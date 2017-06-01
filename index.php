@@ -121,10 +121,14 @@ window.setInterval( function(){
 window.setInterval( function(){
 	now = new Date();
 	mins = now.getMinutes();
+	hours = now.getHours();
 	if (mins < 10){
 		mins = "0" + mins;
 	}
-	time = now.getHours() + ":" + mins;
+	if (hours < 10){
+		hours = "0" + hours;
+	}
+	time = hours + ":" + mins;
 	$('#time').html(time);
 	$('#date').html(now.toDateString());
 } , 1000);
