@@ -48,6 +48,23 @@ body {
 	position: relative;
 }
 
+#rightbar {
+	float: right; width: 300px;
+	text-align: right;
+	position: relative;
+	overflow: hidden;
+}
+
+#rightbar img {
+	/*max-width: 100%;*/
+	float: right;
+}
+#rightbar h2 {
+	 width: 300px;
+	 text-align: left;
+	 font-size: 10pt;
+}
+
 </style>
 
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
@@ -85,11 +102,17 @@ foreach($calendars as $calendar){
 
 ?>
 
+<div id="rightbar">
+	<h2>Network in</h2>
+	<img src="https://treacle.mine.nu/bandwidthd/Total-1-R.png">
+	<h2>Network out</h2>
+	<img src="https://treacle.mine.nu/bandwidthd/Total-1-S.png">
+</div>
 <iframe src="https://calendar.google.com/calendar/embed?<?PHP echo implode("&amp;", $options); ?>" style="border-width:0" width="1200" height="600" frameborder="0" scrolling="no"></iframe>
 
 <div id="bottom">
 	<iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="650px" 
-	src="//forecast.io/embed/#lat=51.768&lon=-1.2&name=Highcross&units=si&font-face-name=Oxygen&font-face-url=<?PHP echo urlencode("https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2"); ?>"
+	src="//forecast.io/embed/#lat=51.768&lon=-1.2&name=Hope:&units=si&font-face-name=Oxygen&font-face-url=<?PHP echo urlencode("https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2"); ?>"
 	> </iframe>
 
 
