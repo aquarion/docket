@@ -1,11 +1,20 @@
-<html>
+<?PHP 
+
+// header('location: wallpaper.php');
+// die();
+
+?><html>
 <head>
-		<link rel="stylesheet" href="static/flipclock/flipclock.css">
+
 
 <link href="https://fonts.googleapis.com/css?family=Oxygen" rel="stylesheet">
 <style type="text/css">
 body {
 	font-family: 'Oxygen', sans-serif;
+    background-repeat: no-repeat; 
+    background-size: cover;
+	background-attachment: fixed; 
+	background-position:  center;
 }
 
 #calendarkey {
@@ -23,6 +32,7 @@ body {
 #calendarkey ul li{
 	height: 1.5em;
 	text-align: right;
+	padding-right: .2em;
 }
 
 #time {
@@ -36,7 +46,6 @@ body {
 }
 
 #datetime {
-	height:100px;
 	display: inline-block; 
 	vertical-align: top;
 	width: 380px;
@@ -65,6 +74,10 @@ body {
 	 font-size: 10pt;
 }
 
+#bottom {
+	background: rgba(255,255,255,.5);
+}
+
 </style>
 
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
@@ -74,8 +87,6 @@ body {
 </head>
 
 <body onLoad="setFocus()">
-<br>
-
 <?php 
 
 include("calendars.inc.php");
@@ -102,13 +113,13 @@ foreach($calendars as $calendar){
 
 ?>
 
-<div id="rightbar">
+<!-- <div id="rightbar">
 	<h2>Network in</h2>
 	<img src="https://treacle.mine.nu/bandwidthd/Total-1-R.png">
 	<h2>Network out</h2>
 	<img src="https://treacle.mine.nu/bandwidthd/Total-1-S.png">
-</div>
-<iframe src="https://calendar.google.com/calendar/embed?<?PHP echo implode("&amp;", $options); ?>" style="border-width:0" width="1200" height="600" frameborder="0" scrolling="no"></iframe>
+</div> -->
+<iframe src="https://calendar.google.com/calendar/embed?<?PHP echo implode("&amp;", $options); ?>" style="border-width:0" width="1200" height="600" frameborder="0" scrolling="no" allowtransparency="true"></iframe>
 
 <div id="bottom">
 	<iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="650px" 
