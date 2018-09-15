@@ -1,1 +1,5 @@
+composer.lock
+etc
+node_modules
+vendor
 calendars.inc.php

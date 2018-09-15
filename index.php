@@ -1,126 +1,48 @@
 <?PHP 
 
+require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/lib/radiator.lib.php';
+
 // header('location: wallpaper.php');
 // die();
+
+include("calendars.inc.php");
 
 ?><html>
 <head>
 
 
 <link href="https://fonts.googleapis.com/css?family=Oxygen" rel="stylesheet">
+<link href="static/style.css" rel="stylesheet">
 <style type="text/css">
-body {
-	font-family: 'Oxygen', sans-serif;
-    background-repeat: no-repeat; 
-    background-size: cover;
-	background-attachment: fixed; 
-	background-position:  center;
-}
-
-#calendarkey {
-
-	position: absolute;
-	top: 0;
-	right: 0;
-}
-
-#calendarkey ul {
-	list-style: none;
-	padding-left: 0;
-}
-
-#calendarkey ul li{
-	height: 1.5em;
-	text-align: right;
-	padding-right: .2em;
-}
-
-#time {
-	font-size: 100pt;
-	text-align: center;
-}
-
-#date {
-	font-size: 28pt;
-	text-align: center;
-}
-
-#datetime {
-	display: inline-block; 
-	vertical-align: top;
-	width: 380px;
-}
-
-#bottom {
-	width: 1200px;
-	height: 245px;
-	position: relative;
-}
-
-#rightbar {
-	float: right; width: 300px;
-	text-align: right;
-	position: relative;
-	overflow: hidden;
-}
-
-#rightbar img {
-	/*max-width: 100%;*/
-	float: right;
-}
-#rightbar h2 {
-	 width: 300px;
-	 text-align: left;
-	 font-size: 10pt;
-}
-
-#bottom {
-	background: rgba(255,255,255,.5);
-}
-
+<?PHP
+	$template = 'a.cal-%2$s { background-color: %1$s; }'."\n";
+	foreach($calendars as $name => $data){
+		printf($template, $data['color'], $name);
+	}
+?>
 </style>
 
-<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-<script>
 
-</script>
+
+<link rel='stylesheet' href='node_modules/fullcalendar/dist/fullcalendar.css' />
+<script src='node_modules/jquery/dist/jquery.min.js'></script>
+<script src='node_modules/moment/min/moment.min.js'></script>
+<script src='node_modules/fullcalendar/dist/fullcalendar.js'></script>
+
 </head>
 
-<body onLoad="setFocus()">
-<?php 
+<body>
 
-include("calendars.inc.php");
-
-$options = array(
-	'showTitle=0',
-	'showNav=0',
-	'showPrint=0',
-	'showTabs=0',
-	'showCalendars=0',
-	'showTz=0',
-	'height=600',
-	'wkst=2',
-	'bgcolor=%23ffffff',
-	'ctz=Europe%2FLondon',
-	
-	);
-
-
-foreach($calendars as $calendar){
-	$options[] = 'src='.urlencode($calendar['src']);
-	$options[] = 'color='.urlencode($calendar['color']);
-}
-
-?>
-
-<!-- <div id="rightbar">
+<div id='calendar'></div>
+<!-- 
+<div id="rightbar">
 	<h2>Network in</h2>
 	<img src="https://treacle.mine.nu/bandwidthd/Total-1-R.png">
 	<h2>Network out</h2>
 	<img src="https://treacle.mine.nu/bandwidthd/Total-1-S.png">
-</div> -->
-<iframe src="https://calendar.google.com/calendar/embed?<?PHP echo implode("&amp;", $options); ?>" style="border-width:0" width="1200" height="600" frameborder="0" scrolling="no" allowtransparency="true"></iframe>
-
+</div>
+ -->
 <div id="bottom">
 	<iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="650px" 
 	src="//forecast.io/embed/#lat=51.768&lon=-1.2&name=Hope:&units=si&font-face-name=Oxygen&font-face-url=<?PHP echo urlencode("https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2"); ?>"
@@ -138,15 +60,39 @@ foreach($calendars as $calendar){
 <?PHP
 $template = '			<li style="color: %s">%s &ndash; &#x2588;</li>';
 foreach($calendars as $name => $data){
-	printf($template, $data['color'], $name);
+	printf($template, $data['color'], $data['name']);
 }
 ?>
 		</ul>
 	</div>
 </div>
+<canvas id="countdown" width="50" height="50"></canvas>
 
 <script type="text/javascript">
 
+
+var handleError = function(error){
+	console.log('---')
+	console.log(error)
+}
+
+
+calendars = <?PHP echo fullcal_json($calendars) ?>
+
+
+$(function() {
+
+  // page is now ready, initialize the calendar...
+
+  $('#calendar').fullCalendar({
+  	height: 600,
+  	width: 1200,
+    eventSources: calendars,
+    error: handleError
+  }
+  )
+
+});
 
 window.setInterval( function(){
 	document.getElementById('forecast_embed').contentWindow.location.reload(true);
@@ -168,9 +114,68 @@ window.setInterval( function(){
 } , 1000);
 
 
+circle = {
+	x : 0,
+	y : 0,
+	radius : false,
+	curPerc : 0,
+	counterClockwise : false,
+	circ : Math.PI * 2,
+	quart : Math.PI / 2,
+
+	drawCircle : function(id){
+		canvas = document.getElementById(id);
+		context = canvas.getContext('2d');
+		circle.x = canvas.width / 2;
+		circle.y = canvas.height / 2;
+		circle.radius = 10;
+		 context.lineWidth = 3;
+		circle.endPercent = 85;
+		circle.curPerc = 0;
+
+		 context.strokeStyle = '#ad2323';
+		 context.shadowOffsetX = 0;
+		 context.shadowOffsetY = 0;
+		 context.shadowBlur = 4;
+		 context.shadowColor = '#656565';
+
+		 circle.animate(0, id)
+	},
+
+
+	animate : function(current, id) {
+		canvas = document.getElementById(id);
+		context = canvas.getContext('2d');
+
+
+	     context.clearRect(0, 0, canvas.width, canvas.height);
+	     context.beginPath();
+	     context.arc(circle.x, circle.y, circle.radius, -(circle.quart), ((circle.circ) * current) - circle.quart, false);
+	     context.stroke();
+	     
+	 }
+
+}
+
+circle.drawCircle('countdown');
+
+var percent = 0;
+
+seconds = 900
+
 window.setInterval( function(){
-	window.location.reload(true);
-} , 1000 * 60 * 120);
+	//.fullCalendar( ‘refetchEvents’ )
+	// $('#number').html(parseInt($('#number').html())+1);
+	if(percent <= 1.02){
+		circle.animate(percent, 'countdown');
+		percent += .01;
+		// console.log(percent);
+	} else {
+		console.log('Refreshing');
+		// $('#calendar').fullCalendar( 'refetchEvents' );
+		percent = 0;
+	}
+} , 9000); // basically seconds, 1800 = 30 minutes
 
 
 

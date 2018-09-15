@@ -1,0 +1,81 @@
+body {
+	font-family: 'Oxygen', sans-serif;
+    background-repeat: no-repeat; 
+    background-size: cover;
+	background-attachment: fixed; 
+	background-position:  center;
+}
+
+#calendar {
+	height: 600px; /* Set this in the JS too */
+	width: 1200px;
+}
+
+#countdown {
+    top: 44px;
+    left: -4;
+    position: absolute;
+    z-index: 1;
+}
+
+
+#calendarkey {
+
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+#calendarkey ul {
+	list-style: none;
+	padding-left: 0;
+}
+
+#calendarkey ul li{
+	height: 1.5em;
+	text-align: right;
+	padding-right: .2em;
+}
+
+#time {
+	font-size: 100pt;
+	text-align: center;
+}
+
+#date {
+	font-size: 28pt;
+	text-align: center;
+}
+
+#datetime {
+	display: inline-block; 
+	vertical-align: top;
+	width: 380px;
+}
+
+#bottom {
+	width: 1200px;
+	height: 245px;
+	position: relative;
+}
+
+#rightbar {
+	float: right; width: 300px;
+	text-align: right;
+	position: relative;
+	overflow: hidden;
+}
+
+#rightbar img {
+	/*max-width: 100%;*/
+	float: right;
+}
+#rightbar h2 {
+	 width: 300px;
+	 text-align: left;
+	 font-size: 10pt;
+}
+
+#bottom {
+	background: rgba(255,255,255,.5);
+}
