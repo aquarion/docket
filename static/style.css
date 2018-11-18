@@ -8,7 +8,6 @@ body {
 
 #calendar {
 	height: 600px; /* Set this in the JS too */
-	width: 1200px;
 }
 
 #countdown {
@@ -78,4 +77,8 @@ body {
 
 #bottom {
 	background: rgba(255,255,255,.5);
+}
+
+.fc-event {
+	font-size: 10pt !important;
 }

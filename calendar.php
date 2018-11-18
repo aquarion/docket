@@ -2,7 +2,8 @@
 
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/lib/gcal.lib.php';
-
+require __DIR__ . '/lib/radiator.lib.php';
+define('SEND_JSON_ERRORS', True);
 
 // Get the API client and construct the service object.
 $client = getClient();

@@ -86,7 +86,7 @@ $(function() {
 
   $('#calendar').fullCalendar({
   	height: 600,
-  	width: 1200,
+  	width: 1400,
     eventSources: calendars,
     error: handleError
   }
@@ -95,8 +95,8 @@ $(function() {
 });
 
 window.setInterval( function(){
-	document.getElementById('forecast_embed').contentWindow.location.reload(true);
-} , 1000 * 60 * 15);
+	document.location.reload(true);
+} , 1000 * 60 * 60);
 
 window.setInterval( function(){
 	now = new Date();
@@ -172,7 +172,7 @@ window.setInterval( function(){
 		// console.log(percent);
 	} else {
 		console.log('Refreshing');
-		// $('#calendar').fullCalendar( 'refetchEvents' );
+		$('#calendar').fullCalendar( 'refetchEvents' );
 		percent = 0;
 	}
 } , 9000); // basically seconds, 1800 = 30 minutes

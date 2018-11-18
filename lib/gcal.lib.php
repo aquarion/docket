@@ -16,7 +16,7 @@ function getClient()
     $credentialsPath = 'etc/token.json';
     if (file_exists($credentialsPath)) {
         $accessToken = json_decode(file_get_contents($credentialsPath), true);
-    } elseif(php_sapi_name() != 'cli') {
+    } elseif(php_sapi_name() == 'cli') {
         // Request authorization from the user.
         $authUrl = $client->createAuthUrl();
         printf("Open the following link in your browser:\n%s\n", $authUrl);
@@ -35,7 +35,7 @@ function getClient()
         if (!file_exists(dirname($credentialsPath))) {
             mkdir(dirname($credentialsPath), 0700, true);
         }
-        file_put_contents($credentialsPath, json_encode($accessToken));
+        file_put_contents($credentialsPath, json_encode($accessToken), LOCK_EX);
         printf("Credentials saved to %s\n", $credentialsPath);
     } else {
         header('HTTP/1.1 500 - Something Bad Happened');
@@ -47,7 +47,7 @@ function getClient()
     // Refresh the token if it's expired.
     if ($client->isAccessTokenExpired()) {
         $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-        file_put_contents($credentialsPath, json_encode($client->getAccessToken()));
+        file_put_contents($credentialsPath, json_encode($client->getAccessToken()), LOCK_EX);
     }
     return $client;
 }
