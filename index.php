@@ -3,8 +3,12 @@
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/lib/radiator.lib.php';
 
-// header('location: wallpaper.php');
-// die();
+// $hour = date('H');
+// $day = date('D');
+// if ($hour >= 19  && $day == 'Mon'){
+// 	header('location: wallpaper.php');
+// 	die();	
+// }
 
 include("calendars.inc.php");
 

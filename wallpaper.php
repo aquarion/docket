@@ -1,7 +1,18 @@
 <?PHP 
 
-header('location: index.php');
-die();
+// $hour = date('H');
+// $day = date('D');
+// if ($hour < 19 || $hour > 21){
+	header('location: index.php');
+// 	die();	
+// }
+
+function random_pic($dir = 'uploads')
+{
+    $files = glob($dir . '/*.*');
+    $file = array_rand($files);
+    return $files[$file];
+}
 
 ?>
 <!DOCTYPE html>
@@ -25,7 +36,7 @@ die();
 body {
 	font-family: 'Oxygen', sans-serif;
 
-    background-image: url("magic.jpg");
+    background-image: url("<?PHP print random_pic('wallpaper'); ?>");
     background-repeat: no-repeat; 
     background-size: cover;
 	background-attachment: fixed; 
@@ -93,7 +104,7 @@ window.setInterval( function(){
 
 window.setInterval( function(){
 	window.location.reload(true);
-} , 1000 * 60);
+} , 1000 * 60 * 10);
 
 
 </script>
