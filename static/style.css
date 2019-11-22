@@ -7,7 +7,6 @@ body {
 }
 
 #calendar {
-	height: 600px; /* Set this in the JS too */
 }
 
 #countdown {
@@ -17,12 +16,14 @@ body {
     z-index: 1;
 }
 
+.forecastbox {
+	display: inline-block; 
+	vertical-align: top;
+}
 
 #calendarkey {
-
-	position: absolute;
-	top: 0;
-	right: 0;
+	display: inline-block; 
+	vertical-align: top;
 }
 
 #calendarkey ul {
@@ -37,6 +38,7 @@ body {
 }
 
 #time {
+	width: 380px;
 	font-size: 100pt;
 	text-align: center;
 }
@@ -49,13 +51,13 @@ body {
 #datetime {
 	display: inline-block; 
 	vertical-align: top;
-	width: 380px;
 }
 
 #bottom {
-	width: 1200px;
+	width: 1920px;
 	height: 245px;
 	position: relative;
+	background: rgba(255,255,255,.5);
 }
 
 #rightbar {
@@ -75,10 +77,17 @@ body {
 	 font-size: 10pt;
 }
 
-#bottom {
-	background: rgba(255,255,255,.5);
-}
 
 .fc-event {
 	font-size: 10pt !important;
+}
+
+
+.marker {
+  background-image: url('mapbox-icon.png');
+  background-size: cover;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
 }

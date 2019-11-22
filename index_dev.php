@@ -60,14 +60,10 @@ div {
 </div>
  -->
 <div id="bottom">
-
-	<div class="forecastbox">
-	<iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="550px" 
+	<iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="650px" 
 	src="//forecast.io/embed/#lat=51.768&lon=-1.2&name=Hope:&units=si&font-face-name=Oxygen&font-face-url=<?PHP echo urlencode("https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2"); ?>"
 	> </iframe>
-		<!-- <script type='text/javascript' src='https://darksky.net/widget/default/42.360082,-71.05888/uk12/en.js?width=100%&height=350&title=Hope&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Default&customFont=&units=uk&htColor=333333&ltColor=C7C7C7&displaySum=yes&displayHeader=yes'></script> -->
-	<!-- <script type='text/javascript' src='https://darksky.net/widget/small/51.768,-1.2/uk12/en.js?width=100%&height=200&title=OX3 9NH&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Oxygen&customFont=https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2&units=uk'></script> -->
-	</div>
+
 
 	<div id="datetime">
 			<div id="time">88:88</div>
@@ -133,11 +129,11 @@ updateMap = function(data, textresult, jsXDR){
 	  	console.log('Found Aq at ',item.location.longitude, item.location.latitude)
 	    llb.extend(aq)
 
-	    // // create a HTML element for each feature
-	    // var aqmark = document.createElement('div');
-	    // aqmark.className = 'marker';
-	    // // make a marker for each feature and add to the map
-	    oneMarker = new mapboxgl.Marker({ color: '<?PHP echo $calendars['aquarion']['color']; ?>' })
+	    // create a HTML element for each feature
+	    var aqmark = document.createElement('div');
+	    aqmark.className = 'marker';
+	    // make a marker for each feature and add to the map
+	    oneMarker = new mapboxgl.Marker(aqmark)
 	      .setLngLat(aq)
 	      .addTo(map);
 	    currentMarkers.push(oneMarker);
@@ -148,11 +144,11 @@ updateMap = function(data, textresult, jsXDR){
 	  	console.log('Found Fyr at ',item.location.longitude, item.location.latitude)
 	    llb.extend(fyr)
 
-	    // // create a HTML element for each feature
-	    // var fyrmark = document.createElement('div');
-	    // fyrmark.className = 'marker';
-	    // // make a marker for each feature and add to the map
-	    oneMarker = new mapboxgl.Marker({ color: '<?PHP echo $calendars['fyr']['color']; ?>' })
+	    // create a HTML element for each feature
+	    var fyrmark = document.createElement('div');
+	    fyrmark.className = 'marker';
+	    // make a marker for each feature and add to the map
+	    oneMarker = new mapboxgl.Marker(fyrmark)
 	      .setLngLat(fyr)
 	      .addTo(map);
 	    currentMarkers.push(oneMarker);
