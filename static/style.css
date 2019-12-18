@@ -19,6 +19,7 @@ body {
 .forecastbox {
 	display: inline-block; 
 	vertical-align: top;
+	width: 320px;
 }
 
 #calendarkey {
@@ -38,13 +39,12 @@ body {
 }
 
 #time {
-	width: 380px;
-	font-size: 100pt;
+	font-size: 72pt;
 	text-align: center;
 }
 
 #date {
-	font-size: 28pt;
+	font-size: 15pt;
 	text-align: center;
 }
 

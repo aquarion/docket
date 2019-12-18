@@ -25,7 +25,26 @@ include("calendars.inc.php");
 <link href='https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css' rel='stylesheet' />
 
 <link href="https://fonts.googleapis.com/css?family=Oxygen" rel="stylesheet">
-<link href="static/style.css" rel="stylesheet">
+<meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="white" />
+<link rel="apple-touch-startup-image" href="radiator.png">
+
+
+
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+<link rel="manifest" href="icons/site.webmanifest">
+<link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#5bbad5">
+<link rel="shortcut icon" href="icons/favicon.ico">
+<meta name="msapplication-TileColor" content="#ffc40d">
+<meta name="msapplication-config" content="icons/browserconfig.xml">
+<meta name="theme-color" content="#ffffff">
+
+
+
+<link href="static/style.css?v=<?PHP echo md5(file_get_contents('static/style.css')); ?>" rel="stylesheet">
 <style type="text/css">
 
 div {
@@ -62,11 +81,14 @@ div {
 <div id="bottom">
 
 	<div class="forecastbox">
-	<iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="550px" 
+	<!-- <iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="550px" 
 	src="//forecast.io/embed/#lat=51.768&lon=-1.2&name=Hope:&units=si&font-face-name=Oxygen&font-face-url=<?PHP echo urlencode("https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2"); ?>"
-	> </iframe>
+	> </iframe> -->
+
 		<!-- <script type='text/javascript' src='https://darksky.net/widget/default/42.360082,-71.05888/uk12/en.js?width=100%&height=350&title=Hope&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Default&customFont=&units=uk&htColor=333333&ltColor=C7C7C7&displaySum=yes&displayHeader=yes'></script> -->
 	<!-- <script type='text/javascript' src='https://darksky.net/widget/small/51.768,-1.2/uk12/en.js?width=100%&height=200&title=OX3 9NH&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Oxygen&customFont=https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2&units=uk'></script> -->
+	<script type='text/javascript' src='https://darksky.net/widget/small/51.7503,-1.209/uk12/en.js?width=100%&height=200&title=OX3 7NH&textColor=333333&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2&units=uk'></script>
+
 	</div>
 
 	<div id="datetime">
@@ -85,7 +107,7 @@ foreach($calendars as $name => $data){
 ?>
 		</ul>
 	</div>
-	<div id='map' style='width: 400px; height: 245px; display: inline-block'></div>
+	<div id='map' style='width: 400px; height: 170px; display: inline-block'></div>
 
 </div>
 
