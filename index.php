@@ -21,8 +21,8 @@ include("calendars.inc.php");
 ?><html>
 <head>
 
-<script src='https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.js'></script>
-<link href='https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.css' rel='stylesheet' />
 
 <link href="https://fonts.googleapis.com/css?family=Oxygen" rel="stylesheet">
 <meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
@@ -107,10 +107,10 @@ foreach($calendars as $name => $data){
 ?>
 		</ul>
 	</div>
-	<div id='map' style='width: 400px; height: 170px; display: inline-block'></div>
 
 </div>
 
+	<div id='map' style='width: 100%; height: 170px; display: inline-block'></div>
 
 
 <canvas id="countdown" width="50" height="50"></canvas>
@@ -183,6 +183,8 @@ updateMap = function(data, textresult, jsXDR){
 
 	console.log(llb);
 
+	map.llb = llb;
+
 	map.fitBounds(llb, { padding: 60, maxZoom: 16  } )
 
 }
@@ -203,12 +205,16 @@ $(function() {
 	mapboxgl.accessToken = 'pk.eyJ1IjoiYXF1YXJpb24iLCJhIjoiQzRoeUpwZyJ9.gIhABGtR7UMR-LZUJGRW0A';
 	map = new mapboxgl.Map({
 	container: 'map',
-	style: 'mapbox://styles/mapbox/streets-v11'
+	//style: 'mapbox://styles/mapbox/streets-v11',
+	style: 'mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh',
 	});
 
 
   	$.get('data/fof.json',updateMap);
 
+  	window.setTimeout(function(){
+		map.fitBounds(map.llb, { padding: 60, maxZoom: 16  } )
+	}, 1000 * 5);
 });
 
 window.setInterval( function(){
@@ -282,7 +288,7 @@ circle.drawCircle('countdown');
 
 var percent = 0;
 
-seconds = 900
+seconds = 900 * 1000
 
 window.setInterval( function(){
 	//.fullCalendar( ‘refetchEvents’ )
@@ -296,8 +302,12 @@ window.setInterval( function(){
 		$('#calendar').fullCalendar( 'refetchEvents' );
 		percent = 0;
 	}
-} , 9000); // basically seconds, 1800 = 30 minutes
+} , 300 * 1000 ); // basically seconds, 1800 = 30 minutes
 
+window.setInterval( function(){
+	console.log("Hi")
+	map.fitBounds(map.llb, { padding: 60, maxZoom: 16  } )
+} , 60* 1000 ); // basically seconds, 1800 = 30 minutes
 
 
 </script>

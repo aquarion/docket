@@ -11,6 +11,14 @@ $service = new Google_Service_Calendar($client);
 
 // Print the next events on the user's calendar.
 $calendarId = $_GET['cal'];
+
+if(!isset($_GET['start'])){
+  $_GET['start'] = date("Y-m-01");
+}
+if(!isset($_GET['end'])){
+  $_GET['end'] = date("Y-m-30");
+}
+
 $optParams = array(
   'orderBy' => 'startTime',
   'singleEvents' => true,
