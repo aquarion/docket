@@ -25,6 +25,7 @@ include("calendars.inc.php");
 <link href='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.css' rel='stylesheet' />
 
 <link href="https://fonts.googleapis.com/css?family=Oxygen" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Wire+One&display=swap" rel="stylesheet">
 <meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="white" />
@@ -43,9 +44,14 @@ include("calendars.inc.php");
 <meta name="theme-color" content="#ffffff">
 
 
+<title>Information Radiator</title>
 
 <link href="static/style.css?v=<?PHP echo md5(file_get_contents('static/style.css')); ?>" rel="stylesheet">
 <style type="text/css">
+
+body {
+	margin: 0;
+}
 
 div {
 
@@ -87,7 +93,7 @@ div {
 
 		<!-- <script type='text/javascript' src='https://darksky.net/widget/default/42.360082,-71.05888/uk12/en.js?width=100%&height=350&title=Hope&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Default&customFont=&units=uk&htColor=333333&ltColor=C7C7C7&displaySum=yes&displayHeader=yes'></script> -->
 	<!-- <script type='text/javascript' src='https://darksky.net/widget/small/51.768,-1.2/uk12/en.js?width=100%&height=200&title=OX3 9NH&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Oxygen&customFont=https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2&units=uk'></script> -->
-	<script type='text/javascript' src='https://darksky.net/widget/small/51.7503,-1.209/uk12/en.js?width=100%&height=200&title=OX3 7NH&textColor=333333&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2&units=uk'></script>
+	<script type='text/javascript' src='https://darksky.net/widget/small/51.7503,-1.209/uk12/en.js?width=100%&height=150&title=OX3 7NH&textColor=333333&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2&units=uk'></script>
 
 	</div>
 
@@ -110,7 +116,7 @@ foreach($calendars as $name => $data){
 
 </div>
 
-	<div id='map' style='width: 100%; height: 170px; display: inline-block'></div>
+	<div id='map' style='width: 100%; height: 260px; display: inline-block'></div>
 
 
 <canvas id="countdown" width="50" height="50"></canvas>
@@ -120,7 +126,7 @@ foreach($calendars as $name => $data){
 var currentMarkers=[];
 
 var handleError = function(error){
-	console.log('---')
+	console.log('--- Error Follows:')
 	console.log(error)
 }
 
@@ -129,10 +135,13 @@ map = null;
 calendars = <?PHP echo fullcal_json($calendars) ?>
 
 
+
+calendars = [ { "url" : "https://altru.istic.net/radiator/all-calendars.php" } ];
+
 updateMap = function(data, textresult, jsXDR){
-	console.log(data)
-	console.log(textresult)
-	console.log(map);
+	//console.log(data)
+	//console.log(textresult)
+	//console.log(map);
 
 	if (currentMarkers!==null) {
 	    for (var i = currentMarkers.length - 1; i >= 0; i--) {
@@ -148,11 +157,11 @@ updateMap = function(data, textresult, jsXDR){
 	  item = data[i]
 
 	  if (item.id == "MTE5MDgzMzc~"){
-	  	console.log(item);
-	  	console.log(item.longitude);
+	  	//console.log(item);
+	  	//console.log(item.longitude);
 
 	  	var aq = new mapboxgl.LngLat(item.location.longitude, item.location.latitude);
-	  	console.log('Found Aq at ',item.location.longitude, item.location.latitude)
+	  	//console.log('Found Aq at ',item.location.longitude, item.location.latitude)
 	    llb.extend(aq)
 
 	    // // create a HTML element for each feature
@@ -167,7 +176,7 @@ updateMap = function(data, textresult, jsXDR){
 
 	  if (item.id == "MTAxNzI2NDM5Mg~~"){
 	  	var fyr = new mapboxgl.LngLat(item.location.longitude, item.location.latitude);
-	  	console.log('Found Fyr at ',item.location.longitude, item.location.latitude)
+	  	//console.log('Found Fyr at ',item.location.longitude, item.location.latitude)
 	    llb.extend(fyr)
 
 	    // // create a HTML element for each feature
@@ -181,7 +190,7 @@ updateMap = function(data, textresult, jsXDR){
 	  }
 	}
 
-	console.log(llb);
+	//console.log(llb);
 
 	map.llb = llb;
 
@@ -205,8 +214,9 @@ $(function() {
 	mapboxgl.accessToken = 'pk.eyJ1IjoiYXF1YXJpb24iLCJhIjoiQzRoeUpwZyJ9.gIhABGtR7UMR-LZUJGRW0A';
 	map = new mapboxgl.Map({
 	container: 'map',
-	//style: 'mapbox://styles/mapbox/streets-v11',
-	style: 'mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh',
+	//style: 'mapbox://styles/mapbox/streets-v11', // Basic
+	// style: 'mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh', // Terminal
+	style: 'mapbox://styles/aquarion/ck6qknw4x4yoy1ipfvkhyuqko',
 	});
 
 
@@ -305,7 +315,7 @@ window.setInterval( function(){
 } , 300 * 1000 ); // basically seconds, 1800 = 30 minutes
 
 window.setInterval( function(){
-	console.log("Hi")
+	//console.log("Hi")
 	map.fitBounds(map.llb, { padding: 60, maxZoom: 16  } )
 } , 60* 1000 ); // basically seconds, 1800 = 30 minutes
 
