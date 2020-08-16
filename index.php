@@ -30,7 +30,7 @@ include("calendars.inc.php");
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="white" />
 <link rel="apple-touch-startup-image" href="radiator.png">
-
+<meta name="mobile-web-app-capable" content="yes">
 
 
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
@@ -55,6 +55,24 @@ body {
 
 div {
 
+}
+
+.marker {
+  background-image: url('mapbox-icon.png');
+  background-size: cover;
+  width: 27px;
+  height: 25px;
+  border-radius: 50%;
+  border: 1px solid black;
+  cursor: pointer;
+}
+
+.fyr_marker {
+  background-image: url('https://art.istic.net/iconography/maps/fyr_icon.png');
+}
+
+.aq_marker {
+  background-image: url('https://art.istic.net/iconography/maps/aq_icon.png');
 }
 <?PHP
 	$template = 'a.cal-%2$s { background-color: %1$s; }'."\n";
@@ -116,7 +134,7 @@ foreach($calendars as $name => $data){
 
 </div>
 
-	<div id='map' style='width: 100%; height: 260px; display: inline-block'></div>
+	<div id='map' style='width: 100%; height: 275px; display: inline-block'></div>
 
 
 <canvas id="countdown" width="50" height="50"></canvas>
@@ -148,6 +166,11 @@ updateMap = function(data, textresult, jsXDR){
 	      currentMarkers[i].remove();
 	    }
 	}
+	var fyr_marker = document.createElement('div');
+	fyr_marker.className = 'marker fyr_marker'
+
+	var aq_marker  = document.createElement('div');
+	aq_marker.className = 'marker aq_marker'
 
 	var llb = new mapboxgl.LngLatBounds();
 
@@ -168,7 +191,7 @@ updateMap = function(data, textresult, jsXDR){
 	    // var aqmark = document.createElement('div');
 	    // aqmark.className = 'marker';
 	    // // make a marker for each feature and add to the map
-	    oneMarker = new mapboxgl.Marker({ color: '<?PHP echo $calendars['aquarion']['color']; ?>' })
+	    oneMarker = new mapboxgl.Marker(aq_marker)
 	      .setLngLat(aq)
 	      .addTo(map);
 	    currentMarkers.push(oneMarker);
@@ -183,7 +206,7 @@ updateMap = function(data, textresult, jsXDR){
 	    // var fyrmark = document.createElement('div');
 	    // fyrmark.className = 'marker';
 	    // // make a marker for each feature and add to the map
-	    oneMarker = new mapboxgl.Marker({ color: '<?PHP echo $calendars['fyr']['color']; ?>' })
+	    oneMarker = new mapboxgl.Marker(fyr_marker)
 	      .setLngLat(fyr)
 	      .addTo(map);
 	    currentMarkers.push(oneMarker);
@@ -214,9 +237,9 @@ $(function() {
 	mapboxgl.accessToken = 'pk.eyJ1IjoiYXF1YXJpb24iLCJhIjoiQzRoeUpwZyJ9.gIhABGtR7UMR-LZUJGRW0A';
 	map = new mapboxgl.Map({
 	container: 'map',
-	//style: 'mapbox://styles/mapbox/streets-v11', // Basic
+	style: 'mapbox://styles/mapbox/streets-v11', // Basic
 	// style: 'mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh', // Terminal
-	style: 'mapbox://styles/aquarion/ck6qknw4x4yoy1ipfvkhyuqko',
+	//style: 'mapbox://styles/aquarion/ck6qknw4x4yoy1ipfvkhyuqko',
 	});
 
 
