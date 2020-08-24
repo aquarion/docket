@@ -20,6 +20,7 @@ include("calendars.inc.php");
 
 ?><html>
 <head>
+<meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
 
 <script src='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.js'></script>
 <link href='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.css' rel='stylesheet' />
@@ -179,12 +180,19 @@ updateMap = function(data, textresult, jsXDR){
 	for (; i < len; i++) { 
 	  item = data[i]
 
+
+	  if(!item.location){
+	  	console.log("Skipped");
+	  	console.log(item);
+	  	continue;
+	  }
+
+
 	  if (item.id == "MTE5MDgzMzc~"){
-	  	//console.log(item);
-	  	//console.log(item.longitude);
+
 
 	  	var aq = new mapboxgl.LngLat(item.location.longitude, item.location.latitude);
-	  	//console.log('Found Aq at ',item.location.longitude, item.location.latitude)
+	  	console.log('Found Aq at ',item.location.longitude, item.location.ltaitude)
 	    llb.extend(aq)
 
 	    // // create a HTML element for each feature
@@ -199,7 +207,7 @@ updateMap = function(data, textresult, jsXDR){
 
 	  if (item.id == "MTAxNzI2NDM5Mg~~"){
 	  	var fyr = new mapboxgl.LngLat(item.location.longitude, item.location.latitude);
-	  	//console.log('Found Fyr at ',item.location.longitude, item.location.latitude)
+	  	console.log('Found Fyr at ',item.location.longitude, item.location.latitude)
 	    llb.extend(fyr)
 
 	    // // create a HTML element for each feature
