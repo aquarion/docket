@@ -95,52 +95,25 @@ div {
 <body>
 
 <div id='calendar'></div>
-<!-- 
-<div id="rightbar">
-	<h2>Network in</h2>
-	<img src="https://treacle.mine.nu/bandwidthd/Total-1-R.png">
-	<h2>Network out</h2>
-	<img src="https://treacle.mine.nu/bandwidthd/Total-1-S.png">
-</div>
- -->
-<div id="bottom">
 
-	<div class="forecastbox">
-	<!-- <iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="550px" 
-	src="//forecast.io/embed/#lat=51.768&lon=-1.2&name=Hope:&units=si&font-face-name=Oxygen&font-face-url=<?PHP echo urlencode("https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2"); ?>"
-	> </iframe> -->
+<div id="datetime"> </div>
 
-		<!-- <script type='text/javascript' src='https://darksky.net/widget/default/42.360082,-71.05888/uk12/en.js?width=100%&height=350&title=Hope&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Default&customFont=&units=uk&htColor=333333&ltColor=C7C7C7&displaySum=yes&displayHeader=yes'></script> -->
-	<!-- <script type='text/javascript' src='https://darksky.net/widget/small/51.768,-1.2/uk12/en.js?width=100%&height=200&title=OX3 9NH&textColor=333333&bgColor=FFFFFF&transparency=false&skyColor=undefined&fontFamily=Oxygen&customFont=https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2&units=uk'></script> -->
-	<script type='text/javascript' src='https://darksky.net/widget/small/51.7503,-1.209/uk12/en.js?width=100%&height=150&title=OX3 7NH&textColor=333333&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2&units=uk'></script>
+<a class="weatherwidget-io" href="https://forecast7.com/en/51d75n1d21/ox3-7nh/" data-label_1="Hubris" data-label_2="WEATHER" data-font="Open Sans Condensed" data-icons="Climacons Animated" data-days="5" data-theme="weather_one" >Hubris WEATHER</a>
+<script>
+!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+</script>
 
-	</div>
 
-	<div id="datetime">
-			<div id="time">88:88</div>
-			<div id="date">DDD MMM dd YYYY</div>
-
-	</div>
-
-	<div style="display: inline-block;" id="calendarkey">
-		<ul>
-<?PHP
-$template = '			<li style="color: %s">%s &ndash; &#x2588;</li>';
-foreach($calendars as $name => $data){
-	printf($template, $data['color'], $data['name']);
-}
-?>
-		</ul>
-	</div>
-
-</div>
-
-	<div id='map' style='width: 100%; height: 275px; display: inline-block'></div>
+<div id='map' style='width: 100%; height: 275px; display: inline-block'></div>
 
 
 <canvas id="countdown" width="50" height="50"></canvas>
 
 <script type="text/javascript">
+
+function dateOrdinal(d) {
+    return (31==d||21==d||1==d?"st":22==d||2==d?"nd":23==d||3==d?"rd":"th")
+};
 
 var currentMarkers=[];
 
@@ -182,7 +155,7 @@ updateMap = function(data, textresult, jsXDR){
 
 
 	  if(!item.location){
-	  	console.log("Skipped");
+	  	console.log("Skipped "+item.id);
 	  	console.log(item);
 	  	continue;
 	  }
@@ -229,6 +202,8 @@ updateMap = function(data, textresult, jsXDR){
 
 }
 
+
+
 $(function() {
 
   // page is now ready, initialize the calendar...
@@ -245,6 +220,8 @@ $(function() {
 	mapboxgl.accessToken = 'pk.eyJ1IjoiYXF1YXJpb24iLCJhIjoiQzRoeUpwZyJ9.gIhABGtR7UMR-LZUJGRW0A';
 	map = new mapboxgl.Map({
 	container: 'map',
+	center: [-1.2, 51.75], // starting position [lng, lat]
+	zoom: 10, // starting zoom
 	style: 'mapbox://styles/mapbox/streets-v11', // Basic
 	// style: 'mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh', // Terminal
 	//style: 'mapbox://styles/aquarion/ck6qknw4x4yoy1ipfvkhyuqko',
@@ -254,7 +231,7 @@ $(function() {
   	$.get('data/fof.json',updateMap);
 
   	window.setTimeout(function(){
-		map.fitBounds(map.llb, { padding: 60, maxZoom: 16  } )
+		map.fitBounds(map.llb, { padding: 60, maxZoom: 16, duration: 5000  } )
 	}, 1000 * 5);
 });
 
@@ -277,8 +254,21 @@ window.setInterval( function(){
 		hours = "0" + hours;
 	}
 	time = hours + ":" + mins;
+
+	var options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+	const o_date = new Intl.DateTimeFormat('en', options);
+	const f_date = (m_ca, m_it) => Object({...m_ca, [m_it.type]: m_it.value});
+	const m_date = o_date.formatToParts().reduce(f_date, {});
+
+	const today = m_date;
+
+	strToday = today.weekday + " " + today.month + " " + today.day + "<sup>"+dateOrdinal(today.day)+"</sup>";
+
+	$('#date').html(strToday);
 	$('#time').html(time);
-	$('#date').html(now.toDateString());
+	$('#datetime').html(time + " &ndash; " + strToday);
+
+
 } , 1000);
 
 

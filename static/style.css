@@ -9,7 +9,7 @@
 
 
 body {
-	font-family: "system", "Oxygen", sans-serif;
+	font-family: "Oxygen", sans-serif;
     background-repeat: no-repeat; 
     background-size: cover;
 	background-attachment: fixed; 
@@ -48,26 +48,23 @@ body {
 	padding-right: .2em;
 }
 
-#time {
-	font-size: 72pt;
-	text-align: center;
-}
 
-#date {
-	font-size: 15pt;
-	text-align: center;
+.fc-toolbar {
+	display: none;
 }
 
 #datetime {
-	display: inline-block; 
-	vertical-align: top;
+	display: block; 
+	width: 100%;
+	font-size: 42pt;
+	text-align: center;
+}
+
+#datetime sup {
+	font-size: 22pt;
 }
 
 #bottom {
-/*	width: 1920px;
-	height: 245px;
-	position: relative;
-	background: rgba(255,255,255,.5);*/
 }
 
 #rightbar {
