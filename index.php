@@ -1,4 +1,4 @@
-<?PHP 
+<?PHP
 
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/lib/radiator.lib.php';
@@ -7,7 +7,7 @@ require __DIR__ . '/lib/radiator.lib.php';
 // $day = date('D');
 // if ($hour >= 19  && $day == 'Mon'){
 // 	header('location: wallpaper.php');
-// 	die();	
+// 	die();
 // }
 
 include("calendars.inc.php");
@@ -22,11 +22,17 @@ include("calendars.inc.php");
 <head>
 <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
 
+<script src='node_modules/ical.js/build/ical.js'></script>
+
+<script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+
+
 <script src='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.js'></script>
 <link href='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.css' rel='stylesheet' />
 
 <link href="https://fonts.googleapis.com/css?family=Oxygen" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Wire+One&display=swap" rel="stylesheet">
+
 <meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="white" />
@@ -66,6 +72,13 @@ div {
   border-radius: 50%;
   border: 1px solid black;
   cursor: pointer;
+}
+
+img.emoji {
+   height: 1em;
+   width: 1em;
+   margin: 0 .05em 0 .1em;
+   vertical-align: -0.1em;
 }
 
 .fyr_marker {
@@ -124,12 +137,6 @@ var handleError = function(error){
 
 map = null;
 
-calendars = <?PHP echo fullcal_json($calendars) ?>
-
-
-
-calendars = [ { "url" : "https://altru.istic.net/radiator/all-calendars.php" } ];
-
 updateMap = function(data, textresult, jsXDR){
 	//console.log(data)
 	//console.log(textresult)
@@ -150,7 +157,7 @@ updateMap = function(data, textresult, jsXDR){
 
 	var i = 0;
 	var len = data.length;
-	for (; i < len; i++) { 
+	for (; i < len; i++) {
 	  item = data[i]
 
 
@@ -202,22 +209,110 @@ updateMap = function(data, textresult, jsXDR){
 
 }
 
+function pr_cal(start, end, timezone, callback){
+	events = update_ical("https://altru.istic.net/pr_cal/Ahsh3AeW.ics", start, end, timezone, callback);
+}
+
+function update_ical(calendarUrl, start, end, timezone, callback) {
+	var callback = callback;
+	$.get(calendarUrl).then(function (data) {
+		// parse the ics data
+		var jcalData = ICAL.parse(data.trim());
+		var comp = new ICAL.Component(jcalData);
+		var eventComps = comp.getAllSubcomponents("vevent");
+		// console.log(JSON.stringify(eventComps));
+		// map them to FullCalendar events
+
+		var rangeStart = ICAL.Time.fromJSDate(start.toDate());
+		var rangeEnd   = ICAL.Time.fromJSDate(end.toDate());
+
+		var events = []
+		$(eventComps).each(function (index, item) {
+			var event = new ICAL.Event(item);
+			if (item.getFirstPropertyValue("class") == "PRIVATE") {
+				return;
+			}
+			if (event.isRecurrenceException() ) {
+				return;
+			}
+
+			if ( event.isRecurring() ) {
+				// if Recurring
+				var recur = item.getFirstPropertyValue('rrule');
+				var dtstart = item.getFirstPropertyValue('dtstart');
+				var iter = recur.iterator(dtstart);
+				for (var next = iter.next(); next; next = iter.next()) {
+					if (next.compare(rangeStart) < 0) {
+						continue;
+					}
+					if (next.compare(rangeEnd) > 0) {
+						continue;
+					}
+					end = item.getFirstPropertyValue("dtend");
+					end.addDuration(event.duration)
+					events.push( {
+						"title":    item.getFirstPropertyValue("summary"),
+						"start":    next.toJSDate(),
+						"end":      end.toJSDate(),
+						"location": item.getFirstPropertyValue("location")
+					} );
+				}
+
+			} else {
+			// end if recurring
+				events.push( {
+					"title": item.getFirstPropertyValue("summary") + ";",
+					"start": item.getFirstPropertyValue("dtstart").toJSDate(),
+					"end": item.getFirstPropertyValue("dtend").toJSDate(),
+					"location": item.getFirstPropertyValue("location")
+				} );
+			}
+		});
+		callback(events);
+	});
+}
+
+calendars = [
+	{ "url" : "https://altru.istic.net/radiator/all-calendars.php" },
+	// { events : pr_cal, color: "#a24db8", textColor: 'white' }
+];
+
+radFirstDay = 1;
+
+if (window.innerHeight < 1024 ){
+	var radDefaultView = 'basicWeek';
+	var radCalHeight = 400;
+	d = new Date();
+	dow = d.getDay();
+	if(dow == 0){
+		radFirstDay = 0;
+	}
+	calendars.push({ events : pr_cal, color: "#a24db8", textColor: 'white' })
+} else {
+	var radDefaultView = 'month';
+	var radCalHeight = 600;
+}
 
 
 $(function() {
 
   // page is now ready, initialize the calendar...
 
-  $('#calendar').fullCalendar({
-  	height: 600,
-  	width: 1400,
-    eventSources: calendars,
-    error: handleError
-  }
-	  )
+	$('#calendar').fullCalendar({
+		height: radCalHeight,
+		eventSources: calendars,
+		error: handleError,
+		defaultView: radDefaultView,
+		firstDay: radFirstDay,
+		fixedWeekCount: false,
 
+		eventAfterAllRender: function() {
+				twemoji.parse(document.body);
+			}
+		}
+	)
 
-	mapboxgl.accessToken = 'pk.eyJ1IjoiYXF1YXJpb24iLCJhIjoiQzRoeUpwZyJ9.gIhABGtR7UMR-LZUJGRW0A';
+		mapboxgl.accessToken = 'pk.eyJ1IjoiYXF1YXJpb24iLCJhIjoiQzRoeUpwZyJ9.gIhABGtR7UMR-LZUJGRW0A';
 	map = new mapboxgl.Map({
 	container: 'map',
 	center: [-1.2, 51.75], // starting position [lng, lat]
@@ -310,7 +405,7 @@ circle = {
 	     context.beginPath();
 	     context.arc(circle.x, circle.y, circle.radius, -(circle.quart), ((circle.circ) * current) - circle.quart, false);
 	     context.stroke();
-	     
+
 	 }
 
 }
