@@ -1,5 +1,14 @@
 <?php
 
+$set = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP);
+$rise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP);
+
+if(time() > $set || time() < $rise ){
+	define("THEME", "nighttime");
+} else {
+	define("THEME", "daytime");
+}
+
 function fullcal_json($calendars){
     $output = [];
     foreach($calendars as $id => $calendar){
@@ -17,14 +26,14 @@ function fullcal_json($calendars){
 }
 
 
-function checkEmoji($str) 
+function checkEmoji($str)
 {
     $regexEmoticons = '/[\x{1F600}-\x{1F64F}]/u';
     preg_match($regexEmoticons, $str, $matches_emo);
     if (!empty($matches_emo[0])) {
         return false;
     }
-    
+
     // Match Miscellaneous Symbols and Pictographs
     $regexSymbols = '/[\x{1F300}-\x{1F5FF}]/u';
     preg_match($regexSymbols, $str, $matches_sym);
@@ -38,7 +47,7 @@ function checkEmoji($str)
     if (!empty($matches_trans[0])) {
         return false;
     }
-   
+
     // Match Miscellaneous Symbols
     $regexMisc = '/[\x{2600}-\x{26FF}]/u';
     preg_match($regexMisc, $str, $matches_misc);

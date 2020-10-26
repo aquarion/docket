@@ -3,20 +3,7 @@
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/lib/radiator.lib.php';
 
-// $hour = date('H');
-// $day = date('D');
-// if ($hour >= 19  && $day == 'Mon'){
-// 	header('location: wallpaper.php');
-// 	die();
-// }
-
 include("calendars.inc.php");
-
-// $fof = json_decode(file_get_contents('etc/fof.json'));
-
-// echo '<pre>';
-// var_dump($fof);
-// echo '</pre>';
 
 ?><html>
 <head>
@@ -105,7 +92,7 @@ img.emoji {
 
 </head>
 
-<body>
+<body id="<?PHP print(THEME) ?>">
 
 <div id='calendar'></div>
 
@@ -293,6 +280,15 @@ if (window.innerHeight < 1024 ){
 	var radCalHeight = 600;
 }
 
+<?PHP
+
+if(THEME == "nighttime"){
+	$map_url = 'mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh';
+} else {
+	$map_url = 'mapbox://styles/mapbox/streets-v11';
+}
+
+?>
 
 $(function() {
 
@@ -317,9 +313,9 @@ $(function() {
 	container: 'map',
 	center: [-1.2, 51.75], // starting position [lng, lat]
 	zoom: 10, // starting zoom
-	style: 'mapbox://styles/mapbox/streets-v11', // Basic
-	// style: 'mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh', // Terminal
-	//style: 'mapbox://styles/aquarion/ck6qknw4x4yoy1ipfvkhyuqko',
+	style: '<?PHP print($map_url); ?>', // Basic
+	// style: '', // Terminal
+	// style: 'mapbox://styles/aquarion/ck6qknw4x4yoy1ipfvkhyuqko',
 	});
 
 

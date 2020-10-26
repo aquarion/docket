@@ -10,10 +10,12 @@
 
 body {
 	font-family: "Oxygen", sans-serif;
-    background-repeat: no-repeat; 
+    background-repeat: no-repeat;
     background-size: cover;
-	background-attachment: fixed; 
+	background-attachment: fixed;
 	background-position:  center;
+	background: #FFF;
+	color: #000;
 }
 
 #calendar {
@@ -27,13 +29,13 @@ body {
 }
 
 .forecastbox {
-	display: inline-block; 
+	display: inline-block;
 	vertical-align: top;
 	width: 320px;
 }
 
 #calendarkey {
-	display: inline-block; 
+	display: inline-block;
 	vertical-align: top;
 }
 
@@ -54,7 +56,7 @@ body {
 }
 
 #datetime {
-	display: block; 
+	display: block;
 	width: 100%;
 	font-size: 42pt;
 	text-align: center;
@@ -97,4 +99,16 @@ body {
   height: 50px;
   border-radius: 50%;
   cursor: pointer;
+}
+
+
+
+body#nighttime {
+	background: #000;
+	color: #AAA;
+}
+
+
+body#nighttime .fc-today {
+	background-color: #333 !important;
 }

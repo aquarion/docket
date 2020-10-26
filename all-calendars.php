@@ -27,7 +27,7 @@ $optParams = array(
   'orderBy' => 'startTime',
   'singleEvents' => true,
   'timeMin' =>  date('c', strtotime($_GET['start'])),
-  'timeMax' =>  date('c', strtotime($_GET['end'])) 
+  'timeMax' =>  date('c', strtotime($_GET['end']))
 );
 
 function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events){
@@ -59,8 +59,10 @@ function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
       $margin = $background = $calendar['color'];
 
       if(!$clean_summary){
-         $margin = $background = '#FFF';
-;      }
+        // print("THEME: " . THEME);
+        $colour = THEME == "nighttime" ? '#000' : '#FFF';
+        $margin = $background = $colour;
+      }
       $all_events[$event_id] = array(
           "allDay" => $event->start->date ? true : false,
           "title"  => $event->summary,
