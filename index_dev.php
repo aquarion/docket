@@ -1,4 +1,4 @@
-<?PHP 
+<?PHP
 
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/lib/radiator.lib.php';
@@ -7,7 +7,7 @@ require __DIR__ . '/lib/radiator.lib.php';
 // $day = date('D');
 // if ($hour >= 19  && $day == 'Mon'){
 // 	header('location: wallpaper.php');
-// 	die();	
+// 	die();
 // }
 
 include("calendars.inc.php");
@@ -33,7 +33,7 @@ div {
 }
 <?PHP
 	$template = 'a.cal-%2$s { background-color: %1$s; }'."\n";
-	foreach($calendars as $name => $data){
+	foreach($google_calendars as $name => $data){
 		printf($template, $data['color'], $name);
 	}
 ?>
@@ -51,7 +51,7 @@ div {
 <body>
 
 <div id='calendar'></div>
-<!-- 
+<!--
 <div id="rightbar">
 	<h2>Network in</h2>
 	<img src="https://treacle.mine.nu/bandwidthd/Total-1-R.png">
@@ -60,7 +60,7 @@ div {
 </div>
  -->
 <div id="bottom">
-	<iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="650px" 
+	<iframe style="display: inline-block; float: left;" id="forecast_embed" type="text/html" frameborder="0" height="245px" width="650px"
 	src="//forecast.io/embed/#lat=51.768&lon=-1.2&name=Hope:&units=si&font-face-name=Oxygen&font-face-url=<?PHP echo urlencode("https://fonts.gstatic.com/s/oxygen/v5/78wGxsHfFBzG7bRkpfRnCQ.woff2"); ?>"
 	> </iframe>
 
@@ -75,7 +75,7 @@ div {
 		<ul>
 <?PHP
 $template = '			<li style="color: %s">%s &ndash; &#x2588;</li>';
-foreach($calendars as $name => $data){
+foreach($google_calendars as $name => $data){
 	printf($template, $data['color'], $data['name']);
 }
 ?>
@@ -100,7 +100,7 @@ var handleError = function(error){
 
 map = null;
 
-calendars = <?PHP echo fullcal_json($calendars) ?>
+calendars = <?PHP echo fullcal_json($google_calendars) ?>
 
 
 updateMap = function(data, textresult, jsXDR){
@@ -118,7 +118,7 @@ updateMap = function(data, textresult, jsXDR){
 
 	var i = 0;
 	var len = data.length;
-	for (; i < len; i++) { 
+	for (; i < len; i++) {
 	  item = data[i]
 
 	  if (item.id == "MTE5MDgzMzc~"){
@@ -247,7 +247,7 @@ circle = {
 	     context.beginPath();
 	     context.arc(circle.x, circle.y, circle.radius, -(circle.quart), ((circle.circ) * current) - circle.quart, false);
 	     context.stroke();
-	     
+
 	 }
 
 }

@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/lib/gcal.lib.php';
 require __DIR__ . '/lib/radiator.lib.php';
-include("calendars.inc.php");
+
 
 define('SEND_JSON_ERRORS', True);
 
@@ -87,7 +87,7 @@ function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
 $all_events = array();
 
 
-foreach($calendars as $cal_id => $calendar){
+foreach($google_calendars as $cal_id => $calendar){
   merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
 }
 
@@ -99,7 +99,7 @@ foreach($all_events as $id => &$event){
 
     $bullets = '';
     foreach($event['calendars'] as $cal_id){
-      $bullets .= $calendars[$cal_id]['emoji'];
+      $bullets .= $google_calendars[$cal_id]['emoji'];
     }
     //$event['title'] = $bullets.' '.$event['title'];
     // Stuff

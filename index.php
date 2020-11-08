@@ -3,7 +3,6 @@
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/lib/radiator.lib.php';
 
-include("calendars.inc.php");
 
 ?><html>
 <head>
@@ -77,7 +76,7 @@ img.emoji {
 }
 <?PHP
 	$template = 'a.cal-%2$s { background-color: %1$s; }'."\n";
-	foreach($calendars as $name => $data){
+	foreach($google_calendars as $name => $data){
 		printf($template, $data['color'], $name);
 	}
 ?>
@@ -196,10 +195,6 @@ updateMap = function(data, textresult, jsXDR){
 
 }
 
-function pr_cal(start, end, timezone, callback){
-	events = update_ical("https://altru.istic.net/pr_cal/Ahsh3AeW.ics", start, end, timezone, callback);
-}
-
 function update_ical(calendarUrl, start, end, timezone, callback) {
 	var callback = callback;
 	$.get(calendarUrl).then(function (data) {
@@ -223,6 +218,8 @@ function update_ical(calendarUrl, start, end, timezone, callback) {
 				return;
 			}
 
+			duration = event.duration
+
 			if ( event.isRecurring() ) {
 				// if Recurring
 				var recur = item.getFirstPropertyValue('rrule');
@@ -235,8 +232,8 @@ function update_ical(calendarUrl, start, end, timezone, callback) {
 					if (next.compare(rangeEnd) > 0) {
 						continue;
 					}
-					end = item.getFirstPropertyValue("dtend");
-					end.addDuration(event.duration)
+					var end = item.getFirstPropertyValue("dtend");
+					end.addDuration(duration)
 					events.push( {
 						"title":    item.getFirstPropertyValue("summary"),
 						"start":    next.toJSDate(),
@@ -264,9 +261,10 @@ calendars = [
 	// { events : pr_cal, color: "#a24db8", textColor: 'white' }
 ];
 
-radFirstDay = 1;
+radFirstDay = 1; // Set first day to Monday
 
-if (window.innerHeight < 1024 ){
+// Smol version
+if (window.innerHeight < 950 ){
 	var radDefaultView = 'basicWeek';
 	var radCalHeight = 400;
 	d = new Date();
@@ -274,13 +272,29 @@ if (window.innerHeight < 1024 ){
 	if(dow == 0){
 		radFirstDay = 0;
 	}
-	calendars.push({ events : pr_cal, color: "#a24db8", textColor: 'white' })
 } else {
 	var radDefaultView = 'month';
 	var radCalHeight = 600;
 }
 
+
 <?PHP
+	$template = <<<EOF
+	calendars.push(
+		{
+			events : function (start, end, timezone, callback){
+					events = update_ical("%s", start, end, timezone, callback)
+				},
+			color: "%s",
+			textColor: '%s'
+		}
+	)
+EOF;
+foreach($ical_calendars as $index => $cal){
+	// printf($template, $cal['src'], $cal['color'], '#FFFFFF');
+	printf($template, $cal['src'], $cal['color'], '#FFFFFF');
+}
+
 
 if(THEME == "nighttime"){
 	$map_url = 'mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh';

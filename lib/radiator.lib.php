@@ -1,7 +1,9 @@
 <?php
 
-$set = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP);
-$rise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP);
+require __DIR__ . '/../calendars.inc.php';
+
+$set = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, MY_LAT, MY_LON);
+$rise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, MY_LAT, MY_LON);
 
 if(time() > $set || time() < $rise ){
 	define("THEME", "nighttime");
@@ -9,9 +11,9 @@ if(time() > $set || time() < $rise ){
 	define("THEME", "daytime");
 }
 
-function fullcal_json($calendars){
+function fullcal_json($google_calendars){
     $output = [];
-    foreach($calendars as $id => $calendar){
+    foreach($google_calendars as $id => $calendar){
         $line = array(
             'url' => 'calendar.php?cal='.$calendar['src'],
             'className' => 'cal-'.$id,

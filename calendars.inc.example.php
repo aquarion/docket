@@ -1,7 +1,7 @@
 <?php
 
 
-$calendars = array(
+$google_calendars = array(
 
 	'holidays' => array( // Unique identifier
 		'name' => 'Holidays in the UK', // Name to display in the key
