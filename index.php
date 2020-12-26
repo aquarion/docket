@@ -7,6 +7,7 @@ require __DIR__ . '/lib/radiator.lib.php';
 ?><html>
 <head>
 <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <script src='node_modules/ical.js/build/ical.js'></script>
 
@@ -21,7 +22,7 @@ require __DIR__ . '/lib/radiator.lib.php';
 
 <meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="white" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="apple-touch-startup-image" href="radiator.png">
 <meta name="mobile-web-app-capable" content="yes">
 
@@ -155,10 +156,8 @@ updateMap = function(data, textresult, jsXDR){
 
 
 	  if (item.id == "MTE5MDgzMzc~"){
-
-
 	  	var aq = new mapboxgl.LngLat(item.location.longitude, item.location.latitude);
-	  	console.log('Found Aq at ',item.location.longitude, item.location.ltaitude)
+	  	console.log('Found Aq at ',item.location.longitude, item.location.latitude)
 	    llb.extend(aq)
 
 	    // // create a HTML element for each feature
@@ -184,6 +183,19 @@ updateMap = function(data, textresult, jsXDR){
 	      .setLngLat(fyr)
 	      .addTo(map);
 	    currentMarkers.push(oneMarker);
+	  }
+
+	  if(fyr && aq){
+			var distance_lat = Math.abs(aq.lat - fyr.lat) * 111139 // Converts lat/lng into meters
+			var distance_lng = Math.abs(aq.lng - fyr.lng) * 111139 //
+			distance = Math.sqrt(Math.pow(distance_lat, 2 ) + Math.pow(distance_lng, 2)) // Pythagorian Radness!
+			if (distance < 100){
+				$('#map').hide();
+			} else {
+				$('#map').show();
+			}
+
+			console.log(distance)
 	  }
 	}
 
@@ -321,6 +333,10 @@ $(function() {
 			}
 		}
 	)
+
+	$('#datetime').click(function(){
+		window.location.reload(true);
+	})
 
 		mapboxgl.accessToken = 'pk.eyJ1IjoiYXF1YXJpb24iLCJhIjoiQzRoeUpwZyJ9.gIhABGtR7UMR-LZUJGRW0A';
 	map = new mapboxgl.Map({

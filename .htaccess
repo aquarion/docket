@@ -1,9 +1,9 @@
-SetEnvIf X-Forwarded-For "82.30.52.61" AllowIP
+SetEnvIf X-Forwarded-For "81.109.116.169" AllowIP
 SetEnvIf X-Forwarded-For "2.3.4.5" AllowIP
 
   <RequireAny>
     Require env AllowIP
-    Require ip 82.30.52.61 2.3.4.5
+    Require ip 81.109.116.169
   </RequireAny>
 
-ErrorDocument 403 "Access denied from this IP"
+ErrorDocument 403 "Sorry, %{HTTP_FORWARDED}"

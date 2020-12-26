@@ -11,6 +11,7 @@ if(time() > $set || time() < $rise ){
 	define("THEME", "daytime");
 }
 
+
 function fullcal_json($google_calendars){
     $output = [];
     foreach($google_calendars as $id => $calendar){
