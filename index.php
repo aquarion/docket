@@ -6,7 +6,7 @@ require __DIR__ . '/lib/radiator.lib.php';
 
 ?><html>
 <head>
-<meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
+<meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://dailyphoto.aquarionics.com https://live.dailyphoto.aquarionics.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <script src='node_modules/ical.js/build/ical.js'></script>
@@ -41,46 +41,40 @@ require __DIR__ . '/lib/radiator.lib.php';
 <title>Information Radiator</title>
 
 <link href="static/style.css?v=<?PHP echo md5(file_get_contents('static/style.css')); ?>" rel="stylesheet">
+<link href="https://dailyphoto.aquarionics.com/element.css.php?element=%23photo" rel="stylesheet">
+
 <style type="text/css">
 
-body {
-	margin: 0;
-}
-
-div {
-
-}
-
-.marker {
-  background-image: url('mapbox-icon.png');
-  background-size: cover;
-  width: 27px;
-  height: 25px;
-  border-radius: 50%;
-  border: 1px solid black;
-  cursor: pointer;
-}
-
-img.emoji {
-   height: 1em;
-   width: 1em;
-   margin: 0 .05em 0 .1em;
-   vertical-align: -0.1em;
-}
-
-.fyr_marker {
-  background-image: url('https://art.istic.net/iconography/maps/fyr_icon.png');
-}
-
-.aq_marker {
-  background-image: url('https://art.istic.net/iconography/maps/aq_icon.png');
-}
 <?PHP
 	$template = 'a.cal-%2$s { background-color: %1$s; }'."\n";
 	foreach($google_calendars as $name => $data){
 		printf($template, $data['color'], $name);
 	}
 ?>
+
+#nextUp {
+	width: 100%; height: 275px; display: inline-block;
+	font-family: "Oxygen";
+	font-size: 32pt;
+}
+
+#nextUp li {
+	list-style: none;
+	overflow: none;
+	padding-left: 0;
+}
+
+#nextUp ul {
+	margin: 0;
+	padding-left: 0;
+}
+
+#daytime #nextup {
+	color: black;
+}
+#nighttime #nextup {
+	color: white;
+}
 </style>
 
 
@@ -94,17 +88,37 @@ img.emoji {
 
 <body id="<?PHP print(THEME) ?>">
 
+
+
+
+
+
+
+
 <div id='calendar'></div>
 
 <div id="datetime"> </div>
 
+
+<div id="weather">
 <a class="weatherwidget-io" href="https://forecast7.com/en/51d75n1d21/ox3-7nh/" data-label_1="Hubris" data-label_2="WEATHER" data-font="Open Sans Condensed" data-icons="Climacons Animated" data-days="5" data-theme="weather_one" >Hubris WEATHER</a>
 <script>
 !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
 </script>
+</div>
+
+<div id='map'   style='width: 100%; height: 275px; display: inline-block'></div>
+
+<div id='nextUp'>
+</div>
 
 
-<div id='map' style='width: 100%; height: 275px; display: inline-block'></div>
+
+
+
+
+
+
 
 
 <canvas id="countdown" width="50" height="50"></canvas>
@@ -144,17 +158,25 @@ updateMap = function(data, textresult, jsXDR){
 
 	var i = 0;
 	var len = data.length;
+
+	var now = new Date();
+
 	for (; i < len; i++) {
 	  item = data[i]
 
-
 	  if(!item.location){
-	  	console.log("Skipped "+item.id);
-	  	console.log(item);
+	  	console.log("Skipped "+item.id+" - No Location");
 	  	continue;
 	  }
 
+	  var date = new Date(item.location.timestamp);
+	  console.log(date)
+	  diff = (now - date) / (1000 * 60 * 60 * 24)
 
+	  if (diff > 1) { // data is older than a day
+	  		console.log("Skipped "+item.id+" - Old");
+			continue;
+	  }
 	  if (item.id == "MTE5MDgzMzc~"){
 	  	var aq = new mapboxgl.LngLat(item.location.longitude, item.location.latitude);
 	  	console.log('Found Aq at ',item.location.longitude, item.location.latitude)
@@ -191,19 +213,118 @@ updateMap = function(data, textresult, jsXDR){
 			distance = Math.sqrt(Math.pow(distance_lat, 2 ) + Math.pow(distance_lng, 2)) // Pythagorian Radness!
 			if (distance < 100){
 				$('#map').hide();
+				$('#nextUp').show();
 			} else {
 				$('#map').show();
+				$('#nextUp').hide();
 			}
-
-			console.log(distance)
 	  }
 	}
 
-	//console.log(llb);
 
 	map.llb = llb;
 
-	map.fitBounds(llb, { padding: 60, maxZoom: 16  } )
+	if (llb.length > 0) {
+		map.fitBounds(llb, { padding: 60, maxZoom: 16  } )
+	}
+}
+
+dateSort = function(a, b){
+	astart = new Date(a.start);
+	bstart = new Date(b.start);
+
+	if (astart == bstart){
+		return 0;
+	} else if (astart > bstart) {
+		return 1;
+	} else {
+		return -1;
+	}
+}
+
+updateNextUp = function(events){
+
+	var i = 0;
+
+	now = moment();
+
+	events.sort(dateSort);
+
+	days = {}
+
+	for (; i < events.length; i++) {
+		event = events[i];
+
+		end   = moment(event.end);
+		start = moment(event.start);
+
+		if (end < now){
+			continue;
+		}
+
+		startF = start.format("YYYY-MM-DD");
+
+		if(!days[startF]){
+			days[startF] = {
+				'allday' : [],
+				'events' : []
+			}
+		}
+
+		if (event.allDay){
+			days[startF]['allday'].push(event)
+		} else {
+			days[startF]['events'].push(event)
+		}
+
+
+	}
+
+
+	output = "<dl>";
+	for (const [date, data] of Object.entries(days)) {
+		day = moment(date)
+
+		if (moment().dayOfYear() == day.dayOfYear()){
+			dayTitle = "Today"
+		} else if (moment().dayOfYear() + 1 == day.dayOfYear()){
+			dayTitle = "Tomorrow"
+		} else {
+			dayTitle = day.format("ddd")
+		}
+
+		output += "<dt>"+dayTitle+": "
+			var i = 0;
+			things = []
+			for (; i < data.allday.length; i++) {
+				allday = data.allday[i]
+				things.push(allday.title);
+			}
+			if (things.lenth == 0) {
+
+			} else if (things.length == 1){
+				output += things[0]
+			} else if (things.length > 1){
+				output += things.slice(0, -1).join(", ") + " & " + things.pop()
+			} else {
+				console.log(things);
+			}
+		output += "</dt>"
+
+
+		for (; i < data.events.length; i++) {
+			event = data.events[i]
+			starts = moment(event.starts)
+			output += "<dd>" + starts.format("HH:mm") + " " + event.title + "</dd>"
+		}
+	}
+
+
+	output += "</dl>";
+	$("#nextUp").html(output);
+
+
+
 
 }
 
@@ -285,7 +406,8 @@ if (window.innerHeight < 950 ){
 		radFirstDay = 0;
 	}
 } else {
-	var radDefaultView = 'month';
+	// var radDefaultView = 'month';
+	var radDefaultView = 'basicWeek';
 	var radCalHeight = 600;
 }
 
@@ -318,6 +440,10 @@ if(THEME == "nighttime"){
 
 $(function() {
 
+
+	$('#map').hide();
+	$('#nextUp').show();
+
   // page is now ready, initialize the calendar...
 
 	$('#calendar').fullCalendar({
@@ -333,6 +459,18 @@ $(function() {
 			}
 		}
 	)
+
+	two_weeks = moment().add(14, "d");
+
+	$.get("https://altru.istic.net/radiator/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), updateNextUp)
+
+
+	if (radDefaultView == 'basicWeek'){
+		$('#calendar').height($('#calendar .fc-content-skeleton').height() + 200);
+	} else {
+		$('#calendar').height($('#calendar .fc-view-container').height());
+	}
+	$('#weather').height($('#weatherwidget-io-0').height());
 
 	$('#datetime').click(function(){
 		window.location.reload(true);
@@ -352,7 +490,9 @@ $(function() {
   	$.get('data/fof.json',updateMap);
 
   	window.setTimeout(function(){
-		map.fitBounds(map.llb, { padding: 60, maxZoom: 16, duration: 5000  } )
+		if (map.llb.length > 0){
+			map.fitBounds(map.llb, { padding: 60, maxZoom: 16, duration: 5000  } )
+		}
 	}, 1000 * 5);
 });
 

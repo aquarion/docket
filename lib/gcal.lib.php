@@ -1,5 +1,27 @@
 <?PHP
 
+$scopes = ['https://www.googleapis.com/auth/photoslibrary.readonly', 'https://www.googleapis.com/auth/calendar.readonly'];
+
+
+use Google\Auth\Credentials\UserRefreshCredentials;
+
+function getGoogleCreds(){
+
+    global $scopes;
+
+    $token  = json_decode(file_get_contents('etc/token.json'));
+    $creds  = json_decode(file_get_contents('etc/credentials.json'));
+
+    $access = [
+        'client_id'     => $creds->installed->client_id,
+        'refresh_token' => $token->refresh_token,
+        'client_secret' =>  $creds->installed->client_secret,
+    ];
+
+    return new UserRefreshCredentials($scopes, $access );
+
+
+}
 /**
  * Returns an authorized API client.
  * @return Google_Client the authorized client object
@@ -8,7 +30,8 @@ function getClient()
 {
     $client = new Google_Client();
     $client->setApplicationName('Radiator');
-    $client->setScopes(Google_Service_Calendar::CALENDAR_READONLY);
+    $client->addScope("https://www.googleapis.com/auth/photoslibrary.readonly");
+    $client->addScope("https://www.googleapis.com/auth/calendar.readonly");
     $client->setAuthConfig('etc/credentials.json');
     $client->setAccessType('offline');
 

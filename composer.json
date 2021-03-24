@@ -1,5 +1,16 @@
 {
     "require": {
-        "google/apiclient": "^2.0"
+        "google/apiclient": "^2.7",
+        "google/photos-library": "^1.6"
+    },
+    "scripts": {
+        "post-update-cmd": "Google\\Task\\Composer::cleanup"
+    },
+    "extra": {
+        "google/apiclient-services": [
+            "Calendar",
+            "PhotosLibrary",
+            "Photos"
+        ]
     }
 }
