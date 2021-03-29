@@ -20,7 +20,7 @@ if(!isset($_GET['start'])){
   $_GET['start'] = date("Y-m-01");
 }
 if(!isset($_GET['end'])){
-  $_GET['end'] = date("Y-m-30");
+  $_GET['end'] = date("Y-m-d",  strtotime('+1 month'));
 }
 
 $optParams = array(
@@ -95,7 +95,18 @@ $events_out = array();
 
 foreach($all_events as $id => &$event){
   if(count($event['calendars']) > 1){
-    $event['backgroundColor'] = '#AAA';
+
+    sort($event['calendars']);
+
+    $merged = implode("-", $event['calendars']);
+
+    if(isset($merged_calendars[$merged])){
+      $event['backgroundColor'] = $merged_calendars[$merged];
+    } else {
+      $event['backgroundColor'] = '#AAA';
+    }
+
+    $event['borderColor'] = adjustBrightness($event['backgroundColor'], -25);
 
     $bullets = '';
     foreach($event['calendars'] as $cal_id){

@@ -19,6 +19,8 @@ require __DIR__ . '/lib/radiator.lib.php';
 
 <link href="https://fonts.googleapis.com/css?family=Oxygen" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Wire+One&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Oxygen+Mono&display=swap" rel="stylesheet">
 
 <meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -46,35 +48,24 @@ require __DIR__ . '/lib/radiator.lib.php';
 <style type="text/css">
 
 <?PHP
-	$template = 'a.cal-%2$s { background-color: %1$s; }'."\n";
+	$a_template = 'a.cal-%2$s { background-color: %1$s; }'."\n";
+	$b_template = '.txtcal-%2$s { color: %1$s; }'."\n";
 	foreach($google_calendars as $name => $data){
-		printf($template, $data['color'], $name);
+		printf($a_template, $data['color'], $name);
+		printf($b_template, $data['color'], $name);
 	}
+
+	foreach($ical_calendars as $name => $data){
+		printf($a_template, $data['color'], $name);
+		printf($b_template, $data['color'], $name);
+	}
+
+	foreach($merged_calendars as $name => $color){
+		printf($a_template, $color, $name);
+		printf($b_template, $color, $name);
+	}
+
 ?>
-
-#nextUp {
-	width: 100%; height: 275px; display: inline-block;
-	font-family: "Oxygen";
-	font-size: 32pt;
-}
-
-#nextUp li {
-	list-style: none;
-	overflow: none;
-	padding-left: 0;
-}
-
-#nextUp ul {
-	margin: 0;
-	padding-left: 0;
-}
-
-#daytime #nextup {
-	color: black;
-}
-#nighttime #nextup {
-	color: white;
-}
 </style>
 
 
@@ -87,18 +78,7 @@ require __DIR__ . '/lib/radiator.lib.php';
 </head>
 
 <body id="<?PHP print(THEME) ?>">
-
-
-
-
-
-
-
-
 <div id='calendar'></div>
-
-<div id="datetime"> </div>
-
 
 <div id="weather">
 <a class="weatherwidget-io" href="https://forecast7.com/en/51d75n1d21/ox3-7nh/" data-label_1="Hubris" data-label_2="WEATHER" data-font="Open Sans Condensed" data-icons="Climacons Animated" data-days="5" data-theme="weather_one" >Hubris WEATHER</a>
@@ -106,6 +86,7 @@ require __DIR__ . '/lib/radiator.lib.php';
 !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
 </script>
 </div>
+<div id="datetime"> </div>
 
 <div id='map'   style='width: 100%; height: 275px; display: inline-block'></div>
 
@@ -114,16 +95,11 @@ require __DIR__ . '/lib/radiator.lib.php';
 
 
 
-
-
-
-
-
-
-
 <canvas id="countdown" width="50" height="50"></canvas>
 
 <script type="text/javascript">
+
+var allEvents = {}
 
 function dateOrdinal(d) {
     return (31==d||21==d||1==d?"st":22==d||2==d?"nd":23==d||3==d?"rd":"th")
@@ -139,9 +115,6 @@ var handleError = function(error){
 map = null;
 
 updateMap = function(data, textresult, jsXDR){
-	//console.log(data)
-	//console.log(textresult)
-	//console.log(map);
 
 	if (currentMarkers!==null) {
 	    for (var i = currentMarkers.length - 1; i >= 0; i--) {
@@ -170,7 +143,7 @@ updateMap = function(data, textresult, jsXDR){
 	  }
 
 	  var date = new Date(item.location.timestamp);
-	  console.log(date)
+
 	  diff = (now - date) / (1000 * 60 * 60 * 24)
 
 	  if (diff > 1) { // data is older than a day
@@ -242,15 +215,68 @@ dateSort = function(a, b){
 	}
 }
 
-updateNextUp = function(events){
+findFurthestDate = function(events){
+	max = new Date();
+	var i = 0;
+	for (; i < events.length; i++) {
+		end = new Date(events[i].end);
+		if (end > max){
+			max = end
+		}
+	}
+	return max;
+}
+
+
+calendarUpdateCallback = function(data, info, third){
+	allEvents['json_cals'] = data;
+	updateNextUp();
+}
+
+updateNextUp = function(){
 
 	var i = 0;
 
 	now = moment();
 
+	nowF = now.format("YYYY-MM-DD");
+
+	days = {
+
+	}
+
+	days[nowF] = {
+				'allday' : [],
+				'events' : []
+			}
+
+	events = []
+
+	for (const [set, set_events] of Object.entries(allEvents)) {
+		events = events.concat(set_events)
+	}
+
 	events.sort(dateSort);
 
-	days = {}
+	maxDate = moment(findFurthestDate(events));
+
+	thisDay = moment();
+	while (thisDay < maxDate){
+		thisDay = thisDay.add(1, "d");
+
+		thisDayF = thisDay.format("YYYY-MM-DD");
+
+		if(!days[thisDayF]){
+			days[thisDayF] = {
+				'allday' : [],
+				'events' : []
+			}
+		}
+	}
+	console.log(days);
+
+
+	i = 0;
 
 	for (; i < events.length; i++) {
 		event = events[i];
@@ -264,15 +290,18 @@ updateNextUp = function(events){
 
 		startF = start.format("YYYY-MM-DD");
 
-		if(!days[startF]){
-			days[startF] = {
-				'allday' : [],
-				'events' : []
-			}
-		}
-
 		if (event.allDay){
 			days[startF]['allday'].push(event)
+			console.log(event)
+			durationHours = ((end - start) / (1000 * 60 * 60) ) -24;
+			while (durationHours > 0) {
+				start = start.add(1, "d");
+				startF = start.format("YYYY-MM-DD");
+				days[startF]['allday'].push(event)
+				durationHours -= 24
+			}
+
+			console.log(durationHours)
 		} else {
 			days[startF]['events'].push(event)
 		}
@@ -295,12 +324,20 @@ updateNextUp = function(events){
 
 		output += "<dt>"+dayTitle+": "
 			var i = 0;
+
 			things = []
 			for (; i < data.allday.length; i++) {
 				allday = data.allday[i]
-				things.push(allday.title);
+
+				classes = "";
+				ii = 0;
+				if (allday.calendars.length > 0){
+					classes += "txtcal-" + allday.calendars.join("-");
+				}
+
+				things.push("<span class=\"" + classes + "\">" + allday.title + "</span>");
 			}
-			if (things.lenth == 0) {
+			if (things.length == 0) {
 
 			} else if (things.length == 1){
 				output += things[0]
@@ -311,11 +348,17 @@ updateNextUp = function(events){
 			}
 		output += "</dt>"
 
+		i = 0;
 
 		for (; i < data.events.length; i++) {
 			event = data.events[i]
-			starts = moment(event.starts)
-			output += "<dd>" + starts.format("HH:mm") + " " + event.title + "</dd>"
+			starts = moment(event.start)
+			classes = "";
+			ii = 0;
+			if (event.calendars.length > 0){
+				classes += "txtcal-" + event.calendars.join("-");
+			}
+			output += "<dd class=\""+classes+"\">" + starts.format("HH:mm") + " " + event.title + "</dd>"
 		}
 	}
 
@@ -324,11 +367,12 @@ updateNextUp = function(events){
 	$("#nextUp").html(output);
 
 
+	twemoji.parse(document.body);
 
 
 }
 
-function update_ical(calendarUrl, start, end, timezone, callback) {
+function update_ical(calendarUrl, start, end, timezone, name, callback) {
 	var callback = callback;
 	$.get(calendarUrl).then(function (data) {
 		// parse the ics data
@@ -366,31 +410,46 @@ function update_ical(calendarUrl, start, end, timezone, callback) {
 						continue;
 					}
 					var end = item.getFirstPropertyValue("dtend");
-					end.addDuration(duration)
+					end.addDuration(duration);
 					events.push( {
 						"title":    item.getFirstPropertyValue("summary"),
 						"start":    next.toJSDate(),
 						"end":      end.toJSDate(),
-						"location": item.getFirstPropertyValue("location")
+						"location": item.getFirstPropertyValue("location"),
+						"calendars": [name]
 					} );
 				}
 
 			} else {
 			// end if recurring
+				dtstart = item.getFirstPropertyValue("dtstart").toJSDate()
+				dtend   = item.getFirstPropertyValue("dtend").toJSDate()
+
+				minutes_length = (dtend - dtstart) / (1000 * 60)
+				if (minutes_length > (60 * 24)) {
+					allDay = true;
+				} else {
+					allDay = false;
+				}
+
 				events.push( {
-					"title": item.getFirstPropertyValue("summary") + ";",
-					"start": item.getFirstPropertyValue("dtstart").toJSDate(),
-					"end": item.getFirstPropertyValue("dtend").toJSDate(),
-					"location": item.getFirstPropertyValue("location")
+					"title": item.getFirstPropertyValue("summary"),
+					"start": dtstart,
+					"end": dtend,
+					"location": item.getFirstPropertyValue("location"),
+					"calendars": [name],
+					"allDay" : allDay
 				} );
 			}
 		});
+		allEvents[calendarUrl] = events
+		updateNextUp();
 		callback(events);
 	});
 }
 
 calendars = [
-	{ "url" : "https://altru.istic.net/radiator/all-calendars.php" },
+	{ "url" : "https://altru.istic.net/radiator/all-calendars.php"},
 	// { events : pr_cal, color: "#a24db8", textColor: 'white' }
 ];
 
@@ -417,16 +476,16 @@ if (window.innerHeight < 950 ){
 	calendars.push(
 		{
 			events : function (start, end, timezone, callback){
-					events = update_ical("%s", start, end, timezone, callback)
+					events = update_ical("%s", start, end, timezone, "%s", callback)
 				},
 			color: "%s",
 			textColor: '%s'
 		}
 	)
 EOF;
-foreach($ical_calendars as $index => $cal){
+foreach($ical_calendars as $name => $cal){
 	// printf($template, $cal['src'], $cal['color'], '#FFFFFF');
-	printf($template, $cal['src'], $cal['color'], '#FFFFFF');
+	printf($template, $cal['src'], $name, $cal['color'], '#FFFFFF');
 }
 
 
@@ -460,9 +519,9 @@ $(function() {
 		}
 	)
 
-	two_weeks = moment().add(14, "d");
+	two_weeks = moment().add(30, "d");
 
-	$.get("https://altru.istic.net/radiator/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), updateNextUp)
+	$.get("https://altru.istic.net/radiator/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
 
 
 	if (radDefaultView == 'basicWeek'){
@@ -500,9 +559,6 @@ window.setInterval( function(){
 	document.location.reload(true);
 } , 1000 * 60 * 60);
 
-window.setInterval( function(){
-	$.get('data/fof.json',updateMap);
-} , 1000 * 300 );
 
 window.setInterval( function(){
 	now = new Date();
@@ -530,7 +586,7 @@ window.setInterval( function(){
 	$('#datetime').html(time + " &ndash; " + strToday);
 
 
-} , 1000);
+} , 5000);
 
 
 circle = {
@@ -548,15 +604,15 @@ circle = {
 		circle.x = canvas.width / 2;
 		circle.y = canvas.height / 2;
 		circle.radius = 10;
-		 context.lineWidth = 3;
+		context.lineWidth = 3;
 		circle.endPercent = 85;
 		circle.curPerc = 0;
 
 		 context.strokeStyle = '#ad2323';
-		 context.shadowOffsetX = 0;
-		 context.shadowOffsetY = 0;
-		 context.shadowBlur = 4;
-		 context.shadowColor = '#656565';
+		//  context.shadowOffsetX = 3;
+		//  context.shadowOffsetY = 3;
+		//  context.shadowBlur = 4;
+		//  context.shadowColor = '#656565';
 
 		 circle.animate(0, id)
 	},
@@ -580,26 +636,30 @@ circle.drawCircle('countdown');
 
 var percent = 0;
 
-seconds = 900 * 1000
+// seconds_per_refresh = 300;
+var seconds_per_refresh = 300; // in seconds. 300 == 5 minutes
+
+
 
 window.setInterval( function(){
 	//.fullCalendar( ‘refetchEvents’ )
 	// $('#number').html(parseInt($('#number').html())+1);
 	if(percent <= 1.02){
 		circle.animate(percent, 'countdown');
-		percent += .01;
-		// console.log(percent);
+		percent += (1/seconds_per_refresh);
 	} else {
 		console.log('Refreshing');
-		$('#calendar').fullCalendar( 'refetchEvents' );
 		percent = 0;
-	}
-} , 300 * 1000 ); // basically seconds, 1800 = 30 minutes
 
-window.setInterval( function(){
-	//console.log("Hi")
-	map.fitBounds(map.llb, { padding: 60, maxZoom: 16  } )
-} , 60* 1000 ); // basically seconds, 1800 = 30 minutes
+
+		two_weeks = moment().add(30, "d");
+
+		$.get("https://altru.istic.net/radiator/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
+
+		$('#calendar').fullCalendar( 'refetchEvents' );
+		$.get('data/fof.json',updateMap);
+	}
+} , 1000 ); // basically seconds, 1800 = 30 minutes
 
 
 </script>

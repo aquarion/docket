@@ -23,10 +23,12 @@ body {
 }
 
 #countdown {
-    top: 44px;
-    left: -4;
+    right: 0;
+    bottom: 0;
     position: absolute;
     z-index: 1;
+	width: 30px;
+	height: 30px;
 }
 
 .forecastbox {
@@ -98,6 +100,7 @@ body#nighttime {
 
 body#nighttime .fc-today {
 	background-color: #333 !important;
+	color: #000;
 }
 
 
@@ -144,8 +147,9 @@ img.emoji {
 #datetime {
 	/* display: block;
 	width: 100%; */
-	font-size: 42pt;
+	font-size: 32pt;
 	text-align: center;
+	font-family: 'Oxygen Mono', monospace;
 }
 
 #datetime sup {
@@ -185,7 +189,27 @@ img.emoji {
   }
 
 
-  #map, #photo {
-	background-color: palegoldenrod;
+#map, #photo {
 	flex-grow: 1;
-  }
+}
+
+
+#nextUp {
+	width: 100%; height: 275px; display: inline-block;
+	font-family: 'Oxygen Mono', monospace;
+	font-size: 22pt;
+}
+
+#nextUp dl {
+	margin: 0;
+}
+
+#nextUp dd, #nextUp dt {
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+#nextUp ul {
+	margin: 0;
+	padding-left: 0;
+}
