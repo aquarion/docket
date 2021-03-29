@@ -25,22 +25,24 @@ require __DIR__ . '/lib/radiator.lib.php';
 <meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="apple-touch-startup-image" href="radiator.png">
+<link rel="apple-touch-startup-image" href="/static/icons/calendar.png">
 <meta name="mobile-web-app-capable" content="yes">
 
 
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
-<link rel="manifest" href="icons/site.webmanifest">
-<link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#5bbad5">
-<link rel="shortcut icon" href="icons/favicon.ico">
-<meta name="msapplication-TileColor" content="#ffc40d">
-<meta name="msapplication-config" content="icons/browserconfig.xml">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png?v=zXvYGBOMEg">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png?v=zXvYGBOMEg">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png?v=zXvYGBOMEg">
+<link rel="manifest" href="/static/icons/site.webmanifest?v=zXvYGBOMEg">
+<link rel="mask-icon" href="/static/icons/safari-pinned-tab.svg?v=zXvYGBOMEg" color="#5bbad5">
+<link rel="shortcut icon" href="/static/icons/favicon.ico?v=zXvYGBOMEg">
+<meta name="apple-mobile-web-app-title" content="Docket">
+<meta name="application-name" content="Docket">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="msapplication-config" content="/static/icons/browserconfig.xml?v=zXvYGBOMEg">
 <meta name="theme-color" content="#ffffff">
 
 
-<title>Information Radiator</title>
+<title>Docket</title>
 
 <link href="static/style.css?v=<?PHP echo md5(file_get_contents('static/style.css')); ?>" rel="stylesheet">
 <link href="https://dailyphoto.aquarionics.com/element.css.php?element=%23photo" rel="stylesheet">
@@ -449,7 +451,7 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 }
 
 calendars = [
-	{ "url" : "https://altru.istic.net/radiator/all-calendars.php"},
+	{ "url" : "https://docket.hubris.house/all-calendars.php"},
 	// { events : pr_cal, color: "#a24db8", textColor: 'white' }
 ];
 
@@ -521,7 +523,7 @@ $(function() {
 
 	two_weeks = moment().add(30, "d");
 
-	$.get("https://altru.istic.net/radiator/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
+	$.get("https://docket.hubris.house/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
 
 
 	if (radDefaultView == 'basicWeek'){
@@ -654,7 +656,7 @@ window.setInterval( function(){
 
 		two_weeks = moment().add(30, "d");
 
-		$.get("https://altru.istic.net/radiator/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
+		$.get("https://docket.hubris.house/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
 
 		$('#calendar').fullCalendar( 'refetchEvents' );
 		$.get('data/fof.json',updateMap);

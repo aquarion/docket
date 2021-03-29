@@ -3,7 +3,7 @@
 // $hour = date('H');
 // $day = date('D');
 // if ($hour < 19 || $hour > 21){
-	header('location: index.php');
+#	header('location: index.php');
 // 	die();	
 // }
 
