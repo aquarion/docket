@@ -275,8 +275,6 @@ updateNextUp = function(){
 			}
 		}
 	}
-	console.log(days);
-
 
 	i = 0;
 
@@ -293,18 +291,20 @@ updateNextUp = function(){
 		startF = start.format("YYYY-MM-DD");
 
 		if (event.allDay){
-			days[startF]['allday'].push(event)
-			console.log(event)
+
+			if(days[startF]){
+				days[startF]['allday'].push(event)
+			}
 			durationHours = ((end - start) / (1000 * 60 * 60) ) -24;
 			while (durationHours > 0) {
 				start = start.add(1, "d");
 				startF = start.format("YYYY-MM-DD");
-				days[startF]['allday'].push(event)
+				if(days[startF]){
+					days[startF]['allday'].push(event)
+				}
 				durationHours -= 24
 			}
-
-			console.log(durationHours)
-		} else {
+		} else if(days[startF]) {
 			days[startF]['events'].push(event)
 		}
 
@@ -411,14 +411,35 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 					if (next.compare(rangeEnd) > 0) {
 						continue;
 					}
-					var end = item.getFirstPropertyValue("dtend");
+
+
+					var end = next.clone()
+					end.addDuration(duration);
+
+					// console.log(item.getFirstPropertyValue("summary"), next.toJSDate(), end.toJSDate(), duration.toSeconds())
+
+
+					minutes_length = duration.toSeconds() / 60;
+
+					if (minutes_length > (60 * 24)) {
+						allDay = true;
+					} else {
+						allDay = false;
+					}
+
+
+
+
+
+
 					end.addDuration(duration);
 					events.push( {
 						"title":    item.getFirstPropertyValue("summary"),
 						"start":    next.toJSDate(),
 						"end":      end.toJSDate(),
 						"location": item.getFirstPropertyValue("location"),
-						"calendars": [name]
+						"calendars": [name],
+						"allDay" : allDay
 					} );
 				}
 
