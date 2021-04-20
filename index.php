@@ -400,16 +400,22 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 			duration = event.duration
 
 			if ( event.isRecurring() ) {
-				// if Recurring
-				var recur = item.getFirstPropertyValue('rrule');
-				var dtstart = item.getFirstPropertyValue('dtstart');
-				var iter = recur.iterator(dtstart);
-				for (var next = iter.next(); next; next = iter.next()) {
+
+
+				var expand = new ICAL.RecurExpansion({
+				   component: item,
+				   dtstart: item.getFirstPropertyValue('dtstart')
+				});
+
+				var next;
+
+				while (next = expand.next()) {
+
 					if (next.compare(rangeStart) < 0) {
 						continue;
 					}
 					if (next.compare(rangeEnd) > 0) {
-						continue;
+						break;
 					}
 
 
