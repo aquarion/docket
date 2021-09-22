@@ -381,6 +381,24 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 		var jcalData = ICAL.parse(data.trim());
 		var comp = new ICAL.Component(jcalData);
 		var eventComps = comp.getAllSubcomponents("vevent");
+
+        if (comp.getFirstSubcomponent('vtimezone')) {
+            for (const tzComponent of comp.getAllSubcomponents('vtimezone')) {
+                const tz = new ICAL.Timezone({
+                    tzid:      tzComponent.getFirstPropertyValue('tzid'),
+                    component: tzComponent,
+                });
+
+                if (!ICAL.TimezoneService.has(tz.tzid)) {
+                    ICAL.TimezoneService.register(tz.tzid, tz);
+                }
+            }
+        }
+        comp = ICAL.helpers.updateTimezones(comp);
+
+
+		localTimeZone = ICAL.Timezone.utcTimezone;
+
 		// console.log(JSON.stringify(eventComps));
 		// map them to FullCalendar events
 
@@ -410,6 +428,7 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 				var next;
 
 				while (next = expand.next()) {
+					next = next.convertToZone(localTimeZone)
 
 					if (next.compare(rangeStart) < 0) {
 						continue;
@@ -417,7 +436,6 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 					if (next.compare(rangeEnd) > 0) {
 						break;
 					}
-
 
 					var end = next.clone()
 					end.addDuration(duration);
@@ -433,11 +451,6 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 						allDay = false;
 					}
 
-
-
-
-
-
 					end.addDuration(duration);
 					events.push( {
 						"title":    item.getFirstPropertyValue("summary"),
@@ -451,7 +464,9 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 
 			} else {
 			// end if recurring
-				dtstart = item.getFirstPropertyValue("dtstart").toJSDate()
+				next = item.getFirstPropertyValue("dtstart").convertToZone(localTimeZone);
+
+				dtstart = next.toJSDate();
 				dtend   = item.getFirstPropertyValue("dtend").toJSDate()
 
 				minutes_length = (dtend - dtstart) / (1000 * 60)
