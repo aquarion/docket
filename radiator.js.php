@@ -20,7 +20,8 @@ $view = [
     'google_calendars' => $google_calendars,
     'merged_calendars' => $merged_calendars,
     'theme' => THEME,
-    'calendar_set' => CALENDAR_SET
+    'calendar_set' => CALENDAR_SET,
+    'mapbox_token' => MAPBOX_API_TOKEN
 ];
 
 if (THEME == "nighttime") {

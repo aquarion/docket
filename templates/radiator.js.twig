@@ -1,5 +1,23 @@
 var allEvents = {}
 
+
+// Smol version
+if (window.innerHeight < 950 ){
+    var radDefaultView = 'basicWeek';
+    var radCalHeight = 400;
+    d = new Date();
+    dow = d.getDay();
+    if(dow == 0){
+        radFirstDay = 0;
+    }
+} else {
+    // var radDefaultView = 'month';
+    var radDefaultView = 'basicWeek';
+    var radCalHeight = 600;
+}
+
+
+
 var untilCalendarFormat = {
     sameDay: '[Today]',
     nextDay: '[Tomorrow]',
@@ -9,18 +27,96 @@ var untilCalendarFormat = {
     sameElse: 'DD/MM/YYYY'
 }
 
+radFirstDay = 1; // Set first day to Monday
+
+calendars = [
+    { "url" : "/all-calendars.php"},
+    // { events : pr_cal, color: "#a24db8", textColor: 'white' }
+];
+
+
+// <iCal Calenders>
+
+{% for name, cal in ical_calendars %}
+
+calendars.push(
+    {
+        events : function (start, end, timezone, callback){
+                events = update_ical("{{ cal.src }}", start, end, timezone, "{{ name }}", callback)
+            },
+        color: "{{ cal.color }}",
+        textColor: '#ffffff'
+    }
+)
+
+{% endfor %}
+//</ iCal Calenders>
+
+circle = {
+    x : 0,
+    y : 0,
+    radius : false,
+    curPerc : 0,
+    counterClockwise : false,
+    circ : Math.PI * 2,
+    quart : Math.PI / 2,
+
+    drawCircle : function(id){
+        canvas = document.getElementById(id);
+        context = canvas.getContext('2d');
+        circle.x = canvas.width / 2;
+        circle.y = canvas.height / 2;
+        circle.radius = 10;
+        context.lineWidth = 3;
+        circle.endPercent = 85;
+        circle.curPerc = 0;
+
+         context.strokeStyle = '#ad2323';
+        //  context.shadowOffsetX = 3;
+        //  context.shadowOffsetY = 3;
+        //  context.shadowBlur = 4;
+        //  context.shadowColor = '#656565';
+
+         circle.animate(0, id)
+    },
+
+
+    animate : function(current, id) {
+        canvas = document.getElementById(id);
+        context = canvas.getContext('2d');
+
+
+         context.clearRect(0, 0, canvas.width, canvas.height);
+         context.beginPath();
+         context.arc(circle.x, circle.y, circle.radius, -(circle.quart), ((circle.circ) * current) - circle.quart, false);
+         context.stroke();
+
+     }
+
+}
+
+circle.drawCircle('countdown');
+
+var percent = 0;
+
+// seconds_per_refresh = 300;
+var seconds_per_refresh = 300; // in seconds. 300 == 5 minutes
+
+
+
+
+var currentMarkers=[];
+var map = null;
+
 function dateOrdinal(d) {
     return (31==d||21==d||1==d?"st":22==d||2==d?"nd":23==d||3==d?"rd":"th")
 };
 
-var currentMarkers=[];
 
 var handleError = function(error){
     console.log('--- Error Follows:')
     console.log(error)
 }
-
-map = null;
 
 updateMap = function(data, textresult, jsXDR){
 
@@ -298,6 +394,55 @@ updateNextUp = function(){
 
     twemoji.parse(document.body);
 
+    update_until();
+
+}
+
+function update_datetime(){
+
+    now = new Date();
+    mins = now.getMinutes();
+    hours = now.getHours();
+    if (mins < 10){
+        mins = "0" + mins;
+    }
+    if (hours < 10){
+        hours = "0" + hours;
+    }
+    time = hours + ":" + mins;
+
+    var options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    const o_date = new Intl.DateTimeFormat('en', options);
+    const f_date = (m_ca, m_it) => Object({...m_ca, [m_it.type]: m_it.value});
+    const m_date = o_date.formatToParts().reduce(f_date, {});
+
+    const today = m_date;
+
+    strToday = today.weekday + " " + today.month + " " + today.day + "<sup>"+dateOrdinal(today.day)+"</sup>";
+
+    $('#date').html(strToday);
+    $('#time').html(time);
+    $('#datetime').html(time + " &ndash; " + strToday);
+}
+
+function update_until(){
+    
+    mnow = moment();
+
+    $(".todayEvent").each(function() {
+        let text = "";
+        event = $(this);
+        thisends = moment(event.attr('eventends'));
+        thisstarts = moment(event.attr('eventstarts'));
+        if (now > thisends){
+            event.hide();
+        } else if (thisstarts > now ){
+            text = "(" + thisstarts.fromNow() + ")";
+        } else if (thisends > now){
+            text = "(ends " + thisends.fromNow() + ")";
+        }
+        $(".until", event).html(text);
+    });
 
 }
 
@@ -423,55 +568,7 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
     });
 }
 
-calendars = [
-    { "url" : "/all-calendars.php"},
-    // { events : pr_cal, color: "#a24db8", textColor: 'white' }
-];
-
-radFirstDay = 1; // Set first day to Monday
-
-// Smol version
-if (window.innerHeight < 950 ){
-    var radDefaultView = 'basicWeek';
-    var radCalHeight = 400;
-    d = new Date();
-    dow = d.getDay();
-    if(dow == 0){
-        radFirstDay = 0;
-    }
-} else {
-    // var radDefaultView = 'month';
-    var radDefaultView = 'basicWeek';
-    var radCalHeight = 600;
-}
-
-
-// <iCal Calenders>
-
-{% for name, cal in ical_calendars %}
-
-calendars.push(
-    {
-        events : function (start, end, timezone, callback){
-                events = update_ical("{{ cal.src }}", start, end, timezone, "{{ name }}", callback)
-            },
-        color: "{{ cal.color }}",
-        textColor: '#ffffff'
-    }
-)
-
-{% endfor %}
-//</ iCal Calenders>
-
-
-$(function() {
-
-
-    $('#map').hide();
-    $('#nextUp').show();
-
-  // page is now ready, initialize the calendar...
-
+function setup_calender(){
     $('#calendar').fullCalendar({
         height: radCalHeight,
         eventSources: calendars,
@@ -496,13 +593,12 @@ $(function() {
     } else {
         $('#calendar').height($('#calendar .fc-view-container').height());
     }
-    $('#weather').height($('#weatherwidget-io-0').height());
+}
 
-    $('#datetime').click(function(){
-        window.location.reload(true);
-    })
+function setup_map(){
+    $('#map').hide();
 
-        mapboxgl.accessToken = 'pk.eyJ1IjoiYXF1YXJpb24iLCJhIjoiQzRoeUpwZyJ9.gIhABGtR7UMR-LZUJGRW0A';
+    mapboxgl.accessToken = '{{ mapbox_token }}';
     map = new mapboxgl.Map({
     container: 'map',
     center: [-1.2, 51.75], // starting position [lng, lat]
@@ -512,71 +608,44 @@ $(function() {
     // style: 'mapbox://styles/aquarion/ck6qknw4x4yoy1ipfvkhyuqko',
     });
 
+    $.get('data/fof.json',updateMap);
+}
+// Startup
+$(function() {
 
-      $.get('data/fof.json',updateMap);
+    $('#nextUp').show();
 
-      window.setTimeout(function(){
-        if (map.llb.length > 0){
-            map.fitBounds(map.llb, { padding: 60, maxZoom: 16, duration: 5000  } )
-        }
-    }, 1000 * 5);
-});
+  // page is now ready, initialize the calendar...
+  setup_calender();
+  setup_map();
 
+
+    $('#weather').height($('#weatherwidget-io-0').height());
+
+    $('#datetime').click(function(){
+        window.location.reload(true);
+    })
+
+
+}); // End Startup
+
+// Hourly
 window.setInterval( function(){
     document.location.reload(true);
 } , 1000 * 60 * 60);
+// End Hourly
 
 
+// Five Seconds
 window.setInterval( function(){
-    now = new Date();
-    mins = now.getMinutes();
-    hours = now.getHours();
-    if (mins < 10){
-        mins = "0" + mins;
+    update_datetime();
+    update_until();
+
+    if (map && map.llb.length > 0){
+        map.fitBounds(map.llb, { padding: 60, maxZoom: 16, duration: 5000  } )
     }
-    if (hours < 10){
-        hours = "0" + hours;
-    }
-    time = hours + ":" + mins;
 
-    var options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-    const o_date = new Intl.DateTimeFormat('en', options);
-    const f_date = (m_ca, m_it) => Object({...m_ca, [m_it.type]: m_it.value});
-    const m_date = o_date.formatToParts().reduce(f_date, {});
-
-    const today = m_date;
-
-    strToday = today.weekday + " " + today.month + " " + today.day + "<sup>"+dateOrdinal(today.day)+"</sup>";
-
-    $('#date').html(strToday);
-    $('#time').html(time);
-    $('#datetime').html(time + " &ndash; " + strToday);
-
-    mnow = moment();
-
-    $(".todayEvent").each(function() {
-        let text = "";
-        event = $(this);
-        thisends = moment(event.attr('eventends'));
-        thisstarts = moment(event.attr('eventstarts'));
-        if (now > thisends){
-            event.hide();
-        } else if (thisstarts > now ){
-            text = "(" + thisstarts.fromNow() + ")";
-        } else if (thisends > now){
-            text = "(ends " + thisends.fromNow() + ")";
-     }
-        $(".until", event).html(text);
-    });
-
-}
-
-circle.drawCircle('countdown');
-
-var percent = 0;
-
-// seconds_per_refresh = 300;
-var seconds_per_refresh = 300; // in seconds. 300 == 5 minutes
+} , 5000);// End Five Seconds
 
 
 
