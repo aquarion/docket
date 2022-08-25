@@ -1,5 +1,14 @@
 var allEvents = {}
 
+var untilCalendarFormat = {
+    sameDay: '[Today]',
+    nextDay: '[Tomorrow]',
+    nextWeek: 'dddd',
+    lastDay: '[Yesterday]',
+    lastWeek: '[Last] dddd',
+    sameElse: 'DD/MM/YYYY'
+}
+
 function dateOrdinal(d) {
     return (31==d||21==d||1==d?"st":22==d||2==d?"nd":23==d||3==d?"rd":"th")
 };
@@ -197,7 +206,7 @@ updateNextUp = function(){
                 const x_event = Object.assign({}, this_event)
                 if (durationHours > 0){
                     x_end = end.subtract(1, 'minutes')
-                    x_event.title = x_event.title + " until " + x_end.format("ddd");
+                    x_event.title = x_event.title + " (until " + x_end.calendar(untilCalendarFormat) + ")";
                 }
                 days[startF]['allday'].push(x_event)
             }
@@ -470,7 +479,7 @@ $(function() {
                 twemoji.parse(document.body);
             }
         }
-    )
+    ) 
 
     two_weeks = moment().add(30, "d");
 
