@@ -274,15 +274,20 @@ updateNextUp = function(){
 
         i = 0;
 
+
         for (; i < data.events.length; i++) {
             this_event = data.events[i]
             starts = moment(this_event.start)
-            classes = "";
+            ends = moment(this_event.end)
+            classes = "event ";
             ii = 0;
             if (this_event.calendars.length > 0){
                 classes += "txtcal-" + this_event.calendars.join("-");
             }
-            output += "<dd class=\""+classes+"\">" + starts.format("HH:mm") + " " + this_event.title + "</dd>"
+            if (moment().dayOfYear() == starts.dayOfYear()){  
+                classes += " todayEvent";
+            }
+            output += "<dd class=\""+classes+"\" eventstarts=\""+ starts.toISOString() +"\" eventends=\""+ ends.toISOString() +"\">" + starts.format("HH:mm") + " " + this_event.title + " <span class=\"until\"></span></dd>"
         }
     }
 
@@ -547,50 +552,22 @@ window.setInterval( function(){
     $('#time').html(time);
     $('#datetime').html(time + " &ndash; " + strToday);
 
+    mnow = moment();
 
-} , 5000);
-
-
-circle = {
-    x : 0,
-    y : 0,
-    radius : false,
-    curPerc : 0,
-    counterClockwise : false,
-    circ : Math.PI * 2,
-    quart : Math.PI / 2,
-
-    drawCircle : function(id){
-        canvas = document.getElementById(id);
-        context = canvas.getContext('2d');
-        circle.x = canvas.width / 2;
-        circle.y = canvas.height / 2;
-        circle.radius = 10;
-        context.lineWidth = 3;
-        circle.endPercent = 85;
-        circle.curPerc = 0;
-
-         context.strokeStyle = '#ad2323';
-        //  context.shadowOffsetX = 3;
-        //  context.shadowOffsetY = 3;
-        //  context.shadowBlur = 4;
-        //  context.shadowColor = '#656565';
-
-         circle.animate(0, id)
-    },
-
-
-    animate : function(current, id) {
-        canvas = document.getElementById(id);
-        context = canvas.getContext('2d');
-
-
-         context.clearRect(0, 0, canvas.width, canvas.height);
-         context.beginPath();
-         context.arc(circle.x, circle.y, circle.radius, -(circle.quart), ((circle.circ) * current) - circle.quart, false);
-         context.stroke();
-
+    $(".todayEvent").each(function() {
+        let text = "";
+        event = $(this);
+        thisends = moment(event.attr('eventends'));
+        thisstarts = moment(event.attr('eventstarts'));
+        if (now > thisends){
+            event.hide();
+        } else if (thisstarts > now ){
+            text = "(" + thisstarts.fromNow() + ")";
+        } else if (thisends > now){
+            text = "(ends " + thisends.fromNow() + ")";
      }
+        $(".until", event).html(text);
+    });
 
 }
 
