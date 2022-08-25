@@ -109,7 +109,7 @@ if (isset($_GET['version']) && $_GET['version'] == "work") {
 
 <canvas id="countdown" width="50" height="50"></canvas>
 
-<script type="text/javascript" src="./radiator.js.php">
+<script type="text/javascript" src="./radiator.js.php?version=<?php echo CALENDAR_SET ?>">
 
 
 </script>

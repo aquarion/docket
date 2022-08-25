@@ -1,4 +1,5 @@
 <?php
+header("Content-Type: application/javascript");
 
 
 require __DIR__ . '/vendor/autoload.php';
@@ -183,10 +184,10 @@ updateNextUp = function(){
     i = 0;
 
     for (; i < events.length; i++) {
-        event = events[i];
+        this_event = events[i];
 
-        end   = moment(event.end);
-        start = moment(event.start);
+        end   = moment(this_event.end);
+        start = moment(this_event.start);
 
         if (end < now){
             continue;
@@ -194,14 +195,14 @@ updateNextUp = function(){
 
         startF = start.format("YYYY-MM-DD");
 
-        if (event.allDay){
+        if (this_event.allDay){
             showed_started = false;
 
             durationHours = ((end - start) / (1000 * 60 * 60) ) -24;
             if(days[startF]){
                 showed_started = true;
                 started_today = true;
-                const x_event = Object.assign({}, event)
+                const x_event = Object.assign({}, this_event)
                 if (durationHours > 0){
                     x_end = end.subtract(1, 'minutes')
                     x_event.title = x_event.title + " until " + x_end.format("ddd");
@@ -213,14 +214,19 @@ updateNextUp = function(){
                 start = start.add(1, "d");
                 startF = start.format("YYYY-MM-DD");
                 if(days[startF] && ! showed_started){
-                    days[startF]['allday'].push(event);
+                    days[startF]['allday'].push(this_event);
                     showed_started = true;
                     started_today = true;
                 }
                 durationHours -= 24
+                if(durationHours < 1 && !started_today){
+                    const x_event = Object.assign({}, this_event)
+                    x_event.title = x_event.title + " ends";
+                    days[startF]['allday'].push(x_event)
+                }
             }
         } else if(days[startF]) {
-            days[startF]['events'].push(event)
+            days[startF]['events'].push(this_event)
         }
 
 
@@ -268,14 +274,14 @@ updateNextUp = function(){
         i = 0;
 
         for (; i < data.events.length; i++) {
-            event = data.events[i]
-            starts = moment(event.start)
+            this_event = data.events[i]
+            starts = moment(this_event.start)
             classes = "";
             ii = 0;
-            if (event.calendars.length > 0){
-                classes += "txtcal-" + event.calendars.join("-");
+            if (this_event.calendars.length > 0){
+                classes += "txtcal-" + this_event.calendars.join("-");
             }
-            output += "<dd class=\""+classes+"\">" + starts.format("HH:mm") + " " + event.title + "</dd>"
+            output += "<dd class=\""+classes+"\">" + starts.format("HH:mm") + " " + this_event.title + "</dd>"
         }
     }
 
@@ -335,7 +341,7 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
             if ( event.isRecurring() ) {
 
 
-                var expand = new ICAL.RecurExpansion({
+                var expand = new ICAL.RecurExpansion({ 
                    component: item,
                    dtstart: item.getFirstPropertyValue('dtstart')
                 });
@@ -446,6 +452,9 @@ if (window.innerHeight < 950 ){
         }
     )
 EOF;
+
+echo "// Ical Calenders\n";
+
 foreach ($ical_calendars as $name => $cal) {
     // printf($template, $cal['src'], $cal['color'], '#FFFFFF');
     printf($template, $cal['src'], $name, $cal['color'], '#FFFFFF');
@@ -457,6 +466,7 @@ if (THEME == "nighttime") {
 } else {
     $map_url = 'mapbox://styles/mapbox/streets-v11';
 }
+echo "// Ical Calenders\n";
 
 ?>
 
