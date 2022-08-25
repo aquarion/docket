@@ -4,3 +4,4 @@ node_modules
 vendor
 calendars.inc.php
 data/fof.json
+cache
