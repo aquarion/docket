@@ -213,3 +213,12 @@ img.emoji {
 	margin: 0;
 	padding-left: 0;
 }
+
+
+#switch {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+	font-size: 24pt;
+	z-index: 100;
+}
