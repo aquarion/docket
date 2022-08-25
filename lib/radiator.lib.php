@@ -1,15 +1,24 @@
 <?php
 
+if (isset($_GET['version']) && $_GET['version'] == "work") {
+    define("CALENDAR_SET", "work");
+} else {
+    define("CALENDAR_SET", "home");
+}
+
 require __DIR__ . '/../calendars.inc.php';
 
-$set = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, MY_LAT, MY_LON);
-$rise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, MY_LAT, MY_LON);
+$sun_info = date_sun_info(time(), MY_LAT, MY_LON);
 
-if(time() > $set || time() < $rise ){
-	define("THEME", "nighttime");
+$set = $sun_info['sunset'];
+$rise = $sun_info['sunrise'];
+
+if (time() > $set || time() < $rise ) {
+    define("THEME", "nighttime");
 } else {
-	define("THEME", "daytime");
+    define("THEME", "daytime");
 }
+
 
 function adjustBrightness($hex, $steps) {
     // From https://stackoverflow.com/questions/3512311/how-to-generate-lighter-darker-color-with-php
@@ -99,6 +108,7 @@ function removeEmoji($text) {
 }
 
 register_shutdown_function( "check_for_fatal" );
+
 function log_error( $num, $str, $file, $line, $context = null )
 {
     log_exception( new ErrorException( $str, 0, $num, $file, $line ) );
@@ -107,7 +117,7 @@ function check_for_fatal()
 {
     $error = error_get_last();
     if (! $error ){
-	return;
+    return;
     }
     if ( $error["type"] == E_ERROR )
         log_error( $error["type"], $error["message"], $error["file"], $error["line"] );
