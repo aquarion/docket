@@ -8,7 +8,7 @@ require __DIR__ . '/lib/gcal.lib.php';
 require __DIR__ . '/lib/radiator.lib.php';
 
 
-define('SEND_JSON_ERRORS', True);
+define('SEND_JSON_ERRORS', true);
 
 // Get the API client and construct the service object.
 $client = getClient();
@@ -16,11 +16,11 @@ $cxn_gcal = new Google_Service_Calendar($client);
 
 // Print the next events on the user's calendar.
 
-if(!isset($_GET['start'])){
-  $_GET['start'] = date("Y-m-01");
+if(!isset($_GET['start'])) {
+    $_GET['start'] = date("Y-m-01");
 }
-if(!isset($_GET['end'])){
-  $_GET['end'] = date("Y-m-d",  strtotime('+1 month'));
+if(!isset($_GET['end'])) {
+    $_GET['end'] = date("Y-m-d",  strtotime('+1 month'));
 }
 
 $optParams = array(
@@ -30,92 +30,93 @@ $optParams = array(
   'timeMax' =>  date('c', strtotime($_GET['end']))
 );
 
-function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events){
-  /* calendar = array(3) {
+function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
+{
+    /* calendar = array(3) {
     ["name"]=>
     string(8) "Holidays"
     ["src"]=>
     string(59) "k6ihf65p5md3okg9fpu4r2q36qk80r7e@import.calendar.google.com"
     ["color"]=>
     string(7) "#865A5A"
-  }*/
+    }*/
 
-  $results = $cxn_gcal->events->listEvents($calendar['src'], $optParams);
-  $events = $results->getItems();
+    $results = $cxn_gcal->events->listEvents($calendar['src'], $optParams);
+    $events = $results->getItems();
 
-  foreach($events as $event){
-    $start = $event->start->dateTime ? $event->start->dateTime : $event->start->date;
-    $end = $event->end->dateTime ? $event->end->dateTime : $event->end->date;
+    foreach($events as $event){
+        $start = $event->start->dateTime ? $event->start->dateTime : $event->start->date;
+        $end = $event->end->dateTime ? $event->end->dateTime : $event->end->date;
 
-    $clean_summary = removeEmoji($event->summary);
-    $clean_summary = trim($clean_summary);
+        $clean_summary = removeEmoji($event->summary);
+        $clean_summary = trim($clean_summary);
 
-    $event_id = sha1($start.$end.$clean_summary);
+        $event_id = sha1($start.$end.$clean_summary);
 
-    if(isset($all_events[$event_id])){
-      $all_events[$event_id]['calendars'][] = $cal_id;
+        if(isset($all_events[$event_id])) {
+            $all_events[$event_id]['calendars'][] = $cal_id;
 
-    } else {
-      $margin = $background = $calendar['color'];
+        } else {
+            $margin = $background = $calendar['color'];
 
-      if(!$clean_summary){
-        // print("THEME: " . THEME);
-        $colour = THEME == "nighttime" ? '#000' : '#FFF';
-        $margin = $background = $colour;
-      }
-      $all_events[$event_id] = array(
-          "allDay" => $event->start->date ? true : false,
-          "title"  => $event->summary,
-          "first"  => $calendar['src'],
-          "clean"  => $clean_summary,
-          "cleancount"  => bin2hex($clean_summary),
-          "id"     => $event->id,
-          "end"    => $end,
-          "start"  => $start,
-          "calendars" => array($cal_id),
-          "backgroundColor" => $margin,
-          "borderColor" => $background
-      );
+            if(!$clean_summary) {
+                // print("THEME: " . THEME);
+                $colour = THEME == "nighttime" ? '#000' : '#FFF';
+                $margin = $background = $colour;
+            }
+            $all_events[$event_id] = array(
+            "allDay" => $event->start->date ? true : false,
+            "title"  => $event->summary,
+            "first"  => $calendar['src'],
+            "clean"  => $clean_summary,
+            "cleancount"  => bin2hex($clean_summary),
+            "id"     => $event->id,
+            "end"    => $end,
+            "start"  => $start,
+            "calendars" => array($cal_id),
+            "backgroundColor" => $margin,
+            "borderColor" => $background
+            );
+        }
     }
-  }
 
 
 }
-#efb88f
-#3f
+// efb88f
+// 3f
 
 $all_events = array();
 
 
 foreach($google_calendars as $cal_id => $calendar){
-  merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
+    merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
 }
 
 $events_out = array();
 
 foreach($all_events as $id => &$event){
-  if(count($event['calendars']) > 1){
+    if(count($event['calendars']) > 1) {
 
-    sort($event['calendars']);
+        sort($event['calendars']);
 
-    $merged = implode("-", $event['calendars']);
+        $merged = implode("-", $event['calendars']);
 
-    if(isset($merged_calendars[$merged])){
-      $event['backgroundColor'] = $merged_calendars[$merged];
-    } else {
-      $event['backgroundColor'] = '#AAA';
+        if(isset($merged_calendars[$merged])) {
+            $event['backgroundColor'] = $merged_calendars[$merged];
+        } else {
+            $event['backgroundColor'] = '#AAA';
+        }
+
+        $event['borderColor'] = adjustBrightness($event['backgroundColor'], -25);
+
+        $bullets = '';
+        foreach($event['calendars'] as $cal_id){
+            $bullets .= $google_calendars[$cal_id]['emoji'];
+        }
+        //$event['title'] = $bullets.' '.$event['title'];
+        // Stuff
     }
-
-    $event['borderColor'] = adjustBrightness($event['backgroundColor'], -25);
-
-    $bullets = '';
-    foreach($event['calendars'] as $cal_id){
-      $bullets .= $google_calendars[$cal_id]['emoji'];
-    }
-    //$event['title'] = $bullets.' '.$event['title'];
-    // Stuff
-  }
-  $events_out[] = $event;
+    $events_out[] = $event;
 }
 
 header('content-type: application/json; charset: utf-8');
