@@ -43,15 +43,21 @@
 
 <style type="text/css">
 
+/* google */
  {% for name, data in google_calendars %}
+    a.cal-{{ data.color }} { background-color: {{name}}; }
     .txtcal-{{name}} { color: {{ data.color }}; }
  {% endfor %}
 
+/* ical */
  {% for name, data in ical_calendars %}
+    a.cal-{{ data.color }} { background-color: {{name}}; }
     .txtcal-{{name}} { color: {{ data.color }}; }
  {% endfor %}
 
+/* merged */
  {% for name, data in merged_calendars %}
+    a.cal-{{ data.color }} { background-color: {{name}}; }
     .txtcal-{{name}} { color: {{ data.color }}; }
  {% endfor %}
 

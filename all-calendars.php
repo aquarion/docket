@@ -102,7 +102,7 @@ foreach($all_events as $id => &$event){
         $merged = implode("-", $event['calendars']);
 
         if(isset($merged_calendars[$merged])) {
-            $event['backgroundColor'] = $merged_calendars[$merged];
+            $event['backgroundColor'] = $merged_calendars[$merged]['color'];
         } else {
             $event['backgroundColor'] = '#AAA';
         }
