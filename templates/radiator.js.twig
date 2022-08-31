@@ -142,7 +142,7 @@ updateMap = function(data, textresult, jsXDR){
       item = data[i]
 
       if(!item.location){
-          console.log("Skipped "+item.id+" - No Location");
+          #console.log("Skipped "+item.id+" - No Location");
           continue;
       }
 
@@ -294,6 +294,10 @@ updateNextUp = function(){
 
         if (this_event.allDay){
             showed_started = false;
+            if (start < now){
+                start = now;
+                startF = start.format("YYYY-MM-DD");
+            }
 
             durationHours = ((end - start) / (1000 * 60 * 60) ) -24;
             if(days[startF]){
