@@ -4,7 +4,8 @@ var filter_out_list = ["Focus time"]
 
 const params = new URLSearchParams(window.location.search);
 const VERSION = params.get("version");
-console.log(VERSION)
+const DEBUG = false;
+
 
 // Smol version
 if (window.innerHeight < 950 ){
@@ -21,6 +22,11 @@ if (window.innerHeight < 950 ){
     var radCalHeight = 600;
 }
 
+function debug(item){
+    if(DEBUG){
+        console.log(item)
+    }
+}
 
 
 var untilCalendarFormat = {
@@ -483,19 +489,29 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
         // console.log(JSON.stringify(eventComps));
         // map them to FullCalendar events
 
+        
+        a_day = 86400000;
+        a_month = a_day * 28;
+        end = new Date(new Date().getTime() + a_month);
+
         var rangeStart = ICAL.Time.fromJSDate(start.toDate());
-        var rangeEnd   = ICAL.Time.fromJSDate(end.toDate());
+        var rangeEnd   = ICAL.Time.fromJSDate(end);
 
         var events = []
         $(eventComps).each(function (index, item) {
             var event = new ICAL.Event(item);
+            
+
             if (item.getFirstPropertyValue("class") == "PRIVATE") {
+                debug("Skipped: Private")
                 return;
             }
             if (event.isRecurrenceException() ) {
+                debug("Skipped: Exception")
                 return;
-            }
+            } 
             if(filter_out_list.indexOf(item.getFirstPropertyValue("summary")) != -1){
+                debug("Skipped: Filtered")
                 return;
             }
 
@@ -512,19 +528,21 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
                 var next;
 
                 while (next = expand.next()) {
+                    
+                    debug("Repeating " + next.toString())
                     next = next.convertToZone(localTimeZone)
 
                     if (next.compare(rangeStart) < 0) {
+                        debug("Skipped: Before rangeStart")
                         continue;
                     }
                     if (next.compare(rangeEnd) > 0) {
-                        break;
+                        debug("Skipped: After rangeEnd " + rangeEnd.toString())
+                        continue;
                     }
 
                     var end = next.clone()
                     end.addDuration(duration);
-
-                    // console.log(item.getFirstPropertyValue("summary"), next.toJSDate(), end.toJSDate(), duration.toSeconds())
 
 
                     minutes_length = duration.toSeconds() / 60;
