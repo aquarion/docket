@@ -1,5 +1,10 @@
 var allEvents = {}
 
+var filter_out_list = ["Focus time"]
+
+const params = new URLSearchParams(window.location.search);
+const VERSION = params.get("version");
+console.log(VERSION)
 
 // Smol version
 if (window.innerHeight < 950 ){
@@ -42,7 +47,7 @@ calendars = [
 calendars.push(
     {
         events : function (start, end, timezone, callback){
-                events = update_ical("{{ cal.src }}", start, end, timezone, "{{ name }}", callback)
+                events = update_ical("./icalproxy.php?cal={{ name }}&version=" + VERSION, start, end, timezone, "{{ name }}", callback)
             },
         color: "{{ cal.color }}",
         textColor: '#ffffff'
@@ -142,7 +147,7 @@ updateMap = function(data, textresult, jsXDR){
       item = data[i]
 
       if(!item.location){
-          #console.log("Skipped "+item.id+" - No Location");
+          // console.log("Skipped "+item.id+" - No Location");
           continue;
       }
 
@@ -488,6 +493,9 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
                 return;
             }
             if (event.isRecurrenceException() ) {
+                return;
+            }
+            if(filter_out_list.indexOf(item.getFirstPropertyValue("summary")) != -1){
                 return;
             }
 
