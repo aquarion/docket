@@ -36,8 +36,20 @@ if (REDIS_HOST) {
     }
 
     if ($output = $redis->get($input_cal)) {
-        return $output;
+        if ($output != "Object") {
+            header("X-Cached: Yes: $input_cal");
+            header("Content-Type: text/calendar; charset=utf-8");
+            echo $output;
+            // var_dump($output);
+            exit;
+        } else {
+            header("X-Cached: Stupid. ");
+        }
+    } else {
+        header("X-Cached: Not found: $input_cal");
     }
+} else {
+    header("X-Cached: No Redis Host: $input_cal");
 }
 
 
@@ -53,10 +65,9 @@ if (!$res->getStatusCode() == 200) {
     throw new Exception("Error accessing calendar");
 }
 
-// Display
 
 if (REDIS_HOST) {
-    $redis->setex($input_cal, 3600/2, $res->getBody());
+    $redis->setex($input_cal, 3600/2, $res->getBody()->getContents());
 }
 
 header("Content-Type: ". $res->getHeader('content-type')[0]);
