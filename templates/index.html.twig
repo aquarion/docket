@@ -71,6 +71,11 @@
 </head>
 
 <body id="{{ theme }}">
+{% if git_branch is not empty %}
+<div class="devmode-ribbon">
+   <a target="_blank" href="https://github.com/aquarion/radiator">Branch {{ git_branch }}</a>
+</div>
+{% endif %}
 <div id='calendar'></div>
 
 <div id="weather">

@@ -6,7 +6,7 @@ var filter_out_regexes = ["^\/",]
 
 const params = new URLSearchParams(window.location.search);
 const VERSION = params.get("version");
-const DEBUG = false;
+const DEBUG = {% if git_branch is not empty %} true {% else %} false {% endif %};
 
 
 // Smol version

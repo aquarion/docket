@@ -63,6 +63,18 @@ function fullcal_json($google_calendars)
     return json_encode($output, JSON_PRETTY_PRINT);
 }
 
+function git_branch()
+{
+    
+    $stringfromfile = file(__DIR__.'/../.git/HEAD', FILE_USE_INCLUDE_PATH);
+
+    $firstLine = $stringfromfile[0]; //get the string from the array
+
+    $explodedstring = explode("/", $firstLine, 3); //seperate out by the "/" in the string
+
+    return $explodedstring[2]; //get the one that is always the branch name
+
+}
 
 function checkEmoji($str)
 {
@@ -173,3 +185,5 @@ function send_text_error($errno, $errstr, $errfile, $errline)
 }
 set_error_handler('log_error');
 set_exception_handler("log_exception");
+
+

@@ -24,6 +24,10 @@ $view = [
     'mapbox_token' => MAPBOX_API_TOKEN
 ];
 
+if (DEV_MODE) {
+    $view['git_branch'] = git_branch();
+}
+
 if (THEME == "nighttime") {
     $view['mapbox_url'] = "mapbox://styles/aquarion/cj656i7c261pn2rolp2i4ptsh";
 } else { 
