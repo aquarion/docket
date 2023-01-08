@@ -1,4 +1,5 @@
 <?php
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -16,11 +17,11 @@ $cxn_gcal = new Google_Service_Calendar($client);
 
 // Print the next events on the user's calendar.
 
-if(!isset($_GET['start'])) {
+if (!isset($_GET['start'])) {
     $_GET['start'] = date("Y-m-01");
 }
-if(!isset($_GET['end'])) {
-    $_GET['end'] = date("Y-m-d",  strtotime('+1 month'));
+if (!isset($_GET['end'])) {
+    $_GET['end'] = date("Y-m-d", strtotime('+1 month'));
 }
 
 $optParams = array(
@@ -44,7 +45,7 @@ function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
     $results = $cxn_gcal->events->listEvents($calendar['src'], $optParams);
     $events = $results->getItems();
 
-    foreach($events as $event){
+    foreach ($events as $event) {
         $start = $event->start->dateTime ? $event->start->dateTime : $event->start->date;
         $end = $event->end->dateTime ? $event->end->dateTime : $event->end->date;
 
@@ -53,13 +54,12 @@ function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
 
         $event_id = sha1($start.$end.$clean_summary);
 
-        if(isset($all_events[$event_id])) {
+        if (isset($all_events[$event_id])) {
             $all_events[$event_id]['calendars'][] = $cal_id;
-
         } else {
             $margin = $background = $calendar['color'];
 
-            if(!$clean_summary) {
+            if (!$clean_summary) {
                 // print("THEME: " . THEME);
                 $colour = THEME == "nighttime" ? '#000' : '#FFF';
                 $margin = $background = $colour;
@@ -79,8 +79,6 @@ function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
             );
         }
     }
-
-
 }
 // efb88f
 // 3f
@@ -88,20 +86,19 @@ function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
 $all_events = array();
 
 
-foreach($google_calendars as $cal_id => $calendar){
+foreach ($google_calendars as $cal_id => $calendar) {
     merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
 }
 
 $events_out = array();
 
-foreach($all_events as $id => &$event){
-    if(count($event['calendars']) > 1) {
-
+foreach ($all_events as $id => &$event) {
+    if (count($event['calendars']) > 1) {
         sort($event['calendars']);
 
         $merged = implode("-", $event['calendars']);
 
-        if(isset($merged_calendars[$merged])) {
+        if (isset($merged_calendars[$merged])) {
             $event['backgroundColor'] = $merged_calendars[$merged]['color'];
         } else {
             $event['backgroundColor'] = '#AAA';
@@ -110,7 +107,7 @@ foreach($all_events as $id => &$event){
         $event['borderColor'] = adjustBrightness($event['backgroundColor'], -25);
 
         $bullets = '';
-        foreach($event['calendars'] as $cal_id){
+        foreach ($event['calendars'] as $cal_id) {
             $bullets .= $google_calendars[$cal_id]['emoji'];
         }
         //$event['title'] = $bullets.' '.$event['title'];

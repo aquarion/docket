@@ -1,7 +1,7 @@
 var allEvents = {}
 
 // @Todo This should be configurable
-var filter_out_list = ["Focus time"]
+var filter_out_list = ["Focus time", "Take a break", "Catch up on messages"]
 
 const params = new URLSearchParams(window.location.search);
 const VERSION = params.get("version");
@@ -354,8 +354,10 @@ updateNextUp = function(){
             dayTitle = "Today"
         } else if (moment().dayOfYear() + 1 == day.dayOfYear()){
             dayTitle = "Tomorrow"
+        } else if (day.dayOfYear() >= moment().dayOfYear() + 7 ){
+            dayTitle = day.format("ddd Do")
         } else {
-            dayTitle = day.format("ddd")
+            dayTitle = day.format("ddd Do")
         }
 
         output += "<dt>"+dayTitle+": "
@@ -399,7 +401,11 @@ updateNextUp = function(){
             if (moment().dayOfYear() == starts.dayOfYear()){  
                 classes += " todayEvent";
             }
-            output += "<dd class=\""+classes+"\" eventstarts=\""+ starts.toISOString() +"\" eventends=\""+ ends.toISOString() +"\">" + starts.format("HH:mm") + " " + this_event.title + " <span class=\"until\"></span></dd>"
+            output += "<dd class=\""+classes+"\" eventstarts=\""+ starts.toISOString() +"\" eventends=\""+ ends.toISOString() +"\">"
+                + "<span class=\"event_dt\">" + starts.format("HH:mm") + "</span> "
+                + "<span class=\"event_title\">" + this_event.title + "</span> "
+                + "<span class=\"until\"></span>"
+                + "</dd>"
         }
     }
 
@@ -427,7 +433,7 @@ function update_datetime(){
     }
     time = hours + ":" + mins;
 
-    var options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    var options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
     const o_date = new Intl.DateTimeFormat('en', options);
     const f_date = (m_ca, m_it) => Object({...m_ca, [m_it.type]: m_it.value});
     const m_date = o_date.formatToParts().reduce(f_date, {});
@@ -438,7 +444,7 @@ function update_datetime(){
 
     $('#date').html(strToday);
     $('#time').html(time);
-    $('#datetime').html(time + " &ndash; " + strToday);
+    $('#datetime').html("<span class=\"dt_time\">" + time + "</span> &ndash; " + strToday);
 }
 
 function update_until(){
@@ -466,9 +472,15 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
     var callback = callback;
     $.get(calendarUrl).then(function (data) {
         // parse the ics data
-        var jcalData = ICAL.parse(data.trim());
-        var comp = new ICAL.Component(jcalData);
-        var eventComps = comp.getAllSubcomponents("vevent");
+        try {
+            var jcalData = ICAL.parse(data);
+            var comp = new ICAL.Component(jcalData);
+            var eventComps = comp.getAllSubcomponents("vevent");
+        }
+        catch (error) {
+            console.warn("Couldn't Parse " + calendarUrl);
+            return;
+        }
 
         if (comp.getFirstSubcomponent('vtimezone')) {
             for (const tzComponent of comp.getAllSubcomponents('vtimezone')) {
@@ -512,7 +524,8 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
                 return;
             } 
             if(filter_out_list.indexOf(item.getFirstPropertyValue("summary")) != -1){
-                debug("Skipped: Filtered")
+                debug("Skipped: Filtered");
+                console.log(item);
                 return;
             }
 
