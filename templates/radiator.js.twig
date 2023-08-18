@@ -2,6 +2,7 @@ var allEvents = {}
 
 // @Todo This should be configurable
 var filter_out_list = ["Focus time", "Take a break", "Catch up on messages"]
+var filter_out_regexes = ["^\/",]
 
 const params = new URLSearchParams(window.location.search);
 const VERSION = params.get("version");
@@ -307,7 +308,7 @@ updateNextUp = function(){
         if (this_event.allDay){
             showed_started = false;
             if (start < now){
-                start = now;
+                start = moment();
                 startF = start.format("YYYY-MM-DD");
             }
 
@@ -525,6 +526,11 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
             } 
             if(filter_out_list.indexOf(item.getFirstPropertyValue("summary")) != -1){
                 debug("Skipped: Filtered");
+                console.log(item);
+                return;
+            }
+            if(item.getFirstPropertyValue("summary")[0] == '/'){
+		debug("Skipped: Filtered for prefix");
                 console.log(item);
                 return;
             }
