@@ -30,7 +30,7 @@ function adjustBrightness($hex, $steps)
     // Normalize into a six character long hex string
     $hex = str_replace('#', '', $hex);
     if (strlen($hex) == 3) {
-        $hex = str_repeat(substr($hex, 0, 1), 2).str_repeat(substr($hex, 1, 1), 2).str_repeat(substr($hex, 2, 1), 2);
+        $hex = str_repeat(substr($hex, 0, 1), 2) . str_repeat(substr($hex, 1, 1), 2) . str_repeat(substr($hex, 2, 1), 2);
     }
 
     // Split into three parts: R, G and B
@@ -51,8 +51,8 @@ function fullcal_json($google_calendars)
     $output = [];
     foreach ($google_calendars as $id => $calendar) {
         $line = array(
-            'url' => 'calendar.php?cal='.$calendar['src'],
-            'className' => 'cal-'.$id,
+            'url' => 'calendar.php?cal=' . $calendar['src'],
+            'className' => 'cal-' . $id,
         );
         if (isset($calendar['rendering'])) {
             $line['rendering'] = $calendar['rendering'];
@@ -132,11 +132,11 @@ function log_exception($e)
         die();
     }
     if (defined('SEND_JSON_ERRORS') && SEND_JSON_ERRORS == true) {
-        send_json_error($e->getCode(), get_class($e).": ".$e->getMessage(), $e->getFile(), $e->getLine(), $e);
+        send_json_error($e->getCode(), get_class($e) . ": " . $e->getMessage(), $e->getFile(), $e->getLine(), $e);
     } elseif (defined('SEND_TEXT_ERRORS') && SEND_TEXT_ERRORS == true) {
         send_text_error($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
     } else {
-        $file = str_replace(realpath(getcwd().DIRECTORY_SEPARATOR.'..'), '', $e->getFile());
+        $file = str_replace(realpath(getcwd() . DIRECTORY_SEPARATOR . '..'), '', $e->getFile());
         header('HTTP/1.1 500 Something Bad');
         header('content-type: text/html; charset: utf-8');
         print "<div style='text-align: center;'>";
@@ -152,7 +152,7 @@ function log_exception($e)
 }
 function send_json_error($errno, $errstr, $errfile, $errline, $e = false)
 {
-    $file = str_replace(realpath(getcwd().DIRECTORY_SEPARATOR.'..'), '', $errfile);
+    $file = str_replace(realpath(getcwd() . DIRECTORY_SEPARATOR . '..'), '', $errfile);
     header('HTTP/1.1 500 Something Bad');
     header('content-type: application/json; charset: utf-8');
     $backtrace = debug_backtrace();
@@ -165,7 +165,7 @@ function send_json_error($errno, $errstr, $errfile, $errline, $e = false)
 }
 function send_text_error($errno, $errstr, $errfile, $errline)
 {
-    $file = str_replace(realpath(getcwd().DIRECTORY_SEPARATOR.'..'), '', $errfile);
+    $file = str_replace(realpath(getcwd() . DIRECTORY_SEPARATOR . '..'), '', $errfile);
     print "{$errstr} in {$file} at {$errline}";
     debug_print_backtrace();
     die();
