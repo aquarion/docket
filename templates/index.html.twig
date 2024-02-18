@@ -39,31 +39,9 @@
 <link href="static/style.css?v=<?php echo md5(file_get_contents('static/style.css')); ?>" rel="stylesheet">
 {# <link href="https://dailyphoto.aquarionics.com/element.css.php?element=%23photo" rel="stylesheet"> #}
 
-<style type="text/css">
-
-/* google */
- {% for name, data in google_calendars %}
-    a.cal-{{ data.color }} { background-color: {{name}}; }
-    .txtcal-{{name}} { color: {{ data.color }}; }
- {% endfor %}
-
-/* ical */
- {% for name, data in ical_calendars %}
-    a.cal-{{ data.color }} { background-color: {{name}}; }
-    .txtcal-{{name}} { color: {{ data.color }}; }
- {% endfor %}
-
-/* merged */
- {% for name, data in merged_calendars %}
-    a.cal-{{ data.color }} { background-color: {{name}}; }
-    .txtcal-{{name}} { color: {{ data.color }}; }
- {% endfor %}
-
-</style>
-
-
 
 <link rel='stylesheet' href='node_modules/fullcalendar/dist/fullcalendar.css' />
+<link rel='stylesheet' href='./calendars.css.php' />
 <script src='node_modules/jquery/dist/jquery.min.js'></script>
 <script src='node_modules/moment/min/moment.min.js'></script>
 <script src='node_modules/fullcalendar/dist/fullcalendar.js'></script>
