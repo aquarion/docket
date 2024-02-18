@@ -217,6 +217,11 @@ img.emoji {
 #nextUp dd, #nextUp dt {
 	overflow: hidden;
 	white-space: nowrap;
+	width: fit-content;
+}
+
+#nextup dd {
+	padding: 0 4pt;
 }
 
 #nextUp ul {

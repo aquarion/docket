@@ -1,0 +1,42 @@
+
+/* google */
+ {% for name, data in google_calendars %}
+    a.cal-{{ name }} { background-color: {{data.color}}; }
+    .txtcal-{{name}} { color: {{ data.color }}; }
+ {% endfor %}
+
+/* ical */
+ {% for name, data in ical_calendars %}
+    a.cal-{{ data.color }} { background-color: {{name}}; }
+    .txtcal-{{name}} { color: {{ data.color }}; }
+ {% endfor %}
+
+{% for alpha_name, alpha_data in all_calendars %}
+   {% for beta_name, beta_data in all_calendars %}
+    /* {{ alpha_name }}_{{ beta_name }} */
+      {% if alpha_name != beta_name %}
+         a.cal-{{ alpha_name }}-{{ beta_name }}, a.cal-{{ beta_name }}-{{ alpha_name }} { 
+          
+            background: repeating-linear-gradient(
+            45deg,
+            {{ alpha_data.color }},
+            {{ alpha_data.color }} 3px,
+            {{ beta_data.color }} 3px,
+            {{ beta_data.color }} 6px
+            );
+         }
+         .txtcal-{{ alpha_name }}-{{ beta_name }}, .txtcal-{{ beta_name }}-{{ alpha_name }} { 
+            color: white;
+            background: repeating-linear-gradient(
+            45deg,
+            {{ alpha_data.color }},
+            {{ alpha_data.color }} 4px,
+            {{ beta_data.color }} 4px,
+            {{ beta_data.color }} 8px
+            );
+            border-radius: 3px;
+         }
+      {% endif %}
+   {% endfor %}
+
+{% endfor %}
