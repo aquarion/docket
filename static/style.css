@@ -9,7 +9,7 @@
 
 
 body {
-	font-family: "Oxygen", sans-serif;
+	font-family: "Playfair Display", sans-serif;
     background-repeat: no-repeat;
     background-size: cover;
 	background-attachment: fixed;
@@ -152,11 +152,15 @@ img.emoji {
 }
 
 #datetime .dt_time {
-	font-family: 'Oxygen Mono', monospace;
+	font-family: 'Sometype Mono', monospace;
 }
 
 #datetime sup {
 	font-size: 22pt;
+}
+
+#nextUp sup {
+	font-size: 12pt;
 }
 
 
@@ -203,7 +207,7 @@ img.emoji {
 }
 
 #nextup span.event_dt {
-	font-family: 'Oxygen Mono', monospace;
+	font-family: 'Sometype Mono', monospace;
 }
 
 #nextUp dl {

@@ -40,8 +40,13 @@ var untilCalendarFormat = {
     sameElse: 'DD/MM/YYYY'
 }
 
-radFirstDay = 1; // Set first day to Monday
 
+day_of_week = moment().isoWeekday();
+if (day_of_week == 7){ // ... if it's the weekend.
+    radFirstDay = 7; // Set first day to Saturday
+} else {
+    radFirstDay = 1; // Set first day to Monday
+}
 calendars = [
     { "url" : "/all-calendars.php"},
     // { events : pr_cal, color: "#a24db8", textColor: 'white' }
@@ -356,9 +361,11 @@ updateNextUp = function(){
         } else if (moment().dayOfYear() + 1 == day.dayOfYear()){
             dayTitle = "Tomorrow"
         } else if (day.dayOfYear() >= moment().dayOfYear() + 7 ){
-            dayTitle = day.format("ddd Do")
+            dayTitle = day.format("ddd D")
+            dayTitle += "<sup>"+dateOrdinal(day)+"</sup>"
         } else {
-            dayTitle = day.format("ddd Do")
+            dayTitle = day.format("ddd D")
+            dayTitle += "<sup>"+dateOrdinal(day)+"</sup>"
         }
 
         output += "<dt>"+dayTitle+": "
