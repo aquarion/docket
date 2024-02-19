@@ -8,22 +8,6 @@ const params = new URLSearchParams(window.location.search);
 const VERSION = params.get("version");
 const DEBUG = {% if git_branch is not empty %} true {% else %} false {% endif %};
 
-
-// Smol version
-if (window.innerHeight < 950 ){
-    var radDefaultView = 'basicWeek';
-    var radCalHeight = 400;
-    d = new Date();
-    dow = d.getDay();
-    if(dow == 0){
-        radFirstDay = 0;
-    }
-} else {
-    // var radDefaultView = 'month';
-    var radDefaultView = 'basicWeek';
-    var radCalHeight = 600;
-}
-
 function debug(item){
     if(DEBUG){
         console.log(item)
@@ -40,13 +24,6 @@ var untilCalendarFormat = {
     sameElse: 'DD/MM/YYYY'
 }
 
-
-day_of_week = moment().isoWeekday();
-if (day_of_week == 7){ // ... if it's the weekend.
-    radFirstDay = 7; // Set first day to Saturday
-} else {
-    radFirstDay = 1; // Set first day to Monday
-}
 calendars = [
     { "url" : "/all-calendars.php"},
     // { events : pr_cal, color: "#a24db8", textColor: 'white' }
@@ -136,93 +113,6 @@ var handleError = function(error){
     console.log(error)
 }
 
-updateMap = function(data, textresult, jsXDR){
-
-    if (currentMarkers!==null) {
-        for (var i = currentMarkers.length - 1; i >= 0; i--) {
-          currentMarkers[i].remove();
-        }
-    }
-    var fyr_marker = document.createElement('div');
-    fyr_marker.className = 'marker fyr_marker'
-
-    var aq_marker  = document.createElement('div');
-    aq_marker.className = 'marker aq_marker'
-
-    var llb = new mapboxgl.LngLatBounds();
-
-    var i = 0;
-    var len = data.length;
-
-    var now = new Date();
-
-    for (; i < len; i++) {
-      item = data[i]
-
-      if(!item.location){
-          // console.log("Skipped "+item.id+" - No Location");
-          continue;
-      }
-
-      var date = new Date(item.location.timestamp);
-
-      diff = (now - date) / (1000 * 60 * 60 * 24)
-
-      if (diff > 1) { // data is older than a day
-              console.log("Skipped "+item.id+" - Old");
-            continue;
-      }
-      if (item.id == "MTE5MDgzMzc~"){
-          var aq = new mapboxgl.LngLat(item.location.longitude, item.location.latitude);
-          console.log('Found Aq at ',item.location.longitude, item.location.latitude)
-        llb.extend(aq)
-
-        // // create a HTML element for each feature
-        // var aqmark = document.createElement('div');
-        // aqmark.className = 'marker';
-        // // make a marker for each feature and add to the map
-        oneMarker = new mapboxgl.Marker(aq_marker)
-          .setLngLat(aq)
-          .addTo(map);
-        currentMarkers.push(oneMarker);
-      }
-
-      if (item.id == "MTAxNzI2NDM5Mg~~"){
-          var fyr = new mapboxgl.LngLat(item.location.longitude, item.location.latitude);
-          console.log('Found Fyr at ',item.location.longitude, item.location.latitude)
-        llb.extend(fyr)
-
-        // // create a HTML element for each feature
-        // var fyrmark = document.createElement('div');
-        // fyrmark.className = 'marker';
-        // // make a marker for each feature and add to the map
-        oneMarker = new mapboxgl.Marker(fyr_marker)
-          .setLngLat(fyr)
-          .addTo(map);
-        currentMarkers.push(oneMarker);
-      }
-
-      if(fyr && aq){
-            var distance_lat = Math.abs(aq.lat - fyr.lat) * 111139 // Converts lat/lng into meters
-            var distance_lng = Math.abs(aq.lng - fyr.lng) * 111139 //
-            distance = Math.sqrt(Math.pow(distance_lat, 2 ) + Math.pow(distance_lng, 2)) // Pythagorian Radness!
-            if (distance < 100){
-                $('#map').hide();
-                $('#nextUp').show();
-            } else {
-                $('#map').show();
-                $('#nextUp').hide();
-            }
-      }
-    }
-
-
-    map.llb = llb;
-
-    if (llb.length > 0) {
-        map.fitBounds(llb, { padding: 60, maxZoom: 16  } )
-    }
-}
 
 dateSort = function(a, b){
     astart = new Date(a.start);
@@ -507,9 +397,6 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 
         localTimeZone = ICAL.Timezone.utcTimezone;
 
-        // console.log(JSON.stringify(eventComps));
-        // map them to FullCalendar events
-
         
         a_day = 86400000;
         a_month = a_day * 28;
@@ -625,63 +512,28 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
     });
 }
 
-function setup_calender(){
-    $('#calendar').fullCalendar({
-        height: radCalHeight,
-        eventSources: calendars,
-        error: handleError,
-        defaultView: radDefaultView,
-        firstDay: radFirstDay,
-        fixedWeekCount: false,
-
-        eventAfterAllRender: function() {
-                twemoji.parse(document.body);
-            }
-        }
-    ) 
+function setup_calender(){    
 
     two_weeks = moment().add(30, "d");
 
     $.get("/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
+    $.get("/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), icalUpdateCallback)
 
-
-    if (radDefaultView == 'basicWeek'){
-        $('#calendar').height($('#calendar .fc-content-skeleton').height() + 200);
-    } else {
-        $('#calendar').height($('#calendar .fc-view-container').height());
-    }
 }
 
-function setup_map(){
-    $('#map').hide();
-
-    mapboxgl.accessToken = '{{ mapbox_token }}';
-    map = new mapboxgl.Map({
-    container: 'map',
-    center: [-1.2, 51.75], // starting position [lng, lat]
-    zoom: 10, // starting zoom
-    style: '{{ mapbox_url }}', // Basic
-    // style: '', // Terminal
-    // style: 'mapbox://styles/aquarion/ck6qknw4x4yoy1ipfvkhyuqko',
-    });
-
-    $.get('data/fof.json',updateMap);
-}
 // Startup
 $(function() {
 
+    update_datetime();
     $('#nextUp').show();
 
   // page is now ready, initialize the calendar...
   setup_calender();
-  setup_map();
 
 
-    $('#weather').height($('#weatherwidget-io-0').height());
-
-    $('#datetime').click(function(){
-        window.location.reload(true);
-    })
+$('#datetime').click(function(){
+    window.location.reload(true);
+})
 
 
 }); // End Startup
@@ -707,8 +559,7 @@ window.setInterval( function(){
 
 
 window.setInterval( function(){
-    //.fullCalendar( ‘refetchEvents’ )
-    // $('#number').html(parseInt($('#number').html())+1);
+    
     if(percent <= 1.02){
         circle.animate(percent, 'countdown');
         percent += (1/seconds_per_refresh);
@@ -721,7 +572,5 @@ window.setInterval( function(){
 
         $.get("/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
 
-        $('#calendar').fullCalendar( 'refetchEvents' );
-        $.get('data/fof.json',updateMap);
     }
 } , 1000 ); // basically seconds, 1800 = 30 minutes
