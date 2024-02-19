@@ -30,6 +30,4 @@ if (DEV_MODE) {
     $view['git_branch'] = git_branch();
 }
 
-if (DEV_MODE) {
-    echo $template->render($view);
-}
+echo $template->render($view);
