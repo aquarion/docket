@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.php",
   "dependencies": {
-    "fullcalendar": "^3.10.5",
+    "fullcalendar": "^6.1.10",
     "ical.js": "^1.5.0",
     "jquery": "^3.6.0",
     "jshint": "^2.13.5",
