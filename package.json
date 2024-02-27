@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.php",
   "dependencies": {
-    "fullcalendar": "^3.10.5",
     "ical.js": "^1.5.0",
     "jquery": "^3.6.0",
     "jshint": "^2.13.5",
-    "moment": "^2.29.4"
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.45",
+    "timezones-ical-library": "^1.8.0"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

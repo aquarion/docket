@@ -1,14 +1,13 @@
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://dailyphoto.aquarionics.com https://live.dailyphoto.aquarionics.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<script src='node_modules/ical.js/build/ical.js'></script>
+<!-- script src='node_modules/ical.js/build/ical.min.js'></script -->
 
 <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
-
-<script src='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.js'></script>
-<link href='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.css' rel='stylesheet' />
+<script src="https://unpkg.com/ical.js@1.5.0/build/ical.min.js" crossorigin="anonymous"></script>
 
 <link href="https://fonts.googleapis.com/css?family=Playfair Display" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Sometype+Mono&amp;display=swap" rel="stylesheet">
@@ -36,15 +35,14 @@
 
 <title>Docket</title>
 
-<link href="static/style.css?v=<?php echo md5(file_get_contents('static/style.css')); ?>" rel="stylesheet">
+<link href="static/style.css" rel="stylesheet">
 {# <link href="https://dailyphoto.aquarionics.com/element.css.php?element=%23photo" rel="stylesheet"> #}
 
 
-<link rel='stylesheet' href='node_modules/fullcalendar/dist/fullcalendar.css' />
-<link rel='stylesheet' href='./calendars.css.php' />
+<link rel='stylesheet' href='./calendars.css.php?version={{ calendar_set }}' />
 <script src='node_modules/jquery/dist/jquery.min.js'></script>
 <script src='node_modules/moment/min/moment.min.js'></script>
-<script src='node_modules/fullcalendar/dist/fullcalendar.js'></script>
+<script src='node_modules/moment-timezone/builds/moment-timezone.min.js'></script>
 
 </head>
 
@@ -56,16 +54,7 @@
 {% endif %}
 <div id='calendar'></div>
 
-<div id="weather">
-<a class="weatherwidget-io" href="https://forecast7.com/en/51d75n1d21/ox3-7nh/" data-label_1="Hubris" data-label_2="WEATHER" data-font="Open Sans Condensed" data-icons="Climacons Animated" data-days="5" data-theme="weather_one" >Hubris WEATHER</a>
-<script>
-!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-</script>
-</div>
 <div id="datetime"> </div>
-
-<div id='map'   style='width: 100%; height: 275px; display: inline-block'></div>
-
 <div id='nextUp'>
 </div>
 
