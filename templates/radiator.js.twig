@@ -280,7 +280,7 @@ updateNextUp = function(){
         } else if (things.length > 1){
             output += things.slice(0, -1).join(", ") + " & " + things.pop()
         } else {
-            console.log(things);
+            debug(things);
         }
         output += "</dt>"
 
@@ -368,6 +368,7 @@ function update_until(){
 
 function update_ical(calendarUrl, start, end, timezone, name, callback) {
     var callback = callback;
+    debug("Updating " + calendarUrl + " from " + start.toDate() + " to " + end.toDate() + " in " + timezone + " as " + name);
     $.get(calendarUrl).then(function (data) {
         // parse the ics data
         try {
@@ -382,6 +383,8 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 
         if (comp.getFirstSubcomponent('vtimezone')) {
             for (const tzComponent of comp.getAllSubcomponents('vtimezone')) {
+                debug("Registering Timezone: " + tzComponent.getFirstPropertyValue('tzid'))
+                debug(tzComponent.getFirstPropertyValue('tzid'))
                 const tz = new ICAL.Timezone({
                     tzid:      tzComponent.getFirstPropertyValue('tzid'),
                     component: tzComponent,
@@ -408,7 +411,9 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
         var events = []
         $(eventComps).each(function (index, item) {
             var event = new ICAL.Event(item);
-            
+            debug("Event: " + item.getFirstPropertyValue("summary"))
+            debug(item)
+
 
             if (item.getFirstPropertyValue("class") == "PRIVATE") {
                 debug("Skipped: Private")
@@ -420,12 +425,12 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
             } 
             if(filter_out_list.indexOf(item.getFirstPropertyValue("summary")) != -1){
                 debug("Skipped: Filtered");
-                console.log(item);
+                debug(item);
                 return;
             }
             if(item.getFirstPropertyValue("summary")[0] == '/'){
-		debug("Skipped: Filtered for prefix");
-                console.log(item);
+		        debug("Skipped: Filtered for / prefix");
+                debug(item);
                 return;
             }
 
@@ -441,18 +446,22 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 
                 var next;
 
+                var break_out = false;
+
                 while (next = expand.next()) {
                     
-                    debug("Repeating " + next.toString())
                     next = next.convertToZone(localTimeZone)
 
                     if (next.compare(rangeStart) < 0) {
-                        debug("Skipped: Before rangeStart")
+                        debug(">> Too early " + rangeStart.toString())
                         continue;
-                    }
-                    if (next.compare(rangeEnd) > 0) {
-                        debug("Skipped: After rangeEnd " + rangeEnd.toString())
-                        continue;
+                    } else if (next.compare(rangeEnd) > 0) {
+                        debug(">> Too late " + rangeEnd.toString())
+                        break_out = true;
+                        break;
+
+                    } else {
+                        debug("Repeating " + next.toString())
                     }
 
                     var end = next.clone()
@@ -482,9 +491,8 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 
             } else {
             // end if recurring
-                next = item.getFirstPropertyValue("dtstart").convertToZone(localTimeZone);
 
-                dtstart = next.toJSDate();
+                dtstart = item.getFirstPropertyValue("dtstart").toJSDate()
                 dtend   = item.getFirstPropertyValue("dtend").toJSDate()
 
                 minutes_length = (dtend - dtstart) / (1000 * 60)
@@ -505,6 +513,8 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
                     "allDay" : allDay
                 } );
             }
+            
+            debug("/Event: " + item.getFirstPropertyValue("summary"))
         });
         allEvents[calendarUrl] = events
         updateNextUp();
@@ -517,7 +527,13 @@ function setup_calender(){
     two_weeks = moment().add(30, "d");
 
     $.get("/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
-    $.get("/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), icalUpdateCallback)
+
+    // <iCal Calenders>
+
+    {% for name, cal in ical_calendars %}
+    update_ical("./icalproxy.php?cal={{ name }}&version=" + VERSION, moment(), two_weeks, "GMT", "{{ name }}", updateNextUp)
+    {% endfor %}
+    //</ iCal Calenders>
 
 }
 
@@ -540,7 +556,7 @@ $('#datetime').click(function(){
 
 // Hourly
 window.setInterval( function(){
-    document.location.reload(true);
+    {# document.location.reload(true); #}
 } , 1000 * 60 * 60);
 // End Hourly
 
@@ -549,11 +565,6 @@ window.setInterval( function(){
 window.setInterval( function(){
     update_datetime();
     update_until();
-
-    if (map && map.llb.length > 0){
-        map.fitBounds(map.llb, { padding: 60, maxZoom: 16, duration: 5000  } )
-    }
-
 } , 5000);// End Five Seconds
 
 
@@ -564,13 +575,11 @@ window.setInterval( function(){
         circle.animate(percent, 'countdown');
         percent += (1/seconds_per_refresh);
     } else {
-        console.log('Refreshing');
+        debug('Refreshing');
         percent = 0;
 
+        setup_calender();
 
-        two_weeks = moment().add(30, "d");
-
-        $.get("/all-calendars.php?end="+two_weeks.format("YYYY-MM-DD"), calendarUpdateCallback)
 
     }
 } , 1000 ); // basically seconds, 1800 = 30 minutes
