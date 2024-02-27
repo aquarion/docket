@@ -299,10 +299,12 @@ updateNextUp = function(){
             if (moment().dayOfYear() == starts.dayOfYear()){  
                 classes += " todayEvent";
             }
+            until = "(for " + moment.duration(starts.diff(ends)).humanize() + ")";
+            console.log(this_event.title, until);
             output += "<dd class=\""+classes+"\" eventstarts=\""+ starts.toISOString() +"\" eventends=\""+ ends.toISOString() +"\">"
                 + "<span class=\"event_dt\">" + starts.format("HH:mm") + "</span> "
                 + "<span class=\"event_title\">" + this_event.title + "</span> "
-                + "<span class=\"until\"></span>"
+                + "<span class=\"until\">"+ until +"</span>"
                 + "</dd>"
         }
     }
@@ -357,11 +359,14 @@ function update_until(){
         if (now > thisends){
             event.hide();
         } else if (thisstarts > now ){
-            text = "(" + thisstarts.fromNow() + ")";
+            duration = moment.duration(thisstarts.diff(thisends)).humanize();
+            text = thisstarts.fromNow() + " for " + duration;
         } else if (thisends > now){
-            text = "(ends " + thisends.fromNow() + ")";
+            text = "ends " + thisends.fromNow();
         }
-        $(".until", event).html(text);
+        
+
+        $(".until", event).html("("+text+")");
     });
 
 }
