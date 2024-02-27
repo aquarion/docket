@@ -300,7 +300,6 @@ updateNextUp = function(){
                 classes += " todayEvent";
             }
             until = "(for " + moment.duration(starts.diff(ends)).humanize() + ")";
-            console.log(this_event.title, until);
             output += "<dd class=\""+classes+"\" eventstarts=\""+ starts.toISOString() +"\" eventends=\""+ ends.toISOString() +"\">"
                 + "<span class=\"event_dt\">" + starts.format("HH:mm") + "</span> "
                 + "<span class=\"event_title\">" + this_event.title + "</span> "
