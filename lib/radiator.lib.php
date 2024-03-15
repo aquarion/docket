@@ -6,7 +6,11 @@ if (isset($_GET['version']) && $_GET['version'] == "work") {
     define("CALENDAR_SET", "home");
 }
 
-require __DIR__ . '/../calendars.inc.php';
+if (file_exists(__DIR__ . '/../calendars.inc.php')) {
+    include __DIR__ . '/../calendars.inc.php';
+} else {
+    throw new Exception("Config file not found");
+}
 
 $sun_info = date_sun_info(time(), MY_LAT, MY_LON);
 
@@ -65,7 +69,7 @@ function fullcal_json($google_calendars)
 
 function git_branch()
 {
-    
+
     $stringfromfile = file(__DIR__.'/../.git/HEAD', FILE_USE_INCLUDE_PATH);
 
     $firstLine = $stringfromfile[0]; //get the string from the array
@@ -185,5 +189,3 @@ function send_text_error($errno, $errstr, $errfile, $errline)
 }
 set_error_handler('log_error');
 set_exception_handler("log_exception");
-
-

@@ -9,8 +9,8 @@ function getGoogleCreds(){
 
     global $scopes;
 
-    $token  = json_decode(file_get_contents('etc/token.json'));
-    $creds  = json_decode(file_get_contents('etc/credentials.json'));
+    $token  = json_decode(file_get_contents(HOME_DIR . '/etc/token.json'));
+    $creds  = json_decode(file_get_contents(HOME_DIR . '/etc/credentials.json'));
 
     $access = [
         'client_id'     => $creds->installed->client_id,
@@ -32,11 +32,11 @@ function getClient()
     $client->setApplicationName('Radiator');
     $client->addScope("https://www.googleapis.com/auth/photoslibrary.readonly");
     $client->addScope("https://www.googleapis.com/auth/calendar.readonly");
-    $client->setAuthConfig('etc/credentials.json');
+    $client->setAuthConfig(HOME_DIR . '/etc/credentials.json');
     $client->setAccessType('offline');
 
     // Load previously authorized credentials from a file.
-    $credentialsPath = 'etc/token.json';
+    $credentialsPath = HOME_DIR . '/etc/token.json';
     if (file_exists($credentialsPath)) {
         $accessToken = json_decode(file_get_contents($credentialsPath), true);
     } elseif(php_sapi_name() == 'cli') {

@@ -4,9 +4,12 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/lib/gcal.lib.php';
-require __DIR__ . '/lib/radiator.lib.php';
+
+define('HOME_DIR', __DIR__.'/..');
+
+require HOME_DIR . '/vendor/autoload.php';
+require HOME_DIR . '/lib/gcal.lib.php';
+require HOME_DIR . '/lib/radiator.lib.php';
 
 use GuzzleHttp\Client;
 
