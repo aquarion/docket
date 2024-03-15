@@ -293,8 +293,10 @@ updateNextUp = function(){
             ends = moment(this_event.end)
             classes = "event ";
             ii = 0;
-            if (this_event.calendars.length > 0){
+            if (this_event.calendars && this_event.calendars.length > 0){
                 classes += "txtcal-" + this_event.calendars.join("-");
+            } else {
+                console.log(this_event);
             }
             if (moment().dayOfYear() == starts.dayOfYear()){  
                 classes += " todayEvent";
@@ -539,6 +541,26 @@ function setup_calender(){
     {% endfor %}
     //</ iCal Calenders>
 
+}
+
+function when_is_it(){
+    now = new Date();
+    sunstate = SunCalc.getTimes(now, {{ latitude }}, {{ longitude }});
+    if (now > sunstate.sunset) {
+        return "night";
+    } else if (now > sunstate.sunrise) {
+        return "day";
+    } else {
+        return "night";
+    }
+}
+
+function update_theme(){
+    if (when_is_it() == "night" && ! $("body").hasClass("nighttime")) {
+        $('body').removeClass("daytime").addClass("nighttime");
+    } else if (when_is_it() == "day" && ! $("body").hasClass("daytime")){
+        $('body').removeClass("nighttime").addClass("daytime");
+    }
 }
 
 // Startup

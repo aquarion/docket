@@ -43,10 +43,11 @@
 <script src='node_modules/jquery/dist/jquery.min.js'></script>
 <script src='node_modules/moment/min/moment.min.js'></script>
 <script src='node_modules/moment-timezone/builds/moment-timezone.min.js'></script>
+<script src='node_modules/suncalc/suncalc.js'></script>
 
 </head>
 
-<body id="{{ theme }}">
+<body class="{{ theme }}">
 {% if git_branch is not empty %}
 <div class="devmode-ribbon">
    <a target="_blank" href="https://github.com/aquarion/radiator">Branch {{ git_branch }}</a>

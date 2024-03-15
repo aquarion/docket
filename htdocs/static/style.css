@@ -16,6 +16,13 @@ body {
 	background-position:  center;
 	background: #FFF;
 	color: #000;
+
+	
+  -webkit-transition: all 1s ease-out;  /* Saf3.2+, Chrome */
+     -moz-transition: all 1s ease-out;  /* FF4+ */
+      -ms-transition: all 1s ease-out;  /* IE10 */
+       -o-transition: all 1s ease-out;  /* Opera 10.5+ */
+          transition: all 1s ease-out;
 }
 
 #calendar {
@@ -92,13 +99,13 @@ body {
 
 
 
-body#nighttime {
+body.nighttime {
 	background: #000;
 	color: #AAA;
 }
 
 
-body#nighttime .fc-today {
+body.nighttime .fc-today {
 	background-color: #333 !important;
 	color: #000;
 }

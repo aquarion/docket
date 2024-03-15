@@ -28,7 +28,9 @@ $view = [
     'merged_calendars' => $merged_calendars,
     'theme' => THEME,
     'calendar_set' => CALENDAR_SET,
-    'mapbox_token' => MAPBOX_API_TOKEN
+    'mapbox_token' => MAPBOX_API_TOKEN,
+    'latitude' => MY_LAT,
+    'longitude' => MY_LON
 ];
 
 if (DEV_MODE) {
