@@ -10,7 +10,7 @@ require HOME_DIR . '/lib/radiator.lib.php';
 $twig_config = [];
 
 if (!DEV_MODE) {
-    $twig_config['cache']  = HOME_DIR.'./cache';
+    $twig_config['cache']  = HOME_DIR.'/cache';
 }
 
 
