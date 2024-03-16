@@ -345,7 +345,7 @@ function update_datetime(){
 
     $('#date').html(strToday);
     $('#time').html(time);
-    $('#datetime').html("<span class=\"dt_time\">" + time + "</span> &ndash; " + strToday);
+    $('#datetime').html("<div class=\"dt_time\">" + time + "</div><div class=\"dt_date\">" + strToday + "</div>");
 }
 
 function update_until(){
@@ -567,6 +567,7 @@ function update_theme(){
 $(function() {
 
     update_datetime();
+    update_theme();
     $('#nextUp').show();
 
   // page is now ready, initialize the calendar...
@@ -591,6 +592,7 @@ window.setInterval( function(){
 window.setInterval( function(){
     update_datetime();
     update_until();
+    update_theme();
 } , 5000);// End Five Seconds
 
 

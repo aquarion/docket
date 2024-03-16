@@ -160,6 +160,7 @@ img.emoji {
 
 #datetime .dt_time {
 	font-family: 'Sometype Mono', monospace;
+  font-size: 72pt;
 }
 
 #datetime sup {
