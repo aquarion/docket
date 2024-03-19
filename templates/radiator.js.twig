@@ -369,8 +369,8 @@ function update_until(){
 
         $(".until", event).html("("+text+")");
     });
-
-}
+    return $(".todayEvent")
+}  
 
 function update_ical(calendarUrl, start, end, timezone, name, callback) {
     var callback = callback;
@@ -413,6 +413,7 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 
         var rangeStart = ICAL.Time.fromJSDate(start.toDate());
         var rangeEnd   = ICAL.Time.fromJSDate(end);
+        var all_day_minutes = (60 * 24);
 
         var events = []
         $(eventComps).each(function (index, item) {
@@ -478,7 +479,7 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 
                     var title = item.getFirstPropertyValue("summary");
 
-                    if (minutes_length > (60 * 24)) {
+                    if (minutes_length >= all_day_minutes) {
                         allDay = true;
                     } else {
                         allDay = false;
@@ -504,7 +505,7 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
                 minutes_length = (dtend - dtstart) / (1000 * 60)
                 var title = item.getFirstPropertyValue("summary");
 
-                if (minutes_length > (60 * 24)) {
+                if (minutes_length >= all_day_minutes) {
                     allDay = true;
                 } else {
                     allDay = false;
