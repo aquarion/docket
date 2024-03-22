@@ -3,7 +3,8 @@
         "google/apiclient": "^2.7",
         "twig/twig": "^3.0",
         "guzzlehttp/guzzle": "^7.5",
-        "kevinrob/guzzle-cache-middleware": "^5.1"
+        "kevinrob/guzzle-cache-middleware": "^5.1",
+        "php": "^7.4"
     },
     "scripts": {
         "post-update-cmd": "Google\\Task\\Composer::cleanup"

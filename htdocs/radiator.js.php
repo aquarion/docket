@@ -1,4 +1,14 @@
 <?php
+/**
+ * This is the main index file for the application.
+ * php version 7.2
+ *
+ * @category Personal
+ * @package  Radiator
+ * @author   "Nicholas Avenell" <nicholas@istic.net>
+ * @license  BSD-3-Clause https://opensource.org/license/bsd-3-clause
+ * @link     https://docket.hubris.house
+ */
 
 header("Content-Type: application/javascript");
 
