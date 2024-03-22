@@ -20,12 +20,18 @@ $twig = new \Twig\Environment(
     $twig_config
 );
 
+$all_calendars = array_merge($ical_calendars, $google_calendars);
+
+foreach ($all_calendars as &$cal) {
+    $cal['color_dim'] = rgba_css($cal['color'], .5);
+}
+
 $template = $twig->load('calendars.css.twig');
 
 $view = [
     'ical_calendars'   => $ical_calendars,
     'google_calendars' => $google_calendars,
-    'all_calendars' => array_merge($ical_calendars, $google_calendars),
+    'all_calendars' => $all_calendars,
     'theme' => THEME,
     'calendar_set' => CALENDAR_SET,
     'mapbox_token' => MAPBOX_API_TOKEN

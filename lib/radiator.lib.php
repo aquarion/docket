@@ -50,6 +50,33 @@ function adjustBrightness($hex, $steps)
     return $return;
 }
 
+function hex_to_rgba($hex)
+{
+
+    // Normalize into a six character long hex string
+    $hex = str_replace('#', '', $hex);
+    if (strlen($hex) == 3) {
+        $hex = str_repeat(substr($hex, 0, 1), 2) . str_repeat(substr($hex, 1, 1), 2) . str_repeat(substr($hex, 2, 1), 2);
+    }
+
+    // Split into three parts: R, G and B
+    $color_parts = str_split($hex, 2);
+
+    $color_rgb = [];
+
+    foreach ($color_parts as $i => $color) {
+        $color_rgb[] = hexdec($color); // Convert to decimal;
+    }
+
+    return $color_rgb;
+}
+
+function rgba_css($color, $alpha)
+{
+    $color_rgb = hex_to_rgba($color);
+    return "rgba({$color_rgb[0]}, {$color_rgb[1]}, {$color_rgb[2]}, {$alpha})";
+}
+
 function fullcal_json($google_calendars)
 {
     $output = [];
