@@ -187,5 +187,22 @@ function send_text_error($errno, $errstr, $errfile, $errline)
     die();
     // throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
 }
+
+
+function clearCacheFiles($cacheLocation)
+{
+    if (is_string($cacheLocation)) {
+        foreach (new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($cacheLocation),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        ) as $file
+        ) {
+            if ($file->isFile()) {
+                @unlink($file->getPathname());
+            }
+        }
+    }
+}
+
 set_error_handler('log_error');
 set_exception_handler("log_exception");

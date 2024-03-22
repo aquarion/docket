@@ -11,6 +11,12 @@ if (!DEV_MODE) {
     $twig_config['cache']  = HOME_DIR.'/cache';
 }
 
+if (isset($_GET['clear_cache'])) {
+    clearCacheFiles(HOME_DIR.'/cache');
+    echo "Cache cleared";
+    die();
+}
+
 
 $loader = new \Twig\Loader\FilesystemLoader(HOME_DIR.'/templates');
 $twig = new \Twig\Environment(
