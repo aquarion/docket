@@ -44,7 +44,7 @@ $view = [
 ];
 
 if (DEV_MODE) {
-    $view['git_branch'] = git_branch();
+    $view['git_branch'] = gitBranch();
 }
 
 if (THEME == "nighttime") {

@@ -1,5 +1,18 @@
 <?php
+/**
+ * File: Radiator.inc.php
+ * php version 7.2
+ *
+ * Library file for Docket
+ *
+ * @category Library
+ * @package  Docket
+ * @author   "Nicholas Avenell" <nicholas@istic.net>
+ * @license  BSD-3-Clause https://opensource.org/license/bsd-3-clause
+ * @link     https://docket.hubris.house
+ */
 
+// Set the calendar version based on the 'version' GET parameter
 if (isset($_GET['version']) && $_GET['version'] == "work") {
     define("CALENDAR_SET", "work");
 } else {
@@ -12,10 +25,12 @@ if (file_exists(__DIR__ . '/../calendars.inc.php')) {
     throw new Exception("Config file not found");
 }
 
+// Get sunrise and sunset times for the current location
 $sun_info = date_sun_info(time(), MY_LAT, MY_LON);
 
 $set = $sun_info['sunset'];
 $rise = $sun_info['sunrise'];
+// Set the theme based on whether it's currently daytime or nighttime
 
 if (time() > $set || time() < $rise) {
     define("THEME", "nighttime");
@@ -23,7 +38,16 @@ if (time() > $set || time() < $rise) {
     define("THEME", "daytime");
 }
 
-
+/**
+ * Adjusts the brightness of a color.
+ * Negative values make the color darker, positive values make the color lighter.
+ *
+ * @param string $hex   The hex color to adjust.
+ * @param int    $steps The number of steps to adjust the color by. 
+ *                      Should be between -255 and 255.
+ * 
+ * @return string The adjusted hex color.
+ */
 function adjustBrightness($hex, $steps)
 {
     // From https://stackoverflow.com/questions/3512311/how-to-generate-lighter-darker-color-with-php
@@ -34,7 +58,9 @@ function adjustBrightness($hex, $steps)
     // Normalize into a six character long hex string
     $hex = str_replace('#', '', $hex);
     if (strlen($hex) == 3) {
-        $hex = str_repeat(substr($hex, 0, 1), 2) . str_repeat(substr($hex, 1, 1), 2) . str_repeat(substr($hex, 2, 1), 2);
+        $hex = str_repeat(substr($hex, 0, 1), 2) . 
+               str_repeat(substr($hex, 1, 1), 2) . 
+               str_repeat(substr($hex, 2, 1), 2);
     }
 
     // Split into three parts: R, G and B
@@ -44,19 +70,28 @@ function adjustBrightness($hex, $steps)
     foreach ($color_parts as $color) {
         $color   = hexdec($color); // Convert to decimal
         $color   = max(0, min(255, $color + $steps)); // Adjust color
-        $return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); // Make two char hex code
+        // Make two char hex code
+        $return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); 
     }
 
     return $return;
 }
 
-function hex_to_rgba($hex)
+/**
+ * Converts a hexadecimal color code to RGBA format.
+ *
+ * @param string $hex The hexadecimal color code to convert.
+ * 
+ * @return string The RGBA color code.
+ */
+function hexToRGBA($hex)
 {
-
     // Normalize into a six character long hex string
     $hex = str_replace('#', '', $hex);
     if (strlen($hex) == 3) {
-        $hex = str_repeat(substr($hex, 0, 1), 2) . str_repeat(substr($hex, 1, 1), 2) . str_repeat(substr($hex, 2, 1), 2);
+        $hex = str_repeat(substr($hex, 0, 1), 2) . 
+               str_repeat(substr($hex, 1, 1), 2) . 
+               str_repeat(substr($hex, 2, 1), 2);
     }
 
     // Split into three parts: R, G and B
@@ -71,103 +106,110 @@ function hex_to_rgba($hex)
     return $color_rgb;
 }
 
-function rgba_css($color, $alpha)
+/**
+ * Converts an RGB color value to a CSS color string.
+ *
+ * @param array $color The RGB color value as an (red, green, and blue) array
+ * @param float $alpha The alpha value (opacity) of the color, ranging from 0 to 1.
+ * 
+ * @return string The CSS color string representing the RGB color value.
+ */
+function RGBToCSS($color, $alpha)
 {
-    $color_rgb = hex_to_rgba($color);
+    $color_rgb = hexToRGBA($color);
     return "rgba({$color_rgb[0]}, {$color_rgb[1]}, {$color_rgb[2]}, {$alpha})";
 }
 
-function fullcal_json($google_calendars)
-{
-    $output = [];
-    foreach ($google_calendars as $id => $calendar) {
-        $line = array(
-            'url' => 'calendar.php?cal=' . $calendar['src'],
-            'className' => 'cal-' . $id,
-        );
-        if (isset($calendar['rendering'])) {
-            $line['rendering'] = $calendar['rendering'];
-            $line['backgroundColor'] = $calendar['color'];
-        }
-        $output[] = $line;
-    }
-    return json_encode($output, JSON_PRETTY_PRINT);
-}
-
-function git_branch()
+/**
+ * Retrieves the current Git branch.
+ *
+ * @return string The name of the current Git branch.
+ */
+function gitBranch()
 {
 
     $stringfromfile = file(__DIR__.'/../.git/HEAD', FILE_USE_INCLUDE_PATH);
 
-    $firstLine = $stringfromfile[0]; //get the string from the array
+    //get the string from the array
+    $firstLine = $stringfromfile[0]; 
 
-    $explodedstring = explode("/", $firstLine, 3); //seperate out by the "/" in the string
+    //seperate out by the "/" in the string
+    $explodedstring = explode("/", $firstLine, 3); 
 
-    return $explodedstring[2]; //get the one that is always the branch name
+    //get the one that is always the branch name
+    return $explodedstring[2]; 
 
 }
 
-function checkEmoji($str)
-{
-    $regexEmoticons = '/[\x{1F600}-\x{1F64F}]/u';
-    preg_match($regexEmoticons, $str, $matches_emo);
-    if (!empty($matches_emo[0])) {
-        return false;
-    }
 
-    // Match Miscellaneous Symbols and Pictographs
-    $regexSymbols = '/[\x{1F300}-\x{1F5FF}]/u';
-    preg_match($regexSymbols, $str, $matches_sym);
-    if (!empty($matches_sym[0])) {
-        return false;
-    }
-
-    // Match Transport And Map Symbols
-    $regexTransport = '/[\x{1F680}-\x{1F6FF}]/u';
-    preg_match($regexTransport, $str, $matches_trans);
-    if (!empty($matches_trans[0])) {
-        return false;
-    }
-
-    // Match Miscellaneous Symbols
-    $regexMisc = '/[\x{2600}-\x{26FF}]/u';
-    preg_match($regexMisc, $str, $matches_misc);
-    if (!empty($matches_misc[0])) {
-        return false;
-    }
-
-    // Match Dingbats
-    $regexDingbats = '/[\x{2700}-\x{27BF}]/u';
-    preg_match($regexDingbats, $str, $matches_bats);
-    if (!empty($matches_bats[0])) {
-        return false;
-    }
-
-    return true;
-}
-
+/**
+ * Removes emojis from the given text.
+ *
+ * @param string $text The text from which emojis should be removed.
+ * 
+ * @return string The text without emojis.
+ */
 function removeEmoji($text)
 {
-    return preg_replace('/([0-9|#][\x{20E3}])|[\x{00ae}|\x{00a9}|\x{203C}|\x{2047}|\x{2048}|\x{2049}|\x{3030}|\x{303D}|\x{2139}|\x{2122}|\x{3297}|\x{3299}][\x{FE00}-\x{FEFF}]?|[\x{2190}-\x{21FF}][\x{FE00}-\x{FEFF}]?|[\x{2300}-\x{23FF}][\x{FE00}-\x{FEFF}]?|[\x{2460}-\x{24FF}][\x{FE00}-\x{FEFF}]?|[\x{25A0}-\x{25FF}][\x{FE00}-\x{FEFF}]?|[\x{2600}-\x{27BF}][\x{FE00}-\x{FEFF}]?|[\x{2900}-\x{297F}][\x{FE00}-\x{FEFF}]?|[\x{2B00}-\x{2BF0}][\x{FE00}-\x{FEFF}]?|[\x{1F000}-\x{1F6FF}][\x{FE00}-\x{FEFF}]?/u', '', $text);
+    $preg = '/([0-9|#][\x{20E3}])|[\x{00ae}|\x{00a9}|\x{203C}|\x{2047}|'.
+            '\x{2048}|\x{2049}|\x{3030}|\x{303D}|\x{2139}|\x{2122}|'.
+            '\x{3297}|\x{3299}][\x{FE00}-\x{FEFF}]?|[\x{2190}-\x{21FF}]'.
+            '[\x{FE00}-\x{FEFF}]?|[\x{2300}-\x{23FF}][\x{FE00}-\x{FEFF}]?|'.
+            '[\x{2460}-\x{24FF}][\x{FE00}-\x{FEFF}]?|[\x{25A0}-\x{25FF}]'.
+            '[\x{FE00}-\x{FEFF}]?|[\x{2600}-\x{27BF}][\x{FE00}-\x{FEFF}]?|'.
+            '[\x{2900}-\x{297F}][\x{FE00}-\x{FEFF}]?|[\x{2B00}-\x{2BF0}]'.
+            '[\x{FE00}-\x{FEFF}]?|[\x{1F000}-\x{1F6FF}][\x{FE00}-\x{FEFF}]'.
+            '?/u';
+    return preg_replace($preg, '', $text);
 }
 
-register_shutdown_function("check_for_fatal");
-
-function log_error($num, $str, $file, $line, $context = null)
+/**
+ * Logs an error message.
+ *
+ * @param int    $num     The error number.
+ * @param string $str     The error message.
+ * @param string $file    The file where the error occurred.
+ * @param int    $line    The line number where the error occurred.
+ * @param mixed  $context (optional) Additional context information. Default is null.
+ * 
+ * @return void
+ */
+function logError($num, $str, $file, $line, $context = null)
 {
-    log_exception(new ErrorException($str, 0, $num, $file, $line));
+    logException(new ErrorException($str, 0, $num, $file, $line));
 }
-function check_for_fatal()
+set_error_handler('logError');
+
+
+/**
+ * Checks for fatal errors.
+ *
+ * This function is responsible for checking if any fatal errors have occurred.
+ * It performs necessary actions to handle fatal errors 
+ * and prevent script termination.
+ *
+ * @return void
+ */
+function checkForFatal()
 {
     $error = error_get_last();
     if (! $error) {
         return;
     }
     if ($error["type"] == E_ERROR) {
-        log_error($error["type"], $error["message"], $error["file"], $error["line"]);
+        logError($error["type"], $error["message"], $error["file"], $error["line"]);
     }
 }
-function log_exception($e)
+register_shutdown_function("checkForFatal");
+
+/**
+ * Logs an exception.
+ *
+ * @param Exception $e The exception to be logged.
+ * 
+ * @return void
+ */
+function logException($e)
 {
     if (!is_a($e, 'Exception')) {
         var_dump($e);
@@ -175,61 +217,112 @@ function log_exception($e)
         die();
     }
     if (defined('SEND_JSON_ERRORS') && SEND_JSON_ERRORS == true) {
-        send_json_error($e->getCode(), get_class($e) . ": " . $e->getMessage(), $e->getFile(), $e->getLine(), $e);
+        $location = get_class($e) . ": " . $e->getMessage();
+        sendJsonError($e->getCode(), $location, $e->getFile(), $e->getLine(), $e);
     } elseif (defined('SEND_TEXT_ERRORS') && SEND_TEXT_ERRORS == true) {
-        send_text_error($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+        sendTextError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
     } else {
-        $file = str_replace(realpath(getcwd() . DIRECTORY_SEPARATOR . '..'), '', $e->getFile());
+        $basedir = realpath(getcwd() . DIRECTORY_SEPARATOR . '..');
+        $file = str_replace($basedir, '', $e->getFile());
         header('HTTP/1.1 500 Something Bad');
         header('content-type: text/html; charset: utf-8');
         print "<div style='text-align: center;'>";
         print "<h2 style='color: rgb(190, 50, 50);'>Exception Occured:</h2>";
         print "<table style='width: 800px; display: inline-block;'>";
-        print "<tr style='background-color:rgb(230,230,230);'><th style='width: 80px;'>Type</th><td>" . get_class($e) . "</td></tr>";
-        print "<tr style='background-color:rgb(240,240,240);'><th>Message</th><td>{$e->getMessage()}</td></tr>";
-        print "<tr style='background-color:rgb(230,230,230);'><th>File</th><td>{$file}</td></tr>";
-        print "<tr style='background-color:rgb(240,240,240);'><th>Line</th><td>{$e->getLine()}</td></tr>";
+        print "<tr style='background-color:rgb(230,230,230);'>";
+        print "<th style='width: 80px;'>Type</th><td>" . get_class($e) 
+            . "</td></tr>";
+        print "<tr style='background-color:rgb(240,240,240);'>";
+        print "<th>Message</th><td>{$e->getMessage()}</td></tr>";
+        print "<tr style='background-color:rgb(230,230,230);'>";
+        print "<th>File</th><td>{$file}</td></tr>";
+        print "<tr style='background-color:rgb(240,240,240);'>";
+        print "<th>Line</th><td>{$e->getLine()}</td></tr>";
         print "</table></div>";
         die();
     }
 }
-function send_json_error($errno, $errstr, $errfile, $errline, $e = false)
+set_exception_handler("logException");
+
+/**
+ * Sends a JSON error response.
+ *
+ * @param int    $errno   The error number.
+ * @param string $errstr  The error message.
+ * @param string $errfile The file where the error occurred.
+ * @param int    $errline The line number where the error occurred.
+ * @param mixed  $e       The exception that occurred. Default is false.
+ * 
+ * @return void
+ */
+function sendJsonError($errno, $errstr, $errfile, $errline, $e = false)
 {
-    $file = str_replace(realpath(getcwd() . DIRECTORY_SEPARATOR . '..'), '', $errfile);
+    $basedir = realpath(getcwd() . DIRECTORY_SEPARATOR . '..');
+    $file = str_replace($basedir, '', $e->getFile());
     header('HTTP/1.1 500 Something Bad');
     header('content-type: application/json; charset: utf-8');
     $backtrace = debug_backtrace();
-    echo json_encode(array('response' => 500, 'message' => $errstr, 'file' => $file, 'line' => $errline, 'backtrace' => $e->getTrace() ));
+    echo json_encode(
+        array(
+        'response' => 500, 
+        'message' => $errstr, 
+        'file' => $file, 
+        'line' => $errline, 
+        'backtrace' => $e->getTrace() 
+        )
+    );
 
-    error_log("JSON Error: [{$_SERVER['HTTP_HOST']}] {$errstr} in {$errfile}:{$errline}");
+    error_log(
+        "JSON Error: [{$_SERVER['HTTP_HOST']}] {$errstr}".
+        " in {$errfile}:{$errline}"
+    );
 
     die();
     // throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
 }
-function send_text_error($errno, $errstr, $errfile, $errline)
+
+/**
+ * Sends a text error response.
+ *
+ * @param int    $errno   The error number.
+ * @param string $errstr  The error message.
+ * @param string $errfile The file where the error occurred.
+ * @param int    $errline The line number where the error occurred.
+ * 
+ * @return void
+ */
+function sendTextError($errno, $errstr, $errfile, $errline)
 {
-    $file = str_replace(realpath(getcwd() . DIRECTORY_SEPARATOR . '..'), '', $errfile);
+    $basedir = realpath(getcwd() . DIRECTORY_SEPARATOR . '..');
+    $file = str_replace($basedir, '', $errfile);
     print "{$errstr} in {$file} at {$errline}";
     debug_print_backtrace();
     die();
     // throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
 }
 
-
+/**
+ * Clears the cache files in the given location.
+ *
+ * @param string $cacheLocation The location of the cache files.
+ * 
+ * @return array The list of files that were cleared.
+ */
 function clearCacheFiles($cacheLocation)
 {
+    $files = [];
     if (is_string($cacheLocation)) {
         foreach (new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($cacheLocation),
             \RecursiveIteratorIterator::LEAVES_ONLY
         ) as $file
         ) {
-            if ($file->isFile()) {
+            if ($file->isFile() && ($file->getFilename() != '.gitkeep')) {
+                $files[] = $file->getPathname();
                 @unlink($file->getPathname());
             }
         }
     }
+    return $files;
 }
 
-set_error_handler('log_error');
-set_exception_handler("log_exception");

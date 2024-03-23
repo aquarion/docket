@@ -1,4 +1,14 @@
 <?php
+/**
+ * This is the main index file for the application.
+ * php version 7.2
+ *
+ * @category Personal
+ * @package  Radiator
+ * @author   "Nicholas Avenell" <nicholas@istic.net>
+ * @license  BSD-3-Clause https://opensource.org/license/bsd-3-clause
+ * @link     https://docket.hubris.house
+ */
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -12,6 +22,8 @@ require HOME_DIR . '/lib/gcal.lib.php';
 require HOME_DIR . '/lib/radiator.lib.php';
 
 define('SEND_JSON_ERRORS', true);
+
+define('SEND_TEXT_ERRORS', false);
 
 // Get the API client and construct the service object.
 $client = getClient();
@@ -33,7 +45,18 @@ $optParams = array(
   'timeMax' =>  date('c', strtotime($_GET['end']))
 );
 
-function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
+/**
+ * Merges a calendar into the main event array
+ *
+ * @param Google_Service_Calendar $cxn_gcal   The Google Calendar connection
+ * @param array                   $optParams  The parameters to pass to the API
+ * @param string                  $cal_id     The ID of the calendar
+ * @param array                   $calendar   The calendar details
+ * @param array                   $all_events The array of all events
+ *
+ * @return void
+ */
+function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
 {
     /* calendar = array(3) {
     ["name"]=>
@@ -48,8 +71,13 @@ function merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
     $events = $results->getItems();
 
     foreach ($events as $event) {
-        $start = $event->start->dateTime ? $event->start->dateTime : $event->start->date;
-        $end = $event->end->dateTime ? $event->end->dateTime : $event->end->date;
+        $start = $event->start->dateTime 
+            ? $event->start->dateTime 
+            : $event->start->date;
+
+        $end = $event->end->dateTime 
+            ? $event->end->dateTime 
+            : $event->end->date;
 
         $clean_summary = removeEmoji($event->summary);
         $clean_summary = trim($clean_summary);
@@ -89,7 +117,7 @@ $all_events = array();
 
 
 foreach ($google_calendars as $cal_id => $calendar) {
-    merge_calendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
+    mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
 }
 
 $events_out = array();

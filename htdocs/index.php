@@ -22,8 +22,11 @@ if (!DEV_MODE) {
 }
 
 if (isset($_GET['clear_cache'])) {
-    clearCacheFiles(HOME_DIR.'/cache');
+    $files = clearCacheFiles(HOME_DIR.'/cache');
     echo "Cache cleared";
+    echo "<pre>";
+    echo implode("\n", $files);
+    echo "</pre>";
     die();
 }
 
@@ -45,7 +48,7 @@ $view = [
 ];
 
 if (DEV_MODE) {
-    $view['git_branch'] = git_branch();
+    $view['git_branch'] = gitBranch();
 }
 
 echo $template->render($view);

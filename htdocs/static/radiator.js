@@ -4,6 +4,7 @@
 /* jshint jquery: true */
 /* jshint devel: true */
 
+
 circle = {
   track_circle_percent: 0,
 
@@ -145,10 +146,20 @@ updateNextUp = function(){
       start = moment(this_event.start);
 
       if (end < now){
-          continue;
+        //debug("Skipping event that has ended: " + this_event.title);
+        continue;
       }
 
       startF = start.format("YYYY-MM-DD");
+
+      if (!days[startF] && end > now){
+        startF = now.format("YYYY-MM-DD");
+        if (end > now.endOf('day')) {
+            this_event.allDay = true;
+        } else {
+            start = now.endOf('day');
+        }
+      }
 
       if (this_event.allDay){
           showed_started = false;
@@ -185,7 +196,10 @@ updateNextUp = function(){
               }
           }
       } else if(days[startF]) {
+        debug("Adding event: " + this_event.title + " to " + startF);
           days[startF].events.push(this_event);
+      } else {
+        debug("Skipping event: " + this_event.title + " as it is not in the next two weeks (" + startF + ")");
       }
 
 
@@ -208,7 +222,8 @@ updateNextUp = function(){
           dayTitle = day.format("ddd D");
           dayTitle += "<sup>"+dateOrdinal(day)+"</sup>";
       }
-
+      debug("Start Day " + day.format("YYYY-MM-DD"));
+      debug(data);
       output += "<dt>"+dayTitle+": ";
       var allday_index = 0;
 
@@ -227,7 +242,7 @@ updateNextUp = function(){
         data.allday = mergedAllday;
       }
 
-       allday_index = 0;
+      allday_index = 0;
       things = [];
       for (; allday_index < data.allday.length; allday_index++) {
           allday = data.allday[allday_index];
@@ -241,6 +256,7 @@ updateNextUp = function(){
           things.push("<span class=\"" + classes + "\">" + allday.title + "</span>");
       }
       if (things.length == 0) {
+        debug("No allday events");
 
       } else if (things.length == 1){
           output += things[0];
@@ -256,15 +272,15 @@ updateNextUp = function(){
 
       for (; i < data.events.length; i++) {
           this_event = data.events[i];
+          debug("Event: " + this_event.title);
+
           starts = moment(this_event.start);
           ends = moment(this_event.end);
           classes = "event ";
 
           if (this_event.calendars && this_event.calendars.length > 0){
               classes += "txtcal-" + this_event.calendars.join("-");
-          } else {
-              console.log(this_event);
-          }
+          }    
           if (moment().dayOfYear() == starts.dayOfYear()){  
               classes += " todayEvent";
           }

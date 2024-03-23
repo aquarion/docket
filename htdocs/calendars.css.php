@@ -23,7 +23,7 @@ $twig = new \Twig\Environment(
 $all_calendars = array_merge($ical_calendars, $google_calendars);
 
 foreach ($all_calendars as &$cal) {
-    $cal['color_dim'] = rgba_css($cal['color'], .5);
+    $cal['color_dim'] = RGBToCSS($cal['color'], .5);
 }
 
 $template = $twig->load('calendars.css.twig');
