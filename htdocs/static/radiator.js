@@ -154,11 +154,15 @@ updateNextUp = function(){
 
       if (!days[startF] && end > now){
         startF = now.format("YYYY-MM-DD");
-        if (end > now.endOf('day')) {
+        if (end >= now.endOf('day')) {
             this_event.allDay = true;
         } else {
             start = now.endOf('day');
         }
+      }
+      
+      if (start.hours() == 0 && start.minutes() == 0 && end.hours() == 0 && end.minutes() == 0){
+          this_event.allDay = true;
       }
 
       if (this_event.allDay){
@@ -285,7 +289,7 @@ updateNextUp = function(){
               classes += " todayEvent";
           }
           until = "(for " + moment.duration(starts.diff(ends)).humanize() + ")";
-          output += "<dd class=\""+classes+"\" eventstarts=\""+ starts.toISOString() +"\" eventends=\""+ ends.toISOString() +"\">" +
+          output += "<dd class=\""+classes+"\" eventstarts=\""+ starts.toISOString() +"\" eventends=\""+ ends.toISOString() +"\" data=\""+ encodeURI(JSON.stringify(this_event)) +"\">" +
               "<span class=\"event_dt\">" + starts.format("HH:mm") + "</span> " +
               "<span class=\"event_title\">" + this_event.title + "</span> " +
               "<span class=\"until\">"+ until +"</span>" +
@@ -296,6 +300,9 @@ updateNextUp = function(){
 
   output += "</dl>";
   $("#nextUp").html(output);
+
+  $("#nextUp dd").on("click", function(currentdd){ 
+    console.log(JSON.parse(decodeURI(this.getAttribute("data"))));});
 
 
   twemoji.parse(document.body);
