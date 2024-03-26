@@ -79,7 +79,18 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
             ? $event->end->dateTime 
             : $event->end->date;
 
-        $clean_summary = removeEmoji($event->summary);
+        $declined = false;
+        foreach ($event->attendees as $attendee) {
+            if ($attendee->email == $calendar['src'] && $attendee->responseStatus == "declined") {
+                $declined = true;
+                continue;
+            }
+        }
+        $summary = $event->summary;
+        if ($declined) {
+            $summary = "<strike>".$summary."</strike>";
+        }
+        $clean_summary = removeEmoji($summary);
         $clean_summary = trim($clean_summary);
 
         $event_id = sha1($start.$end.$clean_summary);
@@ -96,7 +107,7 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
             }
             $all_events[$event_id] = array(
             "allDay" => $event->start->date ? true : false,
-            "title"  => $event->summary,
+            "title"  => $summary,
             "first"  => $calendar['src'],
             "clean"  => $clean_summary,
             "cleancount"  => bin2hex($clean_summary),
@@ -105,7 +116,8 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
             "start"  => $start,
             "calendars" => array($cal_id),
             "backgroundColor" => $margin,
-            "borderColor" => $background
+            "borderColor" => $background,
+            "full_event" => array($event)
             );
         }
     }
