@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.php",
   "dependencies": {
-    "ical.js": "^1.5.0",
+    "ical.js": "^2.0.0",
     "jquery": "^3.6.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.45",
