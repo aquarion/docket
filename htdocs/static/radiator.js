@@ -364,7 +364,7 @@ function update_until(){
 
 function update_ical(calendarUrl, start, end, timezone, name, callback) {
   debug("Updating " + calendarUrl + " from " + start.toDate() + " to " + end.toDate() + " in " + timezone + " as " + name);
-  $.get(calendarUrl).then(function (data) {
+  $.get(calendarUrl).done(function (data) {
 
     var jcalData = false;
     var comp = false;
@@ -525,7 +525,10 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
       allEvents[calendarUrl] = events;
       updateNextUp();
       callback(events);
-  });
+  }) // end done
+    .fail(function (error) {
+       toastr.error("Failed to load calendar: " + name + " - " + error.statusText); 
+    });
 }
 
 function setup_calender(){    
@@ -567,12 +570,14 @@ function update_theme(){
 // Startup
 $(function() {
 
-  update_datetime();
-  update_theme();
-  $('#nextUp').show();
+    toastr.options.closeDuration = 300;
 
-// page is now ready, initialize the calendar...
-setup_calender();
+    update_datetime();
+    update_theme();
+    $('#nextUp').show();
+
+    // page is now ready, initialize the calendar...
+    setup_calender();
 
 
 $('#datetime').on("click", function(){
