@@ -1,9 +1,0 @@
-SetEnvIf X-Forwarded-For "81.109.116.169" AllowIP
-SetEnvIf X-Forwarded-For "165.225.80.213" AllowIP
-SetEnvIf X-Forwarded-For "88.97.212.65" AllowIP
-
-  <RequireAny>
-    Require env AllowIP
-  </RequireAny>
-
-ErrorDocument 403 "Sorry, '%{ENV:AllowIP}' is not authorised"

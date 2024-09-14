@@ -1,0 +1,13 @@
+# SetEnvIf X-Forwarded-For "81.109.116.169" AllowIP
+# SetEnvIf X-Forwarded-For "165.225.80.213" AllowIP
+SetEnvIf X-Forwarded-For "88.97.212.159" AllowIP
+SetEnvIf X-Forwarded-For "127.0.0.1" AllowIP
+
+# RemoteIPHeader X-Forwarded-For
+
+  <RequireAny>
+    Require env AllowIP
+    Require forward-dns fyrion.synology.me
+  </RequireAny>
+
+ErrorDocument 403 /errors/error.403.html
