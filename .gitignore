@@ -5,3 +5,4 @@ vendor
 calendars.inc.php
 data/fof.json
 cache
+htdocs/.htaccess
