@@ -1,0 +1,12 @@
+# Add allowed IPs like this:
+# SetEnvIf X-Forwarded-For "000.000.000.000" AllowIP
+# SetEnvIf X-Forwarded-For "10.4.2.1" AllowIP
+SetEnvIf X-Forwarded-For "127.0.0.1" AllowIP
+
+# RemoteIPHeader X-Forwarded-For
+
+  <RequireAny>
+    Require env AllowIP
+  </RequireAny>
+
+ErrorDocument 403 /errors/error.403.php
