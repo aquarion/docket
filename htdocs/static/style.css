@@ -283,3 +283,26 @@ img.emoji {
   background-color: rgb(17, 0, 170);
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
 }
+
+body.token {
+  margin: 1em;
+}
+
+body.token h1 {
+  font-size: 72pt;
+}
+
+body.token pre {
+  border: 2px solid black;
+  padding: .5em;
+  line-height: 50px;
+  height: 50px;
+}
+
+body.token img {
+  vertical-align: middle;
+  border: 2px solid;
+  border-color: #d2d2d2 #353535 #353535 #d2d2d2 ;
+  margin-right: .5em;
+  background-color: #c5c5c5;
+}
