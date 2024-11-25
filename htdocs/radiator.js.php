@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is the main index file for the application.
  * php version 7.2
@@ -12,7 +13,7 @@
 
 header("Content-Type: application/javascript");
 
-define('HOME_DIR', __DIR__.'/..');
+define('HOME_DIR', __DIR__ . '/..');
 
 require HOME_DIR . '/vendor/autoload.php';
 require HOME_DIR . '/lib/radiator.lib.php';
@@ -20,11 +21,11 @@ require HOME_DIR . '/lib/radiator.lib.php';
 $twig_config = [];
 
 if (!DEV_MODE) {
-    $twig_config['cache']  = HOME_DIR.'/cache';
+    $twig_config['cache']  = HOME_DIR . '/cache';
 }
 
 
-$loader = new \Twig\Loader\FilesystemLoader(HOME_DIR.'/templates');
+$loader = new \Twig\Loader\FilesystemLoader(HOME_DIR . '/templates');
 $twig = new \Twig\Environment(
     $loader,
     $twig_config

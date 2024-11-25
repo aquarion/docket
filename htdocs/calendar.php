@@ -5,25 +5,27 @@ require __DIR__ . '/lib/gcal.lib.php';
 require __DIR__ . '/lib/radiator.lib.php';
 define('SEND_JSON_ERRORS', true);
 
-// Get the API client and construct the service object.
-$client = getClient();
-$service = new Google_Service_Calendar($client);
 
 // Print the next events on the user's calendar.
 $calendarId = $_GET['cal'];
+$accountId = $_GET['account'];
 
-if(!isset($_GET['start'])) {
+// Get the API client and construct the service object.
+$client = getClient($accountId);
+$service = new Google_Service_Calendar($client);
+
+if (!isset($_GET['start'])) {
     $_GET['start'] = date("Y-m-01");
 }
-if(!isset($_GET['end'])) {
+if (!isset($_GET['end'])) {
     $_GET['end'] = date("Y-m-30");
 }
 
 $optParams = array(
-  'orderBy' => 'startTime',
-  'singleEvents' => true,
-  'timeMin' =>  date('c', strtotime($_GET['start'])),
-  'timeMax' =>  date('c', strtotime($_GET['end'])) 
+    'orderBy' => 'startTime',
+    'singleEvents' => true,
+    'timeMin' =>  date('c', strtotime($_GET['start'])),
+    'timeMax' =>  date('c', strtotime($_GET['end']))
 );
 
 

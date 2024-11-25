@@ -26,8 +26,11 @@ function getGoogleCreds(){
  * Returns an authorized API client.
  * @return Google_Client the authorized client object
  */
-function getClient()
+function getClient($account)
 {
+    if(!$account){
+        exit("getClient without Account");
+    }
     $client = new Google_Client();
     $client->setApplicationName('Radiator');
     $client->addScope("https://www.googleapis.com/auth/photoslibrary.readonly");
@@ -35,15 +38,18 @@ function getClient()
     $client->setAuthConfig(HOME_DIR . '/etc/credentials.json');
     $client->setAccessType('offline');
 
+    $redirect_uri = 'https://docket.hubris.house/token.php';
+    $client->setRedirectUri($redirect_uri);
+
     // Load previously authorized credentials from a file.
-    $credentialsPath = HOME_DIR . '/etc/token.json';
+    $credentialsPath = HOME_DIR . '/etc/token_' . $account . '.json';
     if (file_exists($credentialsPath)) {
         $accessToken = json_decode(file_get_contents($credentialsPath), true);
     } elseif(php_sapi_name() == 'cli') {
         // Request authorization from the user.
         $authUrl = $client->createAuthUrl();
         printf("Open the following link in your browser:\n%s\n", $authUrl);
-        print 'Enter verification code: ';
+        print 'Enter code: ';
         $authCode = trim(fgets(STDIN));
 
         // Exchange authorization code for an access token.

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is the main index file for the application.
  * php version 7.2
@@ -14,8 +15,14 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+if (isset($_GET['debug'])) {
+    define("DEBUG", true);
+} else {
+    define("DEBUG", false);
+}
 
-define('HOME_DIR', __DIR__.'/..');
+
+define('HOME_DIR', __DIR__ . '/..');
 
 require HOME_DIR . '/vendor/autoload.php';
 require HOME_DIR . '/lib/gcal.lib.php';
@@ -25,11 +32,6 @@ define('SEND_JSON_ERRORS', true);
 
 define('SEND_TEXT_ERRORS', false);
 
-// Get the API client and construct the service object.
-$client = getClient();
-$cxn_gcal = new Google_Service_Calendar($client);
-
-// Print the next events on the user's calendar.
 
 if (!isset($_GET['start'])) {
     $_GET['start'] = date("Y-m-01");
@@ -39,10 +41,10 @@ if (!isset($_GET['end'])) {
 }
 
 $optParams = array(
-  'orderBy' => 'startTime',
-  'singleEvents' => true,
-  'timeMin' =>  date('c', strtotime($_GET['start'])),
-  'timeMax' =>  date('c', strtotime($_GET['end']))
+    'orderBy' => 'startTime',
+    'singleEvents' => true,
+    'timeMin' =>  date('c', strtotime($_GET['start'])),
+    'timeMax' =>  date('c', strtotime($_GET['end']))
 );
 
 /**
@@ -71,13 +73,22 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
     $events = $results->getItems();
 
     foreach ($events as $event) {
-        $start = $event->start->dateTime 
-            ? $event->start->dateTime 
+        if ($event->eventType == "workingLocation") {
+            continue;
+        }
+        $start = $event->start->dateTime
+            ? $event->start->dateTime
             : $event->start->date;
 
-        $end = $event->end->dateTime 
-            ? $event->end->dateTime 
+        $end = $event->end->dateTime
+            ? $event->end->dateTime
             : $event->end->date;
+
+
+        $start_obj = new DateTimeImmutable($start);
+        $start_obj = $start_obj->setTimezone(new DateTimeZone('UTC'));
+        $end_obj = new DateTimeImmutable($end);
+        $end_obj = $end_obj->setTimezone(new DateTimeZone('UTC'));
 
         $declined = false;
         foreach ($event->attendees as $attendee) {
@@ -88,12 +99,16 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
         }
         $summary = $event->summary;
         if ($declined) {
-            $summary = "<strike>".$summary."</strike>";
+            $summary = "<strike>" . $summary . "</strike>";
         }
         $clean_summary = removeEmoji($summary);
         $clean_summary = trim($clean_summary);
 
-        $event_id = sha1($start.$end.$clean_summary);
+        $event_id = sha1($start_obj->format("c") . $end_obj->format("c") . $clean_summary);
+
+
+        debug($start_obj->format("c") . " - " . $summary);
+        debug("<pre>" . print_r($event, true) . "</pre>");
 
         if (isset($all_events[$event_id])) {
             $all_events[$event_id]['calendars'][] = $cal_id;
@@ -106,18 +121,18 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
                 $margin = $background = $colour;
             }
             $all_events[$event_id] = array(
-            "allDay" => $event->start->date ? true : false,
-            "title"  => $summary,
-            "first"  => $calendar['src'],
-            "clean"  => $clean_summary,
-            "cleancount"  => bin2hex($clean_summary),
-            "id"     => $event->id,
-            "end"    => $end,
-            "start"  => $start,
-            "calendars" => array($cal_id),
-            "backgroundColor" => $margin,
-            "borderColor" => $background,
-            "full_event" => array($event)
+                "allDay" => $event->start->date ? true : false,
+                "title"  => $summary,
+                "first"  => $calendar['src'],
+                "clean"  => $clean_summary,
+                "cleancount"  => bin2hex($clean_summary),
+                "id"     => $event->id,
+                "end"    => $end,
+                "start"  => $start,
+                "calendars" => array($cal_id),
+                "backgroundColor" => $margin,
+                "borderColor" => $background,
+                "full_event" => array($event)
             );
         }
     }
@@ -128,7 +143,32 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
 $all_events = array();
 
 
+
+$clients = [];
+
+function debug($words)
+{
+    if (DEBUG) {
+        print($words . "</br>\n");
+    }
+}
+
+// Get the API client and construct the service object.
+
+
+// Print the next events on the user's calendar.
+
+
 foreach ($google_calendars as $cal_id => $calendar) {
+    $account = $calendar['account'];
+    debug($cal_id . " - " . $account);
+    debug("------");
+    if (isset($clients[$account])) {
+        $cxn_gcal = $clients[$account];
+    } else {
+        $client = getClient($account);
+        $clients[$account] = $cxn_gcal = new Google_Service_Calendar($client);
+    }
     mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
 }
 
@@ -137,6 +177,7 @@ $events_out = array();
 foreach ($all_events as $id => &$event) {
     if (count($event['calendars']) > 1) {
         sort($event['calendars']);
+        $event['calendars'] = array_unique($event['calendars']);
 
         $merged = implode("-", $event['calendars']);
 
@@ -158,6 +199,7 @@ foreach ($all_events as $id => &$event) {
     $events_out[] = $event;
 }
 
-header('content-type: application/json; charset: utf-8');
-
-echo json_encode($events_out);
+if (!DEBUG) {
+    header('content-type: application/json; charset: utf-8');
+    echo json_encode($events_out);
+}

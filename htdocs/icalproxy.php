@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is the main index file for the application.
  * php version 7.2
@@ -15,7 +16,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 
-define('HOME_DIR', __DIR__.'/..');
+define('HOME_DIR', __DIR__ . '/..');
 
 require HOME_DIR . '/vendor/autoload.php';
 require HOME_DIR . '/lib/gcal.lib.php';
@@ -31,13 +32,13 @@ if (!isset($input_cal)) {
     throw new Exception("Cal not set");
 }
 
-if (!isset($ical_calendars[$input_cal ])) {
+if (!isset($ical_calendars[$input_cal])) {
     throw new Exception("Cal not found");
 }
 
 // No
 // Fetch calendar data
-$calendar = $ical_calendars[$input_cal ];
+$calendar = $ical_calendars[$input_cal];
 
 if (REDIS_HOST) {
     // Setup Caching
@@ -80,8 +81,8 @@ if (!$res->getStatusCode() == 200) {
 
 
 if (REDIS_HOST) {
-    $redis->setex($input_cal, 3600/2, $res->getBody()->getContents());
+    $redis->setex($input_cal, 3600 / 2, $res->getBody()->getContents());
 }
 
-header("Content-Type: ". $res->getHeader('content-type')[0]);
+header("Content-Type: " . $res->getHeader('content-type')[0]);
 echo $res->getBody();
