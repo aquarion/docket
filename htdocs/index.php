@@ -31,6 +31,12 @@ if (isset($_GET['clear_cache'])) {
     die();
 }
 
+if (date('m') == 12) {
+    define("FESTIVAL", "christmas");
+} else {
+    define("FESTIVAL", false);
+}
+
 
 $loader = new \Twig\Loader\FilesystemLoader(HOME_DIR . '/templates');
 $twig = new \Twig\Environment(
@@ -45,6 +51,7 @@ $view = [
     'google_calendars' => $google_calendars,
     'merged_calendars' => $merged_calendars,
     'theme' => THEME,
+    'festival' => FESTIVAL,
     'calendar_set' => CALENDAR_SET
 ];
 

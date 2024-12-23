@@ -50,9 +50,23 @@
 		<script src="node_modules/toastr/build/toastr.min.js"></script>
 		<link rel="stylesheet" href="node_modules/toastr/build/toastr.min.css">
 
+		{% if festival == "christmas" %}
+			<script src="/static/snowstorm/snowstorm.js"></script>
+			<script>
+				snowStorm.autoStart = false;
+snowStorm.freezeOnBlur = false;
+			</script>
+			<link rel='stylesheet' href='./static/generated/christmas.css'/>
+		{% endif %}
+
 	</head>
 
 	<body class="{{ theme }}">
+
+		{% if festival == "christmas" %}
+			{% include 'christmas.html.twig' %}
+		{% endif %}
+
 		{% if git_branch is not empty %}
 			<div class="devmode-ribbon">
 				<a target="_blank" href="https://github.com/aquarion/radiator">Branch
@@ -81,4 +95,4 @@
 		<script type="text/javascript" src="./radiator.js.php?version={{ calendar_set }}"></script>
 		<script type="text/javascript" src="./static/radiator.js"></script>
 	</body>
-</html>
+</html></head></html>
