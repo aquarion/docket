@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is the main index file for the application.
  * php version 7.2
@@ -10,8 +11,11 @@
  * @link     https://docket.hubris.house
  */
 
-require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/lib/gcal.lib.php';
+define('HOME_DIR', __DIR__ . '/..');
+
+require HOME_DIR . '/vendor/autoload.php';
+require HOME_DIR . '/lib/radiator.lib.php';
+require HOME_DIR . '/lib/gcal.lib.php';
 
 if (php_sapi_name() != 'cli') {
     throw new Exception('This application must be run on the command line.');
@@ -28,10 +32,10 @@ $service = new Google_Service_Calendar($client);
 // Print the next 10 events on the user's calendar.
 $calendarId = 'primary';
 $optParams = array(
-  'maxResults' => 10,
-  'orderBy' => 'startTime',
-  'singleEvents' => true,
-  'timeMin' => date('c'),
+    'maxResults' => 10,
+    'orderBy' => 'startTime',
+    'singleEvents' => true,
+    'timeMin' => date('c'),
 );
 $results = $service->events->listEvents($calendarId, $optParams);
 $events = $results->getItems();

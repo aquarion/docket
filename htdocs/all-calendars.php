@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is the main index file for the application.
  * php version 7.2
@@ -15,7 +16,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 
-define('HOME_DIR', __DIR__.'/..');
+define('HOME_DIR', __DIR__ . '/..');
 
 require HOME_DIR . '/vendor/autoload.php';
 require HOME_DIR . '/lib/gcal.lib.php';
@@ -39,10 +40,10 @@ if (!isset($_GET['end'])) {
 }
 
 $optParams = array(
-  'orderBy' => 'startTime',
-  'singleEvents' => true,
-  'timeMin' =>  date('c', strtotime($_GET['start'])),
-  'timeMax' =>  date('c', strtotime($_GET['end']))
+    'orderBy' => 'startTime',
+    'singleEvents' => true,
+    'timeMin' =>  date('c', strtotime($_GET['start'])),
+    'timeMax' =>  date('c', strtotime($_GET['end']))
 );
 
 /**
@@ -71,12 +72,12 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
     $events = $results->getItems();
 
     foreach ($events as $event) {
-        $start = $event->start->dateTime 
-            ? $event->start->dateTime 
+        $start = $event->start->dateTime
+            ? $event->start->dateTime
             : $event->start->date;
 
-        $end = $event->end->dateTime 
-            ? $event->end->dateTime 
+        $end = $event->end->dateTime
+            ? $event->end->dateTime
             : $event->end->date;
 
         $declined = false;
@@ -88,12 +89,12 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
         }
         $summary = $event->summary;
         if ($declined) {
-            $summary = "<strike>".$summary."</strike>";
+            $summary = "<strike>" . $summary . "</strike>";
         }
         $clean_summary = removeEmoji($summary);
         $clean_summary = trim($clean_summary);
 
-        $event_id = sha1($start.$end.$clean_summary);
+        $event_id = sha1($start . $end . $clean_summary);
 
         if (isset($all_events[$event_id])) {
             $all_events[$event_id]['calendars'][] = $cal_id;
@@ -106,18 +107,18 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
                 $margin = $background = $colour;
             }
             $all_events[$event_id] = array(
-            "allDay" => $event->start->date ? true : false,
-            "title"  => $summary,
-            "first"  => $calendar['src'],
-            "clean"  => $clean_summary,
-            "cleancount"  => bin2hex($clean_summary),
-            "id"     => $event->id,
-            "end"    => $end,
-            "start"  => $start,
-            "calendars" => array($cal_id),
-            "backgroundColor" => $margin,
-            "borderColor" => $background,
-            "full_event" => array($event)
+                "allDay" => $event->start->date ? true : false,
+                "title"  => $summary,
+                "first"  => $calendar['src'],
+                "clean"  => $clean_summary,
+                "cleancount"  => bin2hex($clean_summary),
+                "id"     => $event->id,
+                "end"    => $end,
+                "start"  => $start,
+                "calendars" => array($cal_id),
+                "backgroundColor" => $margin,
+                "borderColor" => $background,
+                "full_event" => array($event)
             );
         }
     }
@@ -128,11 +129,20 @@ function mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, &$all_events)
 $all_events = array();
 
 
+$events_out = [
+    'events' => [],
+    'errors' => [],
+];
+
 foreach ($google_calendars as $cal_id => $calendar) {
-    mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
+    try {
+        mergeCalendar($cxn_gcal, $optParams, $cal_id, $calendar, $all_events);
+    } catch (Google\Service\Exception $th) {
+        $error = json_decode($th->getMessage());
+        $events_out['errors'][$cal_id] = $cal_id . ': ' . $error->error . ': ' . $error->error_description;
+    }
 }
 
-$events_out = array();
 
 foreach ($all_events as $id => &$event) {
     if (count($event['calendars']) > 1) {
@@ -155,7 +165,7 @@ foreach ($all_events as $id => &$event) {
         //$event['title'] = $bullets.' '.$event['title'];
         // Stuff
     }
-    $events_out[] = $event;
+    $events_out['events'][] = $event;
 }
 
 header('content-type: application/json; charset: utf-8');
