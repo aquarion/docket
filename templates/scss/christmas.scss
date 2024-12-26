@@ -4,11 +4,11 @@ $globe-spacing: 40px;
 $globe-spread: 3px;
 $light-off-opacity: 0.4;
 
-body {
-  background: #000;
+body.daytime .lightrope {
+  display: none;
 }
 
-.lightrope {
+body.nighttime .lightrope {
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -31,20 +31,20 @@ body {
     margin: calc($globe-spacing/2);
     display: inline-block;
     background: rgb(0 247 165 / 100%);
-    box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(0 247 165 / 100%);
+    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 247 165 / 100%);
     animation-name: flash-1;
     animation-duration: 2s;
 
     &:nth-child(2n+1) {
       background: rgb(0 255 255 / 100%);
-      box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(0 255 255 / 50%);
+      box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 255 255 / 50%);
       animation-name: flash-2;
       animation-duration: 0.4s;
     }
 
     &:nth-child(4n+2) {
       background: rgb(247 0 148 / 100%);
-      box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(247 0 148 / 100%);
+      box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(247 0 148 / 100%);
       animation-name: flash-3;
       animation-duration: 1.1s;
     }
@@ -62,19 +62,19 @@ body {
       position: absolute;
       background: #222;
       width: ($globe-width - 2);
-      height: $globe-height/3;
+      height: calc($globe-height/3);
       border-radius: 3px;
-      top: (0 - ($globe-height/6));
+      top: calc(0px - ($globe-height/6));
       left: 1px;
     }
 
     &::after {
       content: "";
-      top: (0 - $globe-height/2);
+      top: calc(0px - $globe-height/2);
       left: $globe-width - 3;
       position: absolute;
       width: $globe-spacing + 12;
-      height: ($globe-height/3 * 2);
+      height: calc($globe-height/3 * 2);
       border-bottom: solid #222 2px;
       border-radius: 50%;
     }
@@ -93,12 +93,12 @@ body {
   0%,
   100% {
     background: rgb(0 247 165 / 100%);
-    box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(0 247 165 / 100%);
+    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 247 165 / 100%);
   }
 
   50% {
     background: rgba(0, 247, 165, $light-off-opacity);
-    box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(0 247 165 / 20%);
+    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 247 165 / 20%);
   }
 }
 
@@ -106,12 +106,12 @@ body {
   0%,
   100% {
     background: rgb(0 255 255 / 100%);
-    box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(0 255 255 / 100%);
+    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 255 255 / 100%);
   }
 
   50% {
     background: rgba(0, 255, 255, $light-off-opacity);
-    box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(0 255 255 / 20%);
+    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 255 255 / 20%);
   }
 }
 
@@ -119,11 +119,11 @@ body {
   0%,
   100% {
     background: rgb(247 0 148 / 100%);
-    box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(247 0 148 / 100%);
+    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(247 0 148 / 100%);
   }
 
   50% {
     background: rgba(247, 0, 148, $light-off-opacity);
-    box-shadow: 0 $globe-height/6 $globe-width*2 $globe-spread rgb(247 0 148 / 20%);
+    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(247 0 148 / 20%);
   }
 }
