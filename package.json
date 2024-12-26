@@ -9,6 +9,7 @@
     "jquery": "^3.6.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.45",
+    "sass": "^1.83.0",
     "timezones-ical-library": "^1.8.0",
     "toastr": "^2.1.4"
   },
