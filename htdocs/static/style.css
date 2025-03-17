@@ -223,9 +223,11 @@ img.emoji {
 }
 
 #nextUp dd, #nextUp dt {
-	overflow: hidden;
-	white-space: nowrap;
+	/* overflow: hidden;
+	white-space: nowrap; */
 	width: fit-content;
+  padding-left: 3em;
+  text-indent: -3em;
 }
 
 #nextup dd {
@@ -237,6 +239,18 @@ img.emoji {
 	padding-left: 0;
 }
 
+#nextUp .day-events span {
+  display: inline-block;
+}
+
+#nextUp .day-events span {
+  text-indent: 0;
+}
+
+
+#nextUp .txtcal-stripy .until {
+  color: rgb(191, 191, 191);
+}
 
 #switch {
 	position: absolute;

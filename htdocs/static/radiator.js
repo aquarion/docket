@@ -185,9 +185,9 @@ updateNextUp = function () {
           x_end = end.subtract(1, "minutes");
           x_event.title =
             x_event.title +
-            " (until " +
+            "<span class='until'>(until " +
             x_end.calendar(UNTIL_CALENDAR_FORMAT) +
-            ")";
+            ")</span>";
         }
         days[startF].allday.push(x_event);
       }
@@ -262,6 +262,7 @@ updateNextUp = function () {
     }
 
     allday_index = 0;
+    allday_ouput = "";
     things = [];
     for (; allday_index < data.allday.length; allday_index++) {
       allday = data.allday[allday_index];
@@ -269,6 +270,9 @@ updateNextUp = function () {
       classes = "";
 
       if (allday.calendars.length > 0) {
+        if (allday.calendars.length > 1) {
+          classes += "txtcal-stripy ";
+        }
         classes += "txtcal-" + allday.calendars.join("-");
       }
 
@@ -277,11 +281,14 @@ updateNextUp = function () {
     if (things.length == 0) {
       debug("No allday events");
     } else if (things.length == 1) {
-      output += things[0];
+      allday_ouput += things[0];
     } else if (things.length > 1) {
-      output += things.slice(0, -1).join(", ") + " & " + things.pop();
+      allday_ouput += things.slice(0, -1).join(", ") + " & " + things.pop();
     } else {
       debug(things);
+    }
+    if (allday_ouput) {
+      output += `<span class="day-events">${allday_ouput}</span>`;
     }
     output += "</dt>";
 
@@ -296,6 +303,9 @@ updateNextUp = function () {
       classes = "event ";
 
       if (this_event.calendars && this_event.calendars.length > 0) {
+        if (this_event.calendars.length > 1) {
+          classes += "txtcal-stripy ";
+        }
         classes += "txtcal-" + this_event.calendars.join("-");
       }
       if (moment().dayOfYear() == starts.dayOfYear()) {
