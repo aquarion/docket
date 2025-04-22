@@ -21,7 +21,7 @@
   "devDependencies": {
     "jshint": "^2.13.6",
     "stylelint": "^16.12.0",
-    "stylelint-config-standard": "^37.0.0",
+    "stylelint-config-standard": "^38.0.0",
     "suncalc": "^1.9.0"
   }
 }
