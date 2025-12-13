@@ -17,6 +17,8 @@ error_reporting(E_ALL);
 
 
 define('HOME_DIR', __DIR__ . '/..');
+define('SEND_JSON_ERRORS', true);
+define('SEND_TEXT_ERRORS', false);
 
 require HOME_DIR . '/vendor/autoload.php';
 require HOME_DIR . '/lib/gcal.lib.php';
@@ -40,30 +42,35 @@ if (!isset($ical_calendars[$input_cal])) {
 // Fetch calendar data
 $calendar = $ical_calendars[$input_cal];
 
-if (REDIS_HOST) {
-    // Setup Caching
-    $redis = new Redis();
-    //Connecting to Redis
-    $redis->connect(REDIS_HOST, REDIS_PORT);
-    if (REDIS_PASSWORD) {
-        $redis->auth(REDIS_PASSWORD);
-    }
+try {
+    if (REDIS_HOST) {
+        // Setup Caching
+        $redis = new Redis();
+        //Connecting to Redis
+        $redis->connect(REDIS_HOST, REDIS_PORT);
+        if (REDIS_PASSWORD) {
+            $redis->auth(REDIS_PASSWORD);
+        }
 
-    if ($output = $redis->get($input_cal)) {
-        if ($output != "Object") {
-            header("X-Cached: Yes: $input_cal");
-            header("Content-Type: text/calendar; charset=utf-8");
-            echo $output;
-            // var_dump($output);
-            exit;
+        if ($output = $redis->get($input_cal)) {
+            if ($output != "Object") {
+                header("X-Cached: Yes: $input_cal");
+                header("Content-Type: text/calendar; charset=utf-8");
+                echo $output;
+                // var_dump($output);
+                exit;
+            } else {
+                header("X-Cached: Stupid. ");
+            }
         } else {
-            header("X-Cached: Stupid. ");
+            header("X-Cached: Not found: $input_cal");
         }
     } else {
-        header("X-Cached: Not found: $input_cal");
+        header("X-Cached: No Redis Host: $input_cal");
     }
-} else {
-    header("X-Cached: No Redis Host: $input_cal");
+} catch (Exception $e) {
+    // No Redis
+    header("X-Cached: No Redis: " . $e->getMessage());
 }
 
 
