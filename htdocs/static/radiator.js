@@ -585,9 +585,16 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
       callback(events);
     }) // end done
     .fail(function (error) {
+      errortext = error.statusText;
+      if (error.responseJSON && error.responseJSON.message) {
+        errortext = error.responseJSON.message;
+      }
+
       toastr.error(
-        "Failed to load calendar: " + name + " - " + error.statusText
+        "Failed to load calendar: " + name + " - " + errortext
       );
+      
+      console.error("Failed to load calendar: " + name + " - " + errortext);
     });
 }
 
