@@ -1,25 +1,26 @@
 {
-  "name": "docket",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.php",
-  "dependencies": {
-    "fill-range": "^7.1.1",
-    "ical.js": "^2.1.0",
-    "noty": "^3.2.0-beta-deprecated",
-    "sass": "^1.83.0",
-    "timezones-ical-library": "^1.8.0",
-    "toastr": "^2.1.4"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "jshint": "^2.13.6",
-    "stylelint": "^16.12.0",
-    "stylelint-config-standard": "^39.0.0",
-    "suncalc": "^1.9.0"
-  }
+	"name": "docket",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.php",
+	"dependencies": {
+		"fill-range": "^7.1.1",
+		"ical.js": "^2.1.0",
+		"noty": "^3.2.0-beta-deprecated",
+		"sass": "^1.83.0",
+		"timezones-ical-library": "^1.8.0",
+		"toastr": "^2.1.4"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@biomejs/biome": "2.3.8",
+		"jshint": "^2.13.6",
+		"stylelint": "^16.12.0",
+		"stylelint-config-standard": "^39.0.0",
+		"suncalc": "^1.9.0"
+	}
 }

@@ -1,17 +1,15 @@
 {
-  "require": {
-    "google/apiclient": "^2.18",
-    "twig/twig": "^3.0",
-    "guzzlehttp/guzzle": "^7.5",
-    "kevinrob/guzzle-cache-middleware": "^5.1",
-    "php": "^8"
-  },
-  "scripts": {
-    "post-update-cmd": "Google\\Task\\Composer::cleanup"
-  },
-  "extra": {
-    "google/apiclient-services": [
-      "Calendar"
-    ]
-  }
+	"require": {
+		"google/apiclient": "^2.18",
+		"twig/twig": "^3.0",
+		"guzzlehttp/guzzle": "^7.5",
+		"kevinrob/guzzle-cache-middleware": "^5.1",
+		"php": "^8"
+	},
+	"scripts": {
+		"post-update-cmd": "Google\\Task\\Composer::cleanup"
+	},
+	"extra": {
+		"google/apiclient-services": ["Calendar"]
+	}
 }

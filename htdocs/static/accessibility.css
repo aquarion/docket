@@ -1,46 +1,48 @@
 /* Skip link for accessibility */
 .skip-link {
-  position: absolute;
-  left: -10000px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+	position: absolute;
+	left: -10000px;
+	top: auto;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
 }
 
 .skip-link:focus {
-  position: static;
-  width: auto;
-  height: auto;
-  background: #000;
-  color: #fff;
-  padding: 8px;
-  text-decoration: none;
-  z-index: 999;
+	position: static;
+	width: auto;
+	height: auto;
+	background: #000;
+	color: #fff;
+	padding: 8px;
+	text-decoration: none;
+	z-index: 999;
 }
 
 /* Improve focus indicators */
-a:focus, button:focus, canvas:focus {
-  outline: 2px solid #007cba;
-  outline-offset: 2px;
+a:focus,
+button:focus,
+canvas:focus {
+	outline: 2px solid #007cba;
+	outline-offset: 2px;
 }
 
 /* Better mobile touch targets */
 #switch a {
-  min-height: 44px;
-  min-width: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+	min-height: 44px;
+	min-width: 44px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
 
 /* Improve contrast for better accessibility */
 .devmode-ribbon {
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 4px 8px;
+	background: rgba(0, 0, 0, 0.8);
+	color: white;
+	padding: 4px 8px;
 }
 
 .devmode-ribbon a {
-  color: #ffd700;
+	color: #ffd700;
 }
