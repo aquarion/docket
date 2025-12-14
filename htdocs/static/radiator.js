@@ -50,9 +50,12 @@ var Radiator = {
    * Setup event handlers
    */
   setupEventHandlers: function() {
-    document.getElementById("datetime").addEventListener("click", function () {
-      window.location.reload(true);
-    });
+    var datetimeEl = document.getElementById("datetime");
+    if (datetimeEl) {
+      datetimeEl.addEventListener("click", function () {
+        window.location.reload(true);
+      });
+    }
   },
 
   /**
@@ -175,11 +178,17 @@ Radiator.ui = {
     var time = formatTime(now);
     var strToday = formatDateWithOrdinal(now);
 
-    document.getElementById("date").innerHTML = strToday;
-    document.getElementById("time").innerHTML = time;
-    document.getElementById("datetime").innerHTML =
-      '<div class="dt_time">' + time + '</div>' +
-      '<div class="dt_date">' + strToday + "</div>";
+    var dateEl = document.getElementById("date");
+    var timeEl = document.getElementById("time");
+    var datetimeEl = document.getElementById("datetime");
+    
+    if (dateEl) dateEl.innerHTML = strToday;
+    if (timeEl) timeEl.innerHTML = time;
+    if (datetimeEl) {
+      datetimeEl.innerHTML =
+        '<div class="dt_time">' + time + '</div>' +
+        '<div class="dt_date">' + strToday + "</div>";
+    }
   },
 
   /**
@@ -661,7 +670,10 @@ Radiator.events = {
     }
     
     output += "</dl>";
-    document.getElementById("nextUp").innerHTML = output;
+    var nextUpEl = document.getElementById("nextUp");
+    if (nextUpEl) {
+      nextUpEl.innerHTML = output;
+    }
   },
 
   /**
@@ -813,15 +825,30 @@ Radiator.events = {
 };
 
 // Initialize circle progress and start application
-Radiator.circleProgress.drawCircle("countdown");
+if (document.getElementById("countdown")) {
+  Radiator.circleProgress.drawCircle("countdown");
+}
 
 // Startup when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    Radiator.init();
+function initWhenReady() {
+  // Check if essential DOM elements exist
+  var requiredElements = ['datetime', 'nextUp'];
+  var allPresent = requiredElements.every(function(id) {
+    return document.getElementById(id) !== null;
   });
+  
+  if (allPresent) {
+    Radiator.init();
+  } else {
+    // Retry in a short time if elements aren't ready
+    setTimeout(initWhenReady, 10);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initWhenReady);
 } else {
-  Radiator.init();
+  initWhenReady();
 }
 
 // Cleanup on page unload
