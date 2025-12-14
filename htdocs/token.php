@@ -42,7 +42,6 @@
 
 
   <link rel='stylesheet' href='./calendars.css.php?version={{ calendar_set }}' />
-  <script src='node_modules/jquery/dist/jquery.min.js'></script>
   <script src='static/date-utils.js'></script>
   <script src='node_modules/suncalc/suncalc.js'></script>
 

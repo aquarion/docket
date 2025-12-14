@@ -1,6 +1,5 @@
 /* jshint esversion: 9 */
 /* jshint browser: true */
-/* jshint jquery: true */
 /* jshint devel: true */
 
 /**
@@ -28,7 +27,6 @@ var Radiator = {
     // Initialize UI
     this.ui.updateDateTime();
     this.ui.updateTheme();
-    $("#nextUp").show();
 
     // Setup calendar
     this.calendar.setup();
@@ -44,7 +42,7 @@ var Radiator = {
    * Setup event handlers
    */
   setupEventHandlers: function() {
-    $("#datetime").on("click", function () {
+    document.getElementById("datetime").addEventListener("click", function () {
       window.location.reload(true);
     });
   },
@@ -146,12 +144,11 @@ Radiator.ui = {
     var time = formatTime(now);
     var strToday = formatDateWithOrdinal(now);
 
-    $("#date").html(strToday);
-    $("#time").html(time);
-    $("#datetime").html(
+    document.getElementById("date").innerHTML = strToday;
+    document.getElementById("time").innerHTML = time;
+    document.getElementById("datetime").innerHTML =
       '<div class="dt_time">' + time + '</div>' +
-      '<div class="dt_date">' + strToday + "</div>"
-    );
+      '<div class="dt_date">' + strToday + "</div>";
   },
 
   /**
@@ -159,15 +156,17 @@ Radiator.ui = {
    */
   updateUntil: function() {
     var mnow = new Date();
+    var todayEvents = document.querySelectorAll(".todayEvent");
 
-    $(".todayEvent").each(function () {
+    for (var i = 0; i < todayEvents.length; i++) {
+      var element = todayEvents[i];
       var text = "";
-      var thisEvent = $(this);
-      var thisends = new Date(thisEvent.attr("eventends"));
-      var thisstarts = new Date(thisEvent.attr("eventstarts"));
+      var thisEvent = element;
+      var thisends = new Date(thisEvent.getAttribute("eventends"));
+      var thisstarts = new Date(thisEvent.getAttribute("eventstarts"));
       
       if (mnow > thisends) {
-        thisEvent.hide();
+        thisEvent.style.display = 'none';
       } else if (thisstarts > mnow) {
         var duration = humanizeDuration(Math.abs(thisends - thisstarts));
         text = fromNow(thisstarts) + " for " + duration;
@@ -175,10 +174,13 @@ Radiator.ui = {
         text = "ends " + fromNow(thisends);
       }
 
-      $(".until", thisEvent).html("(" + text + ")");
-    });
+      var untilElement = thisEvent.querySelector(".until");
+      if (untilElement) {
+        untilElement.innerHTML = "(" + text + ")";
+      }
+    }
     
-    return $(".todayEvent");
+    return todayEvents;
   },
 
   /**
@@ -186,12 +188,14 @@ Radiator.ui = {
    */
   updateTheme: function() {
     var timeOfDay = this.getTimeOfDay();
-    var body = $("body");
+    var body = document.body;
     
-    if (timeOfDay === "night" && !body.hasClass("nighttime")) {
-      body.removeClass("daytime").addClass("nighttime");
-    } else if (timeOfDay === "day" && !body.hasClass("daytime")) {
-      body.removeClass("nighttime").addClass("daytime");
+    if (timeOfDay === "night" && !body.classList.contains("nighttime")) {
+      body.classList.remove("daytime");
+      body.classList.add("nighttime");
+    } else if (timeOfDay === "day" && !body.classList.contains("daytime")) {
+      body.classList.remove("nighttime");
+      body.classList.add("daytime");
     }
     return timeOfDay;
   },
@@ -223,11 +227,16 @@ Radiator.calendar = {
     var twoWeeks = addDays(new Date(), 30);
 
     // Fetch JSON calendar data
-    $.get(
-      "/all-calendars.php?end=" + formatDate(twoWeeks, "YYYY-MM-DD") + 
-      "&version=" + RadiatorConfig.constants.VERSION,
-      this.updateCallback
-    );
+    fetch("/all-calendars.php?end=" + formatDate(twoWeeks, "YYYY-MM-DD") + 
+          "&version=" + RadiatorConfig.constants.VERSION)
+      .then(function(response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(this.updateCallback)
+      .catch(function(error) {
+        console.error('Failed to fetch calendar data:', error);
+      });
 
     // Fetch iCal calendar data
     if (RadiatorConfig.constants.ICAL_CALENDARS) {
@@ -259,8 +268,12 @@ Radiator.calendar = {
     debug("Updating " + calendarUrl + " from " + start + " to " + end + 
           " in " + timezone + " as " + name);
 
-    $.get(calendarUrl)
-      .done(function (data) {
+    fetch(calendarUrl)
+      .then(function(response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+        return response.text();
+      })
+      .then(function (data) {
         try {
           var jcalData = ICAL.parse(data);
           var comp = new ICAL.Component(jcalData);
@@ -298,7 +311,8 @@ Radiator.calendar = {
         var events = [];
 
         // Process events
-        $(eventComps).each(function (index, item) {
+        for (var index = 0; index < eventComps.length; index++) {
+          var item = eventComps[index];
           var event = new ICAL.Event(item);
           var summary = item.getFirstPropertyValue("summary");
           
@@ -348,17 +362,14 @@ Radiator.calendar = {
           }
 
           debug("/Event: " + summary);
-        });
+        }
 
         RadiatorConfig.allEvents[calendarUrl] = events;
         Radiator.events.updateNextUp();
         callback(events);
       })
-      .fail(function (error) {
-        var errortext = error.statusText;
-        if (error.responseJSON && error.responseJSON.message) {
-          errortext = error.responseJSON.message;
-        }
+      .catch(function (error) {
+        var errortext = error.message;
         
         toastr.error("Failed to load calendar: " + name + " - " + errortext);
         console.error("Failed to load calendar: " + name + " - " + errortext);
@@ -619,7 +630,7 @@ Radiator.events = {
     }
     
     output += "</dl>";
-    $("#nextUp").html(output);
+    document.getElementById("nextUp").innerHTML = output;
   },
 
   /**
@@ -745,10 +756,13 @@ Radiator.events = {
    * Setup click handlers for events
    */
   setupEventClickHandlers: function() {
-    $("#nextUp dd, #nextUp span.day-events span").on("click", function (event) {
-      console.log("Clicked on event:" + event.target.innerText);
-      console.log(JSON.parse(decodeURI(this.getAttribute("data"))));
-    });
+    var elements = document.querySelectorAll("#nextUp dd, #nextUp span.day-events span");
+    for (var i = 0; i < elements.length; i++) {
+      elements[i].addEventListener("click", function (event) {
+        console.log("Clicked on event:" + event.target.innerText);
+        console.log(JSON.parse(decodeURI(this.getAttribute("data"))));
+      });
+    }
   }
 };
 
@@ -756,6 +770,10 @@ Radiator.events = {
 Radiator.circleProgress.drawCircle("countdown");
 
 // Startup when DOM is ready
-$(function () {
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    Radiator.init();
+  });
+} else {
   Radiator.init();
-});
+}
