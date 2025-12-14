@@ -38,11 +38,11 @@
   <title>Docket</title>
 
   <link
-    href="static/style.css" rel="stylesheet">
+    href="static/css/style.css" rel="stylesheet">
 
 
   <link rel='stylesheet' href='./calendars.css.php?version={{ calendar_set }}' />
-  <script src='static/date-utils.js'></script>
+  <script src='static/js/date-utils.js'></script>
   <script src='node_modules/suncalc/suncalc.js'></script>
 
   <script src="node_modules/toastr/build/toastr.min.js"></script>
