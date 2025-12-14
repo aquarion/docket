@@ -53,44 +53,9 @@ circle = {
 
 circle.drawCircle("countdown");
 
-function dateOrdinal(d) {
-  return 31 == d || 21 == d || 1 == d
-    ? "st"
-    : 22 == d || 2 == d
-    ? "nd"
-    : 23 == d || 3 == d
-    ? "rd"
-    : "th";
-}
-
 var handleError = function (error) {
   console.log("--- Error Follows:");
   console.log(error);
-};
-
-dateSort = function (a, b) {
-  astart = new Date(a.start);
-  bstart = new Date(b.start);
-
-  if (astart == bstart) {
-    return 0;
-  } else if (astart > bstart) {
-    return 1;
-  } else {
-    return -1;
-  }
-};
-
-findFurthestDate = function (events) {
-  max = new Date();
-  var i = 0;
-  for (; i < events.length; i++) {
-    end = new Date(events[i].end);
-    if (end > max) {
-      max = end;
-    }
-  }
-  return max;
 };
 
 calendarUpdateCallback = function (data, info, third) {
@@ -101,9 +66,9 @@ calendarUpdateCallback = function (data, info, third) {
 updateNextUp = function () {
   var i = 0;
 
-  now = moment();
+  now = new Date();
 
-  nowF = now.format("YYYY-MM-DD");
+  nowF = now.toISOString().split('T')[0];
 
   days = {};
 
@@ -120,13 +85,13 @@ updateNextUp = function () {
 
   events.sort(dateSort);
 
-  maxDate = moment(findFurthestDate(events));
+  maxDate = new Date(findFurthestDate(events));
 
-  thisDay = moment();
+  thisDay = new Date();
   while (thisDay < maxDate) {
-    thisDay = thisDay.add(1, "d");
+    thisDay.setDate(thisDay.getDate() + 1);
 
-    thisDayF = thisDay.format("YYYY-MM-DD");
+    thisDayF = thisDay.toISOString().split('T')[0];
 
     if (!days[thisDayF]) {
       days[thisDayF] = {
@@ -141,35 +106,37 @@ updateNextUp = function () {
   for (; i < events.length; i++) {
     this_event = events[i];
 
-    end = moment(this_event.end);
-    start = moment(this_event.start);
+    end = new Date(this_event.end);
+    start = new Date(this_event.start);
 
     if (end < now) {
       //debug("Skipping event that has ended: " + this_event.title);
       continue;
     }
 
-    startF = start.format("YYYY-MM-DD");
+    startF = start.toISOString().split('T')[0];
 
     if (!days[startF] && end > now) {
-      startF = now.format("YYYY-MM-DD");
-      if (end >= now.endOf("day")) {
+      startF = now.toISOString().split('T')[0];
+      const endOfDay = new Date(now);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (end >= endOfDay) {
         debug("Adjusting event to all day: " + this_event.title + " as it started before today");
         this_event.allDay = true;
       } else {
-        start = now.endOf("day");
+        start = new Date(endOfDay);
       }
     }
 
     if (
-      start.hours() == 0 &&
-      start.minutes() == 0 &&
-      end.hours() == 0 &&
-      end.minutes() == 0 &&
+      start.getHours() == 0 &&
+      start.getMinutes() == 0 &&
+      end.getHours() == 0 &&
+      end.getMinutes() == 0 &&
       this_event.allDay !== true
     ) {
       debug("Setting all day for: " + this_event.title + " as it is midnight to midnight");
-      debug(start.format() + " to " + end.format());
+      debug(start.toISOString() + " to " + end.toISOString());
 
       this_event.allDay = true;
     }
@@ -177,8 +144,8 @@ updateNextUp = function () {
     if (this_event.allDay) {
       showed_started = false;
       if (start < now) {
-        start = moment();
-        startF = start.format("YYYY-MM-DD");
+        start = new Date();
+        startF = start.toISOString().split('T')[0];
       }
 
       durationHours = (end - start) / (1000 * 60 * 60) - 24;
@@ -187,19 +154,19 @@ updateNextUp = function () {
         started_today = true;
         const x_event = Object.assign({}, this_event);
         if (durationHours > 0) {
-          x_end = end.subtract(1, "minutes");
+          x_end = subtractMinutes(end, 1);
           x_event.title =
             x_event.title +
             "<span class='until'>(until " +
-            x_end.calendar(UNTIL_CALENDAR_FORMAT) +
+            calendarFormat(x_end) +
             ")</span>";
         }
         days[startF].allday.push(x_event);
       }
       while (durationHours > 0) {
         started_today = false;
-        start = start.add(1, "d");
-        startF = start.format("YYYY-MM-DD");
+        start = addDays(start, 1);
+        startF = formatDate(start, 'YYYY-MM-DD');
         if (days[startF] && !showed_started) {
           days[startF].allday.push(this_event);
           showed_started = true;
@@ -228,20 +195,23 @@ updateNextUp = function () {
 
   output = "<dl>";
   for (const [date, data] of Object.entries(days)) {
-    day = moment(date);
+    day = new Date(date);
 
-    if (moment().dayOfYear() == day.dayOfYear()) {
+    const nowDayOfYear = getDayOfYear(new Date());
+    const dayDayOfYear = getDayOfYear(day);
+    
+    if (nowDayOfYear == dayDayOfYear) {
       dayTitle = "Today";
-    } else if (moment().dayOfYear() + 1 == day.dayOfYear()) {
+    } else if (nowDayOfYear + 1 == dayDayOfYear) {
       dayTitle = "Tomorrow";
-    } else if (day.dayOfYear() >= moment().dayOfYear() + 7) {
-      dayTitle = day.format("ddd D");
-      dayTitle += "<sup>" + dateOrdinal(day) + "</sup>";
+    } else if (dayDayOfYear >= nowDayOfYear + 7) {
+      dayTitle = formatDate(day, "ddd D");
+      dayTitle += "<sup>" + dateOrdinal(day.getDate()) + "</sup>";
     } else {
-      dayTitle = day.format("ddd D");
-      dayTitle += "<sup>" + dateOrdinal(day) + "</sup>";
+      dayTitle = formatDate(day, "ddd D");
+      dayTitle += "<sup>" + dateOrdinal(day.getDate()) + "</sup>";
     }
-    debug("Start Day " + day.format("YYYY-MM-DD"));
+    debug("Start Day " + formatDate(day, "YYYY-MM-DD"));
     debug(data);
     output += "<dt>" + dayTitle + ": ";
     var allday_index = 0;
@@ -303,8 +273,8 @@ updateNextUp = function () {
       this_event = data.events[i];
       debug("Event: " + this_event.title);
 
-      starts = moment(this_event.start);
-      ends = moment(this_event.end);
+      starts = new Date(this_event.start);
+      ends = new Date(this_event.end);
       classes = "event ";
 
       if (this_event.calendars && this_event.calendars.length > 0) {
@@ -313,10 +283,10 @@ updateNextUp = function () {
         }
         classes += "txtcal-" + this_event.calendars.join("-");
       }
-      if (moment().dayOfYear() == starts.dayOfYear()) {
+      if (getDayOfYear(new Date()) == getDayOfYear(starts)) {
         classes += " todayEvent";
       }
-      until = "(for " + moment.duration(starts.diff(ends)).humanize() + ")";
+      until = "(for " + humanizeDuration(Math.abs(ends - starts)) + ")";
       output +=
         '<dd class="' +
         classes +
@@ -328,7 +298,7 @@ updateNextUp = function () {
         encodeURI(JSON.stringify(this_event)) +
         '">' +
         '<span class="event_dt">' +
-        starts.format("HH:mm") +
+        formatDate(starts, "HH:mm") +
         "</span> " +
         '<span class="event_title">' +
         this_event.title +
@@ -355,37 +325,8 @@ updateNextUp = function () {
 
 function update_datetime() {
   now = new Date();
-  mins = now.getMinutes();
-  hours = now.getHours();
-  if (mins < 10) {
-    mins = "0" + mins;
-  }
-  if (hours < 10) {
-    hours = "0" + hours;
-  }
-  time = hours + ":" + mins;
-
-  var options = {
-    weekday: "long",
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  };
-  const o_date = new Intl.DateTimeFormat("en", options);
-  const f_date = (m_ca, m_it) => Object({ ...m_ca, [m_it.type]: m_it.value });
-  const m_date = o_date.formatToParts().reduce(f_date, {});
-
-  const today = m_date;
-
-  strToday =
-    today.weekday +
-    " " +
-    today.month +
-    " " +
-    today.day +
-    "<sup>" +
-    dateOrdinal(today.day) +
-    "</sup>";
+  time = formatTime(now);
+  strToday = formatDateWithOrdinal(now);
 
   $("#date").html(strToday);
   $("#time").html(time);
@@ -399,20 +340,20 @@ function update_datetime() {
 }
 
 function update_until() {
-  mnow = moment();
+  mnow = new Date();
 
   $(".todayEvent").each(function () {
     let text = "";
     thisEvent = $(this);
-    thisends = moment(thisEvent.attr("eventends"));
-    thisstarts = moment(thisEvent.attr("eventstarts"));
-    if (now > thisends) {
+    thisends = new Date(thisEvent.attr("eventends"));
+    thisstarts = new Date(thisEvent.attr("eventstarts"));
+    if (mnow > thisends) {
       thisEvent.hide();
-    } else if (thisstarts > now) {
-      duration = moment.duration(thisstarts.diff(thisends)).humanize();
-      text = thisstarts.fromNow() + " for " + duration;
-    } else if (thisends > now) {
-      text = "ends " + thisends.fromNow();
+    } else if (thisstarts > mnow) {
+      duration = humanizeDuration(Math.abs(thisends - thisstarts));
+      text = fromNow(thisstarts) + " for " + duration;
+    } else if (thisends > mnow) {
+      text = "ends " + fromNow(thisends);
     }
 
     $(".until", thisEvent).html("(" + text + ")");
@@ -425,9 +366,9 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
     "Updating " +
       calendarUrl +
       " from " +
-      start.toDate() +
+      start +
       " to " +
-      end.toDate() +
+      end +
       " in " +
       timezone +
       " as " +
@@ -472,7 +413,7 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
       a_month = a_day * 28;
       end = new Date(new Date().getTime() + a_month);
 
-      var rangeStart = ICAL.Time.fromJSDate(start.toDate());
+      var rangeStart = ICAL.Time.fromJSDate(start);
       var rangeEnd = ICAL.Time.fromJSDate(end);
       var all_day_minutes = 60 * 24;
 
@@ -610,11 +551,11 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 }
 
 function setup_calender() {
-  two_weeks = moment().add(30, "d");
+  two_weeks = addDays(new Date(), 30);
 
   $.get(
     "/all-calendars.php?end=" +
-      two_weeks.format("YYYY-MM-DD") +
+      formatDate(two_weeks, "YYYY-MM-DD") +
       "&version=" +
       VERSION,
     calendarUpdateCallback
@@ -623,7 +564,7 @@ function setup_calender() {
   // <iCal Calenders>
 
   for (const [name, cal] of Object.entries(ICAL_CALENDARS)) {
-    update_ical(cal.proxy_url, moment(), two_weeks, "GMT", name, updateNextUp);
+    update_ical(cal.proxy_url, new Date(), two_weeks, "GMT", name, updateNextUp);
   }
 
   //</ iCal Calenders>
