@@ -47,10 +47,12 @@ var Docket = {
 	/**
 	 * Setup event handlers
 	 */
-	setupEventHandlers: function () {
-		var datetimeEl = document.getElementById("datetime");
+	setupEventHandlers: () => {
+		var datetimeEl;
+
+		datetimeEl = document.getElementById("datetime");
 		if (datetimeEl) {
-			datetimeEl.addEventListener("click", function () {
+			datetimeEl.addEventListener("click", () => {
 				window.location.reload(true);
 			});
 		}
@@ -60,22 +62,20 @@ var Docket = {
 	 * Start application timers
 	 */
 	startTimers: function () {
-		var self = this;
-
 		// Store interval IDs for cleanup
 		this.intervals = [];
 
 		// Hourly timer for potential maintenance tasks
 		this.intervals.push(
-			window.setInterval(function () {
-				debug("Hourly maintenance check");
+			window.setInterval(() => {
+				NotificationUtils.debug("Hourly maintenance check");
 				// Could be used for cache cleanup, timezone updates, etc.
 			}, this.config.hourlyIntervalMs),
 		);
 
 		// Regular updates (5 seconds)
 		this.intervals.push(
-			window.setInterval(function () {
+			window.setInterval(() => {
 				DocketUI.updateDateTime();
 				DocketUI.updateUntil();
 				DocketUI.updateTheme();
@@ -84,15 +84,14 @@ var Docket = {
 
 		// Refresh timer with circular progress
 		this.intervals.push(
-			window.setInterval(function () {
+			window.setInterval(() => {
 				if (
-					CircleProgress.trackPercent <=
-					Docket.constants.PROGRESS_THRESHOLD
+					CircleProgress.trackPercent <= Docket.constants.PROGRESS_THRESHOLD
 				) {
 					CircleProgress.animate(CircleProgress.trackPercent, "countdown");
-					CircleProgress.trackPercent += 1 / self.config.secondsPerRefresh;
+					CircleProgress.trackPercent += 1 / this.config.secondsPerRefresh;
 				} else {
-					debug("Refreshing");
+					NotificationUtils.debug("Refreshing");
 					CircleProgress.trackPercent = 0;
 					DocketCalendar.setup();
 				}
@@ -105,7 +104,7 @@ var Docket = {
 	 */
 	cleanup: function () {
 		if (this.intervals) {
-			this.intervals.forEach(function (intervalId) {
+			this.intervals.forEach((intervalId) => {
 				clearInterval(intervalId);
 			});
 			this.intervals = [];
@@ -115,10 +114,10 @@ var Docket = {
 	/**
 	 * Error handling
 	 */
-	handleError: function (error) {
+	handleError: (error) => {
 		console.log("--- Error Follows:");
 		console.log(error);
-	}
+	},
 };
 
 // Initialize circle progress and start application
@@ -131,36 +130,42 @@ if (document.getElementById("countdown")) {
  * Uses retry logic to ensure all necessary DOM elements are available
  */
 function initWhenReady() {
+	var requiredElements, allPresent;
+
 	// Check if essential DOM elements exist
-	var requiredElements = ['datetime', 'nextUp'];
-	var allPresent = requiredElements.every(function(id) {
-		return document.getElementById(id) !== null;
-	});
-	
+	requiredElements = ["datetime", "nextUp"];
+	allPresent = requiredElements.every(
+		(id) => document.getElementById(id) !== null,
+	);
+
 	if (allPresent) {
 		Docket.init();
 	} else {
 		// Retry in a short time if elements aren't ready
-		debug('Required DOM elements not ready, retrying...');
+		NotificationUtils.debug("Required DOM elements not ready, retrying...");
 		// Show warning if we've been retrying for too long
 		if (!initWhenReady.retryCount) initWhenReady.retryCount = 0;
 		initWhenReady.retryCount++;
-		if (initWhenReady.retryCount > 100) { // After 1 second of retries
-			NotificationUtils.warning('Some page elements are missing. Calendar may not work properly.', 5000);
-			console.warn('Required DOM elements still not ready after 100 retries');
+		if (initWhenReady.retryCount > 100) {
+			// After 1 second of retries
+			NotificationUtils.warning(
+				"Some page elements are missing. Calendar may not work properly.",
+				5000,
+			);
+			console.warn("Required DOM elements still not ready after 100 retries");
 			return;
 		}
 		setTimeout(initWhenReady, 10);
 	}
 }
 
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', initWhenReady);
+if (document.readyState === "loading") {
+	document.addEventListener("DOMContentLoaded", initWhenReady);
 } else {
 	initWhenReady();
 }
 
 // Cleanup on page unload
-window.addEventListener('beforeunload', function() {
+window.addEventListener("beforeunload", () => {
 	Docket.cleanup();
 });

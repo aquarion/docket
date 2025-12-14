@@ -20,14 +20,16 @@ var CircleProgress = {
 	 * @param {string} id - Canvas element ID
 	 */
 	drawCircle: function (id) {
-		var canvas = document.getElementById(id);
+		var canvas, context;
+
+		canvas = document.getElementById(id);
 		if (!canvas) {
-			NotificationUtils.warning('Canvas element not found: ' + id);
+			NotificationUtils.warning("Canvas element not found: " + id);
 			return;
 		}
-		var context = canvas.getContext("2d");
+		context = canvas.getContext("2d");
 		if (!context) {
-			NotificationUtils.warning('Could not get 2d context for canvas: ' + id);
+			NotificationUtils.warning("Could not get 2d context for canvas: " + id);
 			return;
 		}
 		this.x = canvas.width / 2;
@@ -46,8 +48,10 @@ var CircleProgress = {
 	 * @param {string} id - Canvas element ID
 	 */
 	animate: function (current, id) {
-		var canvas = document.getElementById(id);
-		var context = canvas.getContext("2d");
+		var canvas, context;
+
+		canvas = document.getElementById(id);
+		context = canvas.getContext("2d");
 
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		context.beginPath();
@@ -57,8 +61,8 @@ var CircleProgress = {
 			this.radius,
 			-this.quart,
 			this.circ * current - this.quart,
-			false
+			false,
 		);
 		context.stroke();
-	}
+	},
 };

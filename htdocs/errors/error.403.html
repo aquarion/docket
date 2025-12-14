@@ -6,7 +6,6 @@
   <title>403 Forbidden</title>
   <meta http-equiv="refresh" content="30"> <!-- Auto refresh every 30 seconds -->
   <style src="static/style.css"></style>
-  </style>
 </head>
 <body>
   <h1>Forbidden</h1>
@@ -14,7 +13,7 @@
   <script>
     var countdownElement = document.getElementById("countdown");
     var countdown = 30;
-    var countdownInterval = setInterval(function() {
+    var countdownInterval = setInterval(() => {
       countdown--;
       countdownElement.textContent = countdown;
       if (countdown <= 0) {

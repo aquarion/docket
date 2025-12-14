@@ -40,27 +40,27 @@
 		<!-- Structured Data -->
 		<script type="application/ld+json">
 			{
-															"@context": "https://schema.org",
-															"@type": "WebApplication",
-															"name": "Docket",
-															"description": "Personal Calendar Dashboard",
-															"applicationCategory": "ProductivityApplication",
-															"operatingSystem": "Any"
-														}
+																					"@context": "https://schema.org",
+																					"@type": "WebApplication",
+																					"name": "Docket",
+																					"description": "Personal Calendar Dashboard",
+																					"applicationCategory": "ProductivityApplication",
+																					"operatingSystem": "Any"
+																				}
 		</script>
 
 		<!-- Stylesheets -->
 		<link href="static/style.css" rel="stylesheet">
 		<link href="static/accessibility.css" rel="stylesheet">
 		<link rel="stylesheet" href="./calendars.css.php?version={{ calendar_set }}">
-		<link rel="stylesheet" type="text/css" href="node_modules/toastify-js.min.css">
+		<link rel="stylesheet" type="text/css" href="static/generated/toastify.css">
 
 		{% if festival == "christmas" %}
 			<link rel='stylesheet' href='./static/generated/christmas.css'/>
 		{% endif %}
 
 		<!-- JavaScript Libraries -->
-		<script type="text/javascript" src="node_modules/toastify-js.min.js"></script>
+		<script type="text/javascript" src="static/generated/toastify.js"></script>
 		<script src='node_modules/suncalc/suncalc.js'></script>
 
 		<!-- Application Scripts -->

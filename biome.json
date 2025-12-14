@@ -7,12 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": [
-			"**",
-			"!vendor/**",
-			"!node_modules/**",
-			"!htdocs/static/snowstorm/**"
-		]
+		"includes": ["**", "!vendor", "!node_modules", "!htdocs/static/snowstorm"]
 	},
 	"formatter": {
 		"enabled": true,

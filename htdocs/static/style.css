@@ -12,7 +12,7 @@ body {
 	background-size: cover;
 	background-attachment: fixed;
 	background-position: center;
-	background: #fff;
+	background-color: #fff;
 	color: #000;
 
 	-webkit-transition: all 1s ease-out; /* Saf3.2+, Chrome */
@@ -69,6 +69,14 @@ body {
 	overflow: hidden;
 }
 
+body.token img {
+	vertical-align: middle;
+	border: 2px solid;
+	border-color: #d2d2d2 #353535 #353535 #d2d2d2;
+	margin-right: 0.5em;
+	background-color: #c5c5c5;
+}
+
 #rightbar img {
 	/*max-width: 100%;*/
 	float: right;
@@ -80,7 +88,7 @@ body {
 }
 
 .fc-event {
-	font-size: 10pt !important;
+	font-size: 10pt;
 }
 
 .marker {
@@ -93,12 +101,12 @@ body {
 }
 
 body.nighttime {
-	background: #000;
+	background-color: #000;
 	color: #aaa;
 }
 
 body.nighttime .fc-today {
-	background-color: #333 !important;
+	background-color: #333;
 	color: #000;
 }
 
@@ -289,9 +297,6 @@ body > * {
 		Helvetica,
 		Arial,
 		sans-serif;
-	box-shadow: rgba(0, 0, 0, 0.5) 0px 2px 3px 0px;
-	background-color: rgb(17, 0, 170);
-	background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
 }
 
 body.token {

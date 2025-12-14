@@ -6,13 +6,18 @@
 	"dependencies": {
 		"fill-range": "^7.1.1",
 		"ical.js": "^2.1.0",
-		"noty": "^3.2.0-beta-deprecated",
 		"sass": "^1.83.0",
 		"timezones-ical-library": "^1.8.0",
-		"toastr": "^2.1.4"
+		"toastify-js": "^1.12.0"
 	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "npm run build:sass && npm run build:toastify",
+		"build:sass": "sass templates/scss/christmas.scss:htdocs/static/generated/christmas.css",
+		"build:toastify": "cp node_modules/toastify-js/src/toastify.js htdocs/static/generated/ && cp node_modules/toastify-js/src/toastify.css htdocs/static/generated/",
+		"build:watch": "sass --watch templates/scss/christmas.scss:htdocs/static/generated/christmas.css",
+		"lint": "biome check",
+		"lint:fix": "biome check --write"
 	},
 	"author": "",
 	"license": "ISC",
