@@ -251,6 +251,11 @@ body > * {
 	text-indent: 0;
 }
 
+#nextUp .until {
+	font-size: small;
+	color: #444;
+}
+
 #nextUp .txtcal-stripy .until {
 	color: rgb(191, 191, 191);
 }
@@ -263,10 +268,6 @@ body > * {
 	z-index: 100;
 }
 
-#nextUp .txtcal-stripy .until {
-	font-size: small;
-	color: #444;
-}
 
 .devmode-ribbon {
 	position: absolute;
