@@ -67,9 +67,10 @@ var Radiator = {
     // Store interval IDs for cleanup
     this.intervals = [];
 
-    // Hourly timer
+    // Hourly timer for potential maintenance tasks
     this.intervals.push(window.setInterval(function () {
-      debug("On the hour");
+      debug("Hourly maintenance check");
+      // Could be used for cache cleanup, timezone updates, etc.
     }, this.config.hourlyIntervalMs));
 
     // Regular updates (5 seconds)
@@ -245,12 +246,17 @@ Radiator.ui = {
    * @returns {string} "day" or "night"
    */
   getTimeOfDay: function() {
-    var now = new Date();
-    var sunstate = SunCalc.getTimes(now, RadiatorConfig.constants.LATITUDE, RadiatorConfig.constants.LONGITUDE);
-    
-    if (now > sunstate.sunset || now < sunstate.sunrise) {
-      return "night";
-    } else {
+    try {
+      var now = new Date();
+      var sunstate = SunCalc.getTimes(now, RadiatorConfig.constants.LATITUDE, RadiatorConfig.constants.LONGITUDE);
+      
+      if (now > sunstate.sunset || now < sunstate.sunrise) {
+        return "night";
+      } else {
+        return "day";
+      }
+    } catch (error) {
+      console.warn('Error calculating time of day, defaulting to day:', error);
       return "day";
     }
   }
@@ -829,7 +835,10 @@ if (document.getElementById("countdown")) {
   Radiator.circleProgress.drawCircle("countdown");
 }
 
-// Startup when DOM is ready
+/**
+ * Initialize application when DOM is ready and required elements exist
+ * Uses retry logic to ensure all necessary DOM elements are available
+ */
 function initWhenReady() {
   // Check if essential DOM elements exist
   var requiredElements = ['datetime', 'nextUp'];
@@ -841,6 +850,7 @@ function initWhenReady() {
     Radiator.init();
   } else {
     // Retry in a short time if elements aren't ready
+    debug('Required DOM elements not ready, retrying...');
     setTimeout(initWhenReady, 10);
   }
 }
