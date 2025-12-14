@@ -22,7 +22,7 @@ define('SEND_TEXT_ERRORS', false);
 
 require HOME_DIR . '/vendor/autoload.php';
 require HOME_DIR . '/lib/gcal.lib.php';
-require HOME_DIR . '/lib/radiator.lib.php';
+require HOME_DIR . '/lib/docket.lib.php';
 
 use GuzzleHttp\Client;
 

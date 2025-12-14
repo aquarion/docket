@@ -2,7 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/lib/gcal.lib.php';
-require __DIR__ . '/lib/radiator.lib.php';
+require __DIR__ . '/lib/docket.lib.php';
 define('SEND_JSON_ERRORS', true);
 
 

@@ -1,6 +1,7 @@
 <?php
+
 /**
- * File: Radiator.inc.php
+ * File: Docket.inc.php
  * php version 7.2
  *
  * Library file for Docket
@@ -58,9 +59,9 @@ function adjustBrightness($hex, $steps)
     // Normalize into a six character long hex string
     $hex = str_replace('#', '', $hex);
     if (strlen($hex) == 3) {
-        $hex = str_repeat(substr($hex, 0, 1), 2) . 
-               str_repeat(substr($hex, 1, 1), 2) . 
-               str_repeat(substr($hex, 2, 1), 2);
+        $hex = str_repeat(substr($hex, 0, 1), 2) .
+            str_repeat(substr($hex, 1, 1), 2) .
+            str_repeat(substr($hex, 2, 1), 2);
     }
 
     // Split into three parts: R, G and B
@@ -71,7 +72,7 @@ function adjustBrightness($hex, $steps)
         $color   = hexdec($color); // Convert to decimal
         $color   = max(0, min(255, $color + $steps)); // Adjust color
         // Make two char hex code
-        $return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); 
+        $return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT);
     }
 
     return $return;
@@ -89,9 +90,9 @@ function hexToRGBA($hex)
     // Normalize into a six character long hex string
     $hex = str_replace('#', '', $hex);
     if (strlen($hex) == 3) {
-        $hex = str_repeat(substr($hex, 0, 1), 2) . 
-               str_repeat(substr($hex, 1, 1), 2) . 
-               str_repeat(substr($hex, 2, 1), 2);
+        $hex = str_repeat(substr($hex, 0, 1), 2) .
+            str_repeat(substr($hex, 1, 1), 2) .
+            str_repeat(substr($hex, 2, 1), 2);
     }
 
     // Split into three parts: R, G and B
@@ -128,17 +129,16 @@ function RGBToCSS($color, $alpha)
 function gitBranch()
 {
 
-    $stringfromfile = file(__DIR__.'/../.git/HEAD', FILE_USE_INCLUDE_PATH);
+    $stringfromfile = file(__DIR__ . '/../.git/HEAD', FILE_USE_INCLUDE_PATH);
 
     //get the string from the array
-    $firstLine = $stringfromfile[0]; 
+    $firstLine = $stringfromfile[0];
 
     //seperate out by the "/" in the string
-    $explodedstring = explode("/", $firstLine, 3); 
+    $explodedstring = explode("/", $firstLine, 3);
 
     //get the one that is always the branch name
-    return $explodedstring[2]; 
-
+    return $explodedstring[2];
 }
 
 
@@ -151,15 +151,15 @@ function gitBranch()
  */
 function removeEmoji($text)
 {
-    $preg = '/([0-9|#][\x{20E3}])|[\x{00ae}|\x{00a9}|\x{203C}|\x{2047}|'.
-            '\x{2048}|\x{2049}|\x{3030}|\x{303D}|\x{2139}|\x{2122}|'.
-            '\x{3297}|\x{3299}][\x{FE00}-\x{FEFF}]?|[\x{2190}-\x{21FF}]'.
-            '[\x{FE00}-\x{FEFF}]?|[\x{2300}-\x{23FF}][\x{FE00}-\x{FEFF}]?|'.
-            '[\x{2460}-\x{24FF}][\x{FE00}-\x{FEFF}]?|[\x{25A0}-\x{25FF}]'.
-            '[\x{FE00}-\x{FEFF}]?|[\x{2600}-\x{27BF}][\x{FE00}-\x{FEFF}]?|'.
-            '[\x{2900}-\x{297F}][\x{FE00}-\x{FEFF}]?|[\x{2B00}-\x{2BF0}]'.
-            '[\x{FE00}-\x{FEFF}]?|[\x{1F000}-\x{1F6FF}][\x{FE00}-\x{FEFF}]'.
-            '?/u';
+    $preg = '/([0-9|#][\x{20E3}])|[\x{00ae}|\x{00a9}|\x{203C}|\x{2047}|' .
+        '\x{2048}|\x{2049}|\x{3030}|\x{303D}|\x{2139}|\x{2122}|' .
+        '\x{3297}|\x{3299}][\x{FE00}-\x{FEFF}]?|[\x{2190}-\x{21FF}]' .
+        '[\x{FE00}-\x{FEFF}]?|[\x{2300}-\x{23FF}][\x{FE00}-\x{FEFF}]?|' .
+        '[\x{2460}-\x{24FF}][\x{FE00}-\x{FEFF}]?|[\x{25A0}-\x{25FF}]' .
+        '[\x{FE00}-\x{FEFF}]?|[\x{2600}-\x{27BF}][\x{FE00}-\x{FEFF}]?|' .
+        '[\x{2900}-\x{297F}][\x{FE00}-\x{FEFF}]?|[\x{2B00}-\x{2BF0}]' .
+        '[\x{FE00}-\x{FEFF}]?|[\x{1F000}-\x{1F6FF}][\x{FE00}-\x{FEFF}]' .
+        '?/u';
     return preg_replace($preg, '', $text);
 }
 
@@ -230,7 +230,7 @@ function logException($e)
         print "<h2 style='color: rgb(190, 50, 50);'>Exception Occured:</h2>";
         print "<table style='width: 800px; display: inline-block;'>";
         print "<tr style='background-color:rgb(230,230,230);'>";
-        print "<th style='width: 80px;'>Type</th><td>" . get_class($e) 
+        print "<th style='width: 80px;'>Type</th><td>" . get_class($e)
             . "</td></tr>";
         print "<tr style='background-color:rgb(240,240,240);'>";
         print "<th>Message</th><td>{$e->getMessage()}</td></tr>";
@@ -264,17 +264,17 @@ function sendJsonError($errno, $errstr, $errfile, $errline, $e = false)
     $backtrace = debug_backtrace();
     echo json_encode(
         array(
-        'response' => 500, 
-        'message' => $errstr, 
-        'file' => $file, 
-        'line' => $errline, 
-        'backtrace' => $e->getTrace() 
+            'response' => 500,
+            'message' => $errstr,
+            'file' => $file,
+            'line' => $errline,
+            'backtrace' => $e->getTrace()
         )
     );
 
     error_log(
-        "JSON Error: [{$_SERVER['HTTP_HOST']}] {$errstr}".
-        " in {$errfile}:{$errline}"
+        "JSON Error: [{$_SERVER['HTTP_HOST']}] {$errstr}" .
+            " in {$errfile}:{$errline}"
     );
 
     die();
@@ -312,10 +312,11 @@ function clearCacheFiles($cacheLocation)
 {
     $files = [];
     if (is_string($cacheLocation)) {
-        foreach (new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($cacheLocation),
-            \RecursiveIteratorIterator::LEAVES_ONLY
-        ) as $file
+        foreach (
+            new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($cacheLocation),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            ) as $file
         ) {
             if ($file->isFile() && ($file->getFilename() != '.gitkeep')) {
                 $files[] = $file->getPathname();
@@ -325,4 +326,3 @@ function clearCacheFiles($cacheLocation)
     }
     return $files;
 }
-

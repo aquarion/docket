@@ -50,8 +50,8 @@ var NotificationUtils = {
 	 */
 	debug: function (item) {
 		if (
-			typeof RadiatorConfig !== "undefined" &&
-			RadiatorConfig.constants.DEBUG
+			typeof DocketConfig !== "undefined" &&
+			DocketConfig.constants.DEBUG
 		) {
 			console.log(item);
 		}

@@ -26,7 +26,7 @@ define('HOME_DIR', __DIR__ . '/..');
 
 require HOME_DIR . '/vendor/autoload.php';
 require HOME_DIR . '/lib/gcal.lib.php';
-require HOME_DIR . '/lib/radiator.lib.php';
+require HOME_DIR . '/lib/docket.lib.php';
 
 define('SEND_JSON_ERRORS', true);
 

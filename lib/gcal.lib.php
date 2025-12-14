@@ -5,7 +5,8 @@ $scopes = ['https://www.googleapis.com/auth/photoslibrary.readonly', 'https://ww
 
 use Google\Auth\Credentials\UserRefreshCredentials;
 
-function getGoogleCreds(){
+function getGoogleCreds()
+{
 
     global $scopes;
 
@@ -18,9 +19,7 @@ function getGoogleCreds(){
         'client_secret' =>  $creds->installed->client_secret,
     ];
 
-    return new UserRefreshCredentials($scopes, $access );
-
-
+    return new UserRefreshCredentials($scopes, $access);
 }
 /**
  * Returns an authorized API client.
@@ -28,11 +27,11 @@ function getGoogleCreds(){
  */
 function getClient($account)
 {
-    if(!$account){
+    if (!$account) {
         exit("getClient without Account");
     }
     $client = new Google_Client();
-    $client->setApplicationName('Radiator');
+    $client->setApplicationName('Docket');
     $client->addScope("https://www.googleapis.com/auth/photoslibrary.readonly");
     $client->addScope("https://www.googleapis.com/auth/calendar.readonly");
     $client->setAuthConfig(HOME_DIR . '/etc/credentials.json');
@@ -45,7 +44,7 @@ function getClient($account)
     $credentialsPath = HOME_DIR . '/etc/token_' . $account . '.json';
     if (file_exists($credentialsPath)) {
         $accessToken = json_decode(file_get_contents($credentialsPath), true);
-    } elseif(php_sapi_name() == 'cli') {
+    } elseif (php_sapi_name() == 'cli') {
         // Request authorization from the user.
         $authUrl = $client->createAuthUrl();
         printf("Open the following link in your browser:\n%s\n", $authUrl);

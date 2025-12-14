@@ -16,7 +16,7 @@ header("Content-Type: application/javascript");
 define('HOME_DIR', __DIR__ . '/..');
 
 require HOME_DIR . '/vendor/autoload.php';
-require HOME_DIR . '/lib/radiator.lib.php';
+require HOME_DIR . '/lib/docket.lib.php';
 
 $twig_config = [];
 
