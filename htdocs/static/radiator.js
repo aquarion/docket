@@ -14,6 +14,14 @@ var Radiator = {
     hourlyIntervalMs: 1000 * 60 * 60,
     secondsPerRefresh: null // Will be set from RadiatorConfig.constants.SECONDS_PER_REFRESH
   },
+  
+  // Constants
+  constants: {
+    PROGRESS_THRESHOLD: 1.02,
+    MILLISECONDS_PER_DAY: 86400000,
+    DAYS_PER_MONTH: 30, // Approximate for range calculations
+    MINUTES_PER_DAY: 1440
+  },
 
   /**
    * Initialize the application
@@ -52,22 +60,25 @@ var Radiator = {
    */
   startTimers: function() {
     var self = this;
+    
+    // Store interval IDs for cleanup
+    this.intervals = [];
 
     // Hourly timer
-    window.setInterval(function () {
+    this.intervals.push(window.setInterval(function () {
       debug("On the hour");
-    }, this.config.hourlyIntervalMs);
+    }, this.config.hourlyIntervalMs));
 
     // Regular updates (5 seconds)
-    window.setInterval(function () {
+    this.intervals.push(window.setInterval(function () {
       self.ui.updateDateTime();
       self.ui.updateUntil();
       self.ui.updateTheme();
-    }, this.config.updateIntervalMs);
+    }, this.config.updateIntervalMs));
 
     // Refresh timer with circular progress
-    window.setInterval(function () {
-      if (self.circleProgress.trackPercent <= 1.02) {
+    this.intervals.push(window.setInterval(function () {
+      if (self.circleProgress.trackPercent <= Radiator.constants.PROGRESS_THRESHOLD) {
         self.circleProgress.animate(self.circleProgress.trackPercent, "countdown");
         self.circleProgress.trackPercent += 1 / self.config.secondsPerRefresh;
       } else {
@@ -75,7 +86,19 @@ var Radiator = {
         self.circleProgress.trackPercent = 0;
         self.calendar.setup();
       }
-    }, this.config.refreshIntervalMs);
+    }, this.config.refreshIntervalMs));
+  },
+
+  /**
+   * Cleanup timers
+   */
+  cleanup: function() {
+    if (this.intervals) {
+      this.intervals.forEach(function(intervalId) {
+        clearInterval(intervalId);
+      });
+      this.intervals = [];
+    }
   }
 };
 
@@ -98,7 +121,15 @@ Radiator.circleProgress = {
    */
   drawCircle: function (id) {
     var canvas = document.getElementById(id);
+    if (!canvas) {
+      console.warn('Canvas element not found:', id);
+      return;
+    }
     var context = canvas.getContext("2d");
+    if (!context) {
+      console.warn('Could not get 2d context for canvas:', id);
+      return;
+    }
     this.x = canvas.width / 2;
     this.y = canvas.height / 2;
     this.radius = 10;
@@ -233,7 +264,7 @@ Radiator.calendar = {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.json();
       })
-      .then(this.updateCallback)
+      .then(this.updateCallback.bind(this))
       .catch(function(error) {
         console.error('Failed to fetch calendar data:', error);
       });
@@ -302,12 +333,12 @@ Radiator.calendar = {
         
         comp = ICAL.helpers.updateTimezones(comp);
         var localTimeZone = ICAL.Timezone.utcTimezone;
-        var aDay = 86400000;
-        var aMonth = aDay * 28;
-        var endRange = new Date(new Date().getTime() + aMonth);
+        var msPerDay = Radiator.constants.MILLISECONDS_PER_DAY;
+        var approxDaysInMonth = Radiator.constants.DAYS_PER_MONTH;
+        var endRange = new Date(new Date().getTime() + (msPerDay * approxDaysInMonth));
         var rangeStart = ICAL.Time.fromJSDate(start);
         var rangeEnd = ICAL.Time.fromJSDate(endRange);
-        var allDayMinutes = 60 * 24;
+        var allDayMinutes = Radiator.constants.MINUTES_PER_DAY;
         var events = [];
 
         // Process events
@@ -756,12 +787,27 @@ Radiator.events = {
    * Setup click handlers for events
    */
   setupEventClickHandlers: function() {
+    // Remove existing handlers to prevent duplicates
+    var existingElements = document.querySelectorAll("#nextUp dd, #nextUp span.day-events span");
+    for (var j = 0; j < existingElements.length; j++) {
+      existingElements[j].removeEventListener("click", this._eventClickHandler);
+    }
+    
+    // Store handler reference for removal
+    if (!this._eventClickHandler) {
+      this._eventClickHandler = function (event) {
+        console.log("Clicked on event:" + event.target.innerText);
+        try {
+          console.log(JSON.parse(decodeURI(this.getAttribute("data"))));
+        } catch (error) {
+          console.error('Error parsing event data:', error);
+        }
+      };
+    }
+    
     var elements = document.querySelectorAll("#nextUp dd, #nextUp span.day-events span");
     for (var i = 0; i < elements.length; i++) {
-      elements[i].addEventListener("click", function (event) {
-        console.log("Clicked on event:" + event.target.innerText);
-        console.log(JSON.parse(decodeURI(this.getAttribute("data"))));
-      });
+      elements[i].addEventListener("click", this._eventClickHandler);
     }
   }
 };
@@ -777,3 +823,8 @@ if (document.readyState === 'loading') {
 } else {
   Radiator.init();
 }
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+  Radiator.cleanup();
+});
