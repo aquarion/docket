@@ -2,10 +2,7 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://dailyphoto.aquarionics.com https://live.dailyphoto.aquarionics.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
-		<meta
-		name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-		<!-- script src='node_modules/ical.js/build/ical.min.js'></script -->
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 		<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
 		<script src="https://unpkg.com/ical.js@1.5.0/build/ical.min.js" crossorigin="anonymous"></script>
@@ -18,73 +15,92 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 		<link rel="apple-touch-startup-image" href="/static/icons/calendar.png">
-		<meta name="mobile-web-app-capable" content="yes">
+		<meta
+		name="mobile-web-app-capable" content="yes">
 
+		<!-- Favicons and Icons -->
+		<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png">
+		<link rel="shortcut icon" href="/static/icons/favicon.ico">
+		<link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png">
+		<link rel="mask-icon" href="/static/icons/safari-pinned-tab.svg" color="#5bbad5">
+		<link rel="manifest" href="/static/icons/site.webmanifest">
+		<meta
+		name="msapplication-config" content="/static/icons/browserconfig.xml">
 
-		<link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png?v=zXvYGBOMEg">
-		<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png?v=zXvYGBOMEg">
-		<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png?v=zXvYGBOMEg">
-		<link rel="manifest" href="/static/icons/site.webmanifest?v=zXvYGBOMEg">
-		<link rel="mask-icon" href="/static/icons/safari-pinned-tab.svg?v=zXvYGBOMEg" color="#5bbad5">
-		<link rel="shortcut icon" href="/static/icons/favicon.ico?v=zXvYGBOMEg">
-		<meta name="apple-mobile-web-app-title" content="Docket">
-		<meta name="application-name" content="Docket">
-		<meta name="msapplication-TileColor" content="#da532c">
-		<meta name="msapplication-config" content="/static/icons/browserconfig.xml?v=zXvYGBOMEg">
-		<meta name="theme-color" content="#ffffff">
+		<!-- External Resources -->
+		<link rel="preconnect" href="https://fonts.gstatic.com">
+		<link href="https://fonts.googleapis.com/css?family=Playfair Display" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Sometype+Mono&display=swap" rel="stylesheet">
 
+		<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous" async></script>
+		<script src="https://unpkg.com/ical.js@1.5.0/build/ical.min.js" crossorigin="anonymous"></script>
+		<title>Docket - Personal Calendar</title>
 
-		<title>Docket</title>
+		<!-- Structured Data -->
+		<script type="application/ld+json">
+			{
+						"@context": "https://schema.org",
+						"@type": "WebApplication",
+						"name": "Docket",
+						"description": "Personal Calendar Radiator View",
+						"applicationCategory": "ProductivityApplication",
+						"operatingSystem": "Any"
+					}
+		</script>
 
-		<link
-		href="static/style.css" rel="stylesheet">
-		{# <link href="https://dailyphoto.aquarionics.com/element.css.php?element=%23photo" rel="stylesheet"> #}
-
-
-		<link rel='stylesheet' href='./calendars.css.php?version={{ calendar_set }}'/>
-		<script src='static/date-utils.js'></script>
-		<script src='static/notification-utils.js'></script>
-		<script src='node_modules/suncalc/suncalc.js'></script>
-
-		<script type="text/javascript" src="node_modules/toastify-js.min.js"></script>
+		<!-- Stylesheets -->
+		<link href="static/style.css" rel="stylesheet">
+		<link href="static/accessibility.css" rel="stylesheet">
+		<link rel="stylesheet" href="./calendars.css.php?version={{ calendar_set }}">
 		<link rel="stylesheet" type="text/css" href="node_modules/toastify-js.min.css">
 
 		{% if festival == "christmas" %}
 			<link rel='stylesheet' href='./static/generated/christmas.css'/>
 		{% endif %}
 
+		<!-- JavaScript Libraries -->
+		<script type="text/javascript" src="node_modules/toastify-js.min.js"></script>
+		<script src='node_modules/suncalc/suncalc.js'></script>
+
+		<!-- Application Scripts -->
+		<script src='static/date-utils.js'></script>
+		<script src='static/notification-utils.js'></script>
+
 	</head>
 
-	<body class="{{ theme }}">
+	<body class="{{ theme }}" role="application" aria-label="Calendar Dashboard">
+		<a href="#main-content" class="skip-link">Skip to main content</a>
 
 		{% if festival == "christmas" %}
 			{% include 'christmas.html.twig' %}
 		{% endif %}
 
 		{% if git_branch is not empty %}
-			<div class="devmode-ribbon">
-				<a target="_blank" href="https://github.com/aquarion/radiator">Branch
-					{{ git_branch }}</a>
+			<div class="devmode-ribbon" role="banner" aria-label="Development mode indicator">
+				<a target="_blank" href="https://github.com/aquarion/radiator" rel="noopener noreferrer">
+					Branch
+					{{ git_branch }}
+				</a>
 			</div>
 		{% endif %}
-		<div id='calendar'></div>
 
-		<div id="datetime"></div>
-		<div id='nextUp'></div>
+		<main id="main-content">
+			<div id='calendar' role="img" aria-label="Calendar visualization"></div>
 
+			<div id="datetime" role="timer" aria-live="polite" aria-label="Current date and time"></div>
+			<div id='nextUp' role="region" aria-label="Upcoming events" aria-live="polite"></div>
+		</main>
 
-		<div id='switch'>
-
+		<nav id='switch' role="navigation" aria-label="View switcher">
 			{% if calendar_set == "work" %}
-				<a href="/?version=home">🏠</a>
+				<a href="/?version=home" aria-label="Switch to home calendar view">🏠</a>
 			{% else %}
-				<a href="/?version=work">🏢</a>
+				<a href="/?version=work" aria-label="Switch to work calendar view">🏢</a>
 			{% endif %}
+		</nav>
 
-		</div>
-
-
-		<canvas id="countdown" width="50" height="50"></canvas>
+		<canvas id="countdown" width="50" height="50" aria-label="Refresh countdown indicator"></canvas>
 
 		<script type="text/javascript" src="./radiator.js.php?version={{ calendar_set }}"></script>
 		<script type="text/javascript" src="./static/radiator.js"></script>
