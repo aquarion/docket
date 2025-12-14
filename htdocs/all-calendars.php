@@ -5,7 +5,7 @@
  * php version 7.2
  *
  * @category Personal
- * @package  Radiator
+ * @package  Docket
  * @author   "Nicholas Avenell" <nicholas@istic.net>
  * @license  BSD-3-Clause https://opensource.org/license/bsd-3-clause
  * @link     https://docket.hubris.house

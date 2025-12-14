@@ -40,13 +40,13 @@
 		<!-- Structured Data -->
 		<script type="application/ld+json">
 			{
-						"@context": "https://schema.org",
-						"@type": "WebApplication",
-						"name": "Docket",
-						"description": "Personal Calendar Radiator View",
-						"applicationCategory": "ProductivityApplication",
-						"operatingSystem": "Any"
-					}
+												"@context": "https://schema.org",
+												"@type": "WebApplication",
+												"name": "Docket",
+												"description": "Personal Calendar Radiator View",
+												"applicationCategory": "ProductivityApplication",
+												"operatingSystem": "Any"
+											}
 		</script>
 
 		<!-- Stylesheets -->
@@ -66,6 +66,11 @@
 		<!-- Application Scripts -->
 		<script src='static/date-utils.js'></script>
 		<script src='static/notification-utils.js'></script>
+		<script src='static/circle-progress.js'></script>
+		<script src='static/docket-ui.js'></script>
+		<script src='static/docket-calendar.js'></script>
+		<script src='static/docket-events.js'></script>
+		<script src='static/docket-main.js'></script>
 
 	</head>
 
@@ -78,7 +83,7 @@
 
 		{% if git_branch is not empty %}
 			<div class="devmode-ribbon" role="banner" aria-label="Development mode indicator">
-				<a target="_blank" href="https://github.com/aquarion/radiator" rel="noopener noreferrer">
+				<a target="_blank" href="https://github.com/aquarion/docket" rel="noopener noreferrer">
 					Branch
 					{{ git_branch }}
 				</a>
@@ -102,7 +107,6 @@
 
 		<canvas id="countdown" width="50" height="50" aria-label="Refresh countdown indicator"></canvas>
 
-		<script type="text/javascript" src="./radiator.js.php?version={{ calendar_set }}"></script>
-		<script type="text/javascript" src="./static/radiator.js"></script>
+		<script type="text/javascript" src="./docket.js.php?version={{ calendar_set }}"></script>
 	</body>
 </html>
