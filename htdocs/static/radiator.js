@@ -321,6 +321,16 @@ Radiator.calendar = {
             debug("Skipped: Filtered");
             return;
           }
+
+          if (RadiatorConfig.constants.FILTER_OUT_REGEXES) {
+            for (const regexString of RadiatorConfig.constants.FILTER_OUT_REGEXES) {
+              var regex = new RegExp(regexString);
+              if (regex.test(summary)) {
+                debug("Skipped: Filtered by regex " + regexString);
+                return;
+              }
+            }
+          }
           
           // Skip events with / prefix
           if (summary && summary[0] === "/") {
