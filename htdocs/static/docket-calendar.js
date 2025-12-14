@@ -33,7 +33,7 @@ var DocketCalendar = {
 			for (const [name, cal] of Object.entries(
 				DocketConfig.constants.ICAL_CALENDARS,
 			)) {
-				this.updateIcal(
+				DocketCalendar.updateIcal(
 					cal.proxy_url,
 					new Date(),
 					twoWeeks,
@@ -172,7 +172,7 @@ var DocketCalendar = {
 					var duration = event.duration;
 
 					if (event.isRecurring()) {
-						this.processRecurringEvent(
+						DocketCalendar.processRecurringEvent(
 							item,
 							event,
 							duration,
@@ -184,7 +184,7 @@ var DocketCalendar = {
 							events,
 						);
 					} else {
-						this.processSingleEvent(item, allDayMinutes, name, events);
+						DocketCalendar.processSingleEvent(item, allDayMinutes, name, events);
 					}
 
 					debug("/Event: " + summary);
@@ -241,7 +241,7 @@ var DocketCalendar = {
 			end.addDuration(duration);
 			var minutesLength = duration.toSeconds() / 60;
 			var title = item.getFirstPropertyValue("summary");
-			var allDay = this.determineAllDay(item, minutesLength, allDayMinutes, title);
+			var allDay = DocketCalendar.determineAllDay(item, minutesLength, allDayMinutes, title);
 
 			events.push({
 				title: title,
