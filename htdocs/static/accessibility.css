@@ -43,6 +43,6 @@ canvas:focus {
 	padding: 4px 8px;
 }
 
-.devmode-ribbon a {
+.devmode-ribbon a:link {
 	color: #ffd700;
 }

@@ -263,7 +263,7 @@ body > * {
 	z-index: 100;
 }
 
-.until {
+#nextUp .txtcal-stripy .until {
 	font-size: small;
 	color: #444;
 }
