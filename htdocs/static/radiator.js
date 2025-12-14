@@ -154,6 +154,7 @@ updateNextUp = function () {
     if (!days[startF] && end > now) {
       startF = now.format("YYYY-MM-DD");
       if (end >= now.endOf("day")) {
+        debug("Adjusting event to all day: " + this_event.title + " as it started before today");
         this_event.allDay = true;
       } else {
         start = now.endOf("day");
@@ -164,8 +165,12 @@ updateNextUp = function () {
       start.hours() == 0 &&
       start.minutes() == 0 &&
       end.hours() == 0 &&
-      end.minutes() == 0
+      end.minutes() == 0 &&
+      this_event.allDay !== true
     ) {
+      debug("Setting all day for: " + this_event.title + " as it is midnight to midnight");
+      debug(start.format() + " to " + end.format());
+
       this_event.allDay = true;
     }
 
@@ -536,13 +541,18 @@ function update_ical(calendarUrl, start, end, timezone, name, callback) {
 
             var title = item.getFirstPropertyValue("summary");
 
-            if (minutes_length >= all_day_minutes) {
+
+            if (item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") == "TRUE") {
               allDay = true;
-            } else {
-              allDay = false;
+              debug("Setting all day for: " + title + " from Microsoft Calendar flag");
+            } else if (item.getFirstPropertyValue("x-apple-allday") == "TRUE") {
+              allDay = true;
+              debug("Setting all day for: " + title + " from Apple Calendar flag");
+            } else if ( minutes_length >= all_day_minutes) {
+                console.warn("Allday flag not found for long event: " + title);
+
             }
 
-            end.addDuration(duration);
             events.push({
               title: title,
               start: next.toJSDate(),
