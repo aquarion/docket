@@ -5,7 +5,9 @@
 /**
  * Notification utility functions for user feedback and logging
  */
+// biome-ignore-start lint/correctness/noUnusedVariables: NotificationUtils is used globally
 var NotificationUtils = {
+	// biome-ignore-end lint/correctness/noUnusedVariables: NotificationUtils is used globally
 	/**
 	 * Display a warning notification
 	 * @param {string} message - Warning message to display

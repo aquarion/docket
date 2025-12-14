@@ -5,7 +5,9 @@
 /**
  * UI update and theming functions
  */
+// biome-ignore-start lint/correctness/noUnusedVariables: DocketUI is used globally
 var DocketUI = {
+	// biome-ignore-end lint/correctness/noUnusedVariables: DocketUI is used globally
 	/**
 	 * Update date and time display
 	 */
@@ -23,13 +25,7 @@ var DocketUI = {
 		if (dateEl) dateEl.innerHTML = strToday;
 		if (timeEl) timeEl.innerHTML = time;
 		if (datetimeEl) {
-			datetimeEl.innerHTML =
-				'<div class="dt_time">' +
-				time +
-				"</div>" +
-				'<div class="dt_date">' +
-				strToday +
-				"</div>";
+			datetimeEl.innerHTML = `<div class="dt_time">${time}</div><div class="dt_date">${strToday}</div>`;
 		}
 	},
 

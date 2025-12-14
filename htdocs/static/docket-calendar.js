@@ -5,12 +5,15 @@
 /**
  * Calendar management functions for fetching and processing calendar data
  */
+
+// biome-ignore-start lint/correctness/noUnusedVariables: DocketCalendar is used globally
 var DocketCalendar = {
+	// biome-ignore-end lint/correctness/noUnusedVariables: DocketCalendar is used globally
 	/**
 	 * Setup and refresh calendar data
 	 */
 	setup: function () {
-		var twoWeeks, name, cal;
+		var twoWeeks, _name, _cal;
 
 		twoWeeks = DateUtils.addDays(new Date(), 30);
 
@@ -22,7 +25,7 @@ var DocketCalendar = {
 				DocketConfig.constants.VERSION,
 		)
 			.then((response) => {
-				if (!response.ok) throw new Error("HTTP " + response.status);
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
 				return response.json();
 			})
 			.then(this.updateCallback.bind(this))
@@ -67,24 +70,13 @@ var DocketCalendar = {
 	 */
 	updateIcal: (calendarUrl, start, end, timezone, name, callback) => {
 		NotificationUtils.debug(
-			"Updating " +
-				calendarUrl +
-				" from " +
-				start +
-				" to " +
-				end +
-				" in " +
-				timezone +
-				" as " +
-				name,
+			`Updating ${calendarUrl} from ${start} to ${end} in ${timezone} as ${name}`,
 		);
 
 		fetch(calendarUrl)
 			.then((response) => {
 				if (!response.ok)
-					throw new Error(
-						"HTTP " + response.status + ": " + response.statusText,
-					);
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 				return response.text();
 			})
 			.then((data) => {
@@ -123,7 +115,7 @@ var DocketCalendar = {
 				if (comp.getFirstSubcomponent("vtimezone")) {
 					for (const tzComponent of comp.getAllSubcomponents("vtimezone")) {
 						tzid = tzComponent.getFirstPropertyValue("tzid");
-						NotificationUtils.debug("Registering Timezone: " + tzid);
+						NotificationUtils.debug(`Registering Timezone: ${tzid}`);
 
 						tz = new ICAL.Timezone({
 							tzid: tzid,
@@ -152,9 +144,7 @@ var DocketCalendar = {
 					event = new ICAL.Event(item);
 					summary = item.getFirstPropertyValue("summary");
 
-					NotificationUtils.debug("Event: " + summary);
-
-					// Skip private events
+					NotificationUtils.debug(`Event: ${summary}`); // Skip private events
 					if (item.getFirstPropertyValue("class") === "PRIVATE") {
 						NotificationUtils.debug("Skipped: Private");
 						continue;
@@ -182,7 +172,7 @@ var DocketCalendar = {
 							regex = new RegExp(regexString);
 							if (regex.test(summary)) {
 								NotificationUtils.debug(
-									"Skipped: Filtered by regex " + regexString,
+									`Skipped: Filtered by regex ${regexString}`,
 								);
 								skipEvent = true;
 								break;
@@ -219,7 +209,7 @@ var DocketCalendar = {
 							events,
 						);
 					}
-					NotificationUtils.debug("/Event: " + summary);
+					NotificationUtils.debug(`/Event: ${summary}`);
 				}
 
 				DocketConfig.allEvents[calendarUrl] = events;
@@ -266,14 +256,14 @@ var DocketCalendar = {
 			next = next.convertToZone(localTimeZone);
 
 			if (next.compare(rangeStart) < 0) {
-				NotificationUtils.debug(">> Too early " + rangeStart.toString());
+				NotificationUtils.debug(`>> Too early ${rangeStart.toString()}`);
 				continue;
 			} else if (next.compare(rangeEnd) > 0) {
-				NotificationUtils.debug(">> Too late " + rangeEnd.toString());
+				NotificationUtils.debug(`>> Too late ${rangeEnd.toString()}`);
 				break;
 			}
 
-			NotificationUtils.debug("Repeating " + next.toString());
+			NotificationUtils.debug(`Repeating ${next.toString()}`);
 
 			end = next.clone();
 			end.addDuration(duration);
@@ -325,12 +315,12 @@ var DocketCalendar = {
 	determineAllDay: (item, minutesLength, allDayMinutes, title) => {
 		if (item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") === "TRUE") {
 			NotificationUtils.debug(
-				"Setting all day for: " + title + " from Microsoft Calendar flag",
+				`Setting all day for: ${title} from Microsoft Calendar flag`,
 			);
 			return true;
 		} else if (item.getFirstPropertyValue("x-apple-allday") === "TRUE") {
 			NotificationUtils.debug(
-				"Setting all day for: " + title + " from Apple Calendar flag",
+				`Setting all day for: ${title} from Apple Calendar flag`,
 			);
 			return true;
 		} else if (minutesLength >= allDayMinutes) {

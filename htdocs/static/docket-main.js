@@ -6,7 +6,9 @@
  * Main Docket application controller
  * Coordinates all modules and manages application lifecycle
  */
+// biome-ignore-start lint/correctness/noUnusedVariables: Docket is used globally
 var Docket = {
+	// biome-ignore-end lint/correctness/noUnusedVariables: Docket is used globally
 	// Configuration
 	config: {
 		refreshIntervalMs: 1000,

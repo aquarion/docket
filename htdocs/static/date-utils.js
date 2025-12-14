@@ -5,7 +5,9 @@
  * Date utility functions to replace moment.js functionality
  * Organized as an object for better namespace management
  */
+// biome-ignore-start lint/correctness/noUnusedVariables: DateUtils is used globally
 var DateUtils = {
+	// biome-ignore-end lint/correctness/noUnusedVariables: DateUtils is used globally
 	/**
 	 * Get ordinal suffix for a date (st, nd, rd, th)
 	 * @param {number} d - Day of month (1-31)

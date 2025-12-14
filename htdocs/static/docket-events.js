@@ -5,7 +5,9 @@
 /**
  * Event processing and display functions
  */
+// biome-ignore-start lint/correctness/noUnusedVariables: DocketEvents is used globally
 var DocketEvents = {
+	// biome-ignore-end lint/correctness/noUnusedVariables: DocketEvents is used globally
 	/**
 	 * Update the next upcoming events display
 	 */

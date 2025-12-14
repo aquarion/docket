@@ -5,7 +5,9 @@
 /**
  * Circle progress animation functionality for countdown display
  */
+// biome-ignore-start lint/correctness/noUnusedVariables: CircleProgress is used globally
 var CircleProgress = {
+	// biome-ignore-end lint/correctness/noUnusedVariables: CircleProgress is used globally
 	trackPercent: 0,
 	x: 0,
 	y: 0,
@@ -24,12 +26,12 @@ var CircleProgress = {
 
 		canvas = document.getElementById(id);
 		if (!canvas) {
-			NotificationUtils.warning("Canvas element not found: " + id);
+			NotificationUtils.warning(`Canvas element not found: ${id}`);
 			return;
 		}
 		context = canvas.getContext("2d");
 		if (!context) {
-			NotificationUtils.warning("Could not get 2d context for canvas: " + id);
+			NotificationUtils.warning(`Could not get 2d context for canvas: ${id}`);
 			return;
 		}
 		this.x = canvas.width / 2;
