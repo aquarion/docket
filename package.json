@@ -6,6 +6,7 @@
   "dependencies": {
     "fill-range": "^7.1.1",
     "ical.js": "^2.1.0",
+    "noty": "^3.2.0-beta-deprecated",
     "sass": "^1.83.0",
     "timezones-ical-library": "^1.8.0",
     "toastr": "^2.1.4"

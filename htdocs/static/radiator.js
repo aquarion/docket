@@ -28,11 +28,6 @@ var Radiator = {
    */
   init: function() {
     this.config.secondsPerRefresh = RadiatorConfig.constants.SECONDS_PER_REFRESH || 1800;
-    
-    // Setup toastr
-    if (typeof toastr !== 'undefined') {
-      toastr.options.closeDuration = 300;
-    }
 
     // Initialize UI
     this.ui.updateDateTime();
@@ -128,14 +123,12 @@ Radiator.circleProgress = {
   drawCircle: function (id) {
     var canvas = document.getElementById(id);
     if (!canvas) {
-      if (typeof toastr !== 'undefined') toastr.warning('Canvas element not found: ' + id);
-      console.warn('Canvas element not found:', id);
+      NotificationUtils.warning('Canvas element not found: ' + id);
       return;
     }
     var context = canvas.getContext("2d");
     if (!context) {
-      if (typeof toastr !== 'undefined') toastr.warning('Could not get 2d context for canvas: ' + id);
-      console.warn('Could not get 2d context for canvas:', id);
+      NotificationUtils.warning('Could not get 2d context for canvas: ' + id);
       return;
     }
     this.x = canvas.width / 2;
@@ -260,7 +253,7 @@ Radiator.ui = {
         return "day";
       }
     } catch (error) {
-      if (typeof toastr !== 'undefined') toastr.warning('Error calculating day/night theme, using day mode');
+      NotificationUtils.warning('Error calculating day/night theme, using day mode');
       console.warn('Error calculating time of day, defaulting to day:', error);
       return "day";
     }
@@ -330,7 +323,7 @@ Radiator.calendar = {
           var comp = new ICAL.Component(jcalData);
           var eventComps = comp.getAllSubcomponents("vevent");
         } catch (error) {
-          if (typeof toastr !== 'undefined') toastr.warning("Couldn't parse calendar: " + name);
+          NotificationUtils.warning("Couldn't parse calendar: " + name);
           console.warn("Couldn't Parse " + calendarUrl);
           return;
         }
@@ -423,8 +416,7 @@ Radiator.calendar = {
       .catch(function (error) {
         var errortext = error.message;
         
-        if (typeof toastr !== 'undefined') toastr.error("Failed to load calendar: " + name + " - " + errortext);
-        console.error("Failed to load calendar: " + name + " - " + errortext);
+        NotificationUtils.error("Failed to load calendar: " + name + " - " + errortext);
       });
   },
 
@@ -504,8 +496,7 @@ Radiator.calendar = {
       debug("Setting all day for: " + title + " from Apple Calendar flag");
       return true;
     } else if (minutesLength >= allDayMinutes) {
-      if (typeof toastr !== 'undefined') toastr.warning("All-day flag not found for long event: " + title);
-      console.warn("Allday flag not found for long event: " + title);
+      NotificationUtils.warning("All-day flag not found for long event: " + title);
       return false;
     }
     return false;
@@ -862,7 +853,7 @@ function initWhenReady() {
     if (!initWhenReady.retryCount) initWhenReady.retryCount = 0;
     initWhenReady.retryCount++;
     if (initWhenReady.retryCount > 100) { // After 1 second of retries
-      if (typeof toastr !== 'undefined') toastr.warning('Some page elements are missing. Calendar may not work properly.');
+      NotificationUtils.warning('Some page elements are missing. Calendar may not work properly.', 5000);
       console.warn('Required DOM elements still not ready after 100 retries');
       return;
     }
