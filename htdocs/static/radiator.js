@@ -8,22 +8,19 @@
  * Main application object for managing calendar display and interactions
  */
 var Radiator = {
-  // Application state
-  allEvents: {},
-  
   // Configuration
   config: {
     refreshIntervalMs: 1000,
     updateIntervalMs: 5000,
     hourlyIntervalMs: 1000 * 60 * 60,
-    secondsPerRefresh: null // Will be set from global SECONDS_PER_REFRESH
+    secondsPerRefresh: null // Will be set from RadiatorConfig.constants.SECONDS_PER_REFRESH
   },
 
   /**
    * Initialize the application
    */
   init: function() {
-    this.config.secondsPerRefresh = window.SECONDS_PER_REFRESH || 1800;
+    this.config.secondsPerRefresh = RadiatorConfig.constants.SECONDS_PER_REFRESH || 1800;
     
     // Setup toastr
     toastr.options.closeDuration = 300;
@@ -196,6 +193,7 @@ Radiator.ui = {
     } else if (timeOfDay === "day" && !body.hasClass("daytime")) {
       body.removeClass("nighttime").addClass("daytime");
     }
+    return timeOfDay;
   },
 
   /**
@@ -204,7 +202,7 @@ Radiator.ui = {
    */
   getTimeOfDay: function() {
     var now = new Date();
-    var sunstate = SunCalc.getTimes(now, window.LATITUDE, window.LONGITUDE);
+    var sunstate = SunCalc.getTimes(now, RadiatorConfig.constants.LATITUDE, RadiatorConfig.constants.LONGITUDE);
     
     if (now > sunstate.sunset || now < sunstate.sunrise) {
       return "night";
@@ -227,13 +225,13 @@ Radiator.calendar = {
     // Fetch JSON calendar data
     $.get(
       "/all-calendars.php?end=" + formatDate(twoWeeks, "YYYY-MM-DD") + 
-      "&version=" + window.VERSION,
+      "&version=" + RadiatorConfig.constants.VERSION,
       this.updateCallback
     );
 
     // Fetch iCal calendar data
-    if (window.ICAL_CALENDARS) {
-      for (const [name, cal] of Object.entries(window.ICAL_CALENDARS)) {
+    if (RadiatorConfig.constants.ICAL_CALENDARS) {
+      for (const [name, cal] of Object.entries(RadiatorConfig.constants.ICAL_CALENDARS)) {
         this.updateIcal(cal.proxy_url, new Date(), twoWeeks, "GMT", name, Radiator.events.updateNextUp);
       }
     }
@@ -244,7 +242,7 @@ Radiator.calendar = {
    * @param {Object} data - Calendar data
    */
   updateCallback: function(data, info, third) {
-    Radiator.allEvents.json_cals = data;
+    RadiatorConfig.allEvents.json_cals = data;
     Radiator.events.updateNextUp();
   },
 
@@ -319,7 +317,7 @@ Radiator.calendar = {
           }
           
           // Skip filtered events
-          if (window.filter_out_list && window.filter_out_list.indexOf(summary) !== -1) {
+          if (RadiatorConfig.constants.FILTER_OUT_LIST && RadiatorConfig.constants.FILTER_OUT_LIST.indexOf(summary) !== -1) {
             debug("Skipped: Filtered");
             return;
           }
@@ -342,7 +340,7 @@ Radiator.calendar = {
           debug("/Event: " + summary);
         });
 
-        Radiator.allEvents[calendarUrl] = events;
+        RadiatorConfig.allEvents[calendarUrl] = events;
         Radiator.events.updateNextUp();
         callback(events);
       })
@@ -463,7 +461,7 @@ Radiator.events = {
 
     // Combine all events from different sources
     var events = [];
-    for (const [set, setEvents] of Object.entries(Radiator.allEvents)) {
+    for (const [set, setEvents] of Object.entries(RadiatorConfig.allEvents)) {
       events = events.concat(setEvents);
     }
 
@@ -517,7 +515,7 @@ Radiator.events = {
       }
 
       if (thisEvent.allDay) {
-        this.processAllDayEvent(thisEvent, start, end, now, days);
+        Radiator.events.processAllDayEvent(thisEvent, start, end, now, days);
       } else if (days[startF]) {
         debug("Adding event: " + thisEvent.title + " to " + startF);
         days[startF].events.push(thisEvent);
@@ -527,8 +525,8 @@ Radiator.events = {
       }
     }
 
-    this.renderEventsList(days);
-    this.setupEventClickHandlers();
+    Radiator.events.renderEventsList(days);
+    Radiator.events.setupEventClickHandlers();
     
     // Parse emojis and update relative times
     twemoji.parse(document.body);
@@ -592,7 +590,7 @@ Radiator.events = {
     
     for (const [date, data] of Object.entries(days)) {
       var day = new Date(date);
-      var dayTitle = this.getDayTitle(day);
+      var dayTitle = Radiator.events.getDayTitle(day);
       
       debug("Start Day " + formatDate(day, "YYYY-MM-DD"));
       debug(data);
@@ -600,14 +598,14 @@ Radiator.events = {
       output += "<dt>" + dayTitle + ": ";
       
       // Merge duplicate all-day events
-      this.mergeAllDayEvents(data);
+      Radiator.events.mergeAllDayEvents(data);
       
       // Render all-day events
-      output += this.renderAllDayEvents(data.allday);
+      output += Radiator.events.renderAllDayEvents(data.allday);
       output += "</dt>";
       
       // Render timed events
-      output += this.renderTimedEvents(data.events);
+      output += Radiator.events.renderTimedEvents(data.events);
     }
     
     output += "</dl>";
@@ -667,7 +665,7 @@ Radiator.events = {
     
     for (var i = 0; i < alldayEvents.length; i++) {
       var allday = alldayEvents[i];
-      var classes = this.getEventClasses(allday);
+      var classes = Radiator.events.getEventClasses(allday);
       
       things.push('<span class="' + classes + '" data="' + 
                  encodeURI(JSON.stringify(allday)) + '">' + 
@@ -696,7 +694,7 @@ Radiator.events = {
 
       var starts = new Date(thisEvent.start);
       var ends = new Date(thisEvent.end);
-      var classes = "event " + this.getEventClasses(thisEvent);
+      var classes = "event " + Radiator.events.getEventClasses(thisEvent);
 
       if (getDayOfYear(new Date()) === getDayOfYear(starts)) {
         classes += " todayEvent";

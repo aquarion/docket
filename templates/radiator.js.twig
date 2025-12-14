@@ -1,43 +1,64 @@
-var allEvents = {}
+/**
+ * Application configuration and constants
+ */
+var RadiatorConfig = {
+  // Global application state
+  allEvents: {},
 
-// @Todo This should be configurable
-var filter_out_list = ["Focus time", "Take a break", "Catch up on messages"]
-var filter_out_regexes = ["^\/",]
-
-const params = new URLSearchParams(window.location.search);
-const VERSION = params.get("version");
-const DEBUG = {% if git_branch is not empty %} true {% else %} false {% endif %};
-
-function debug(item){
-    if(DEBUG){
-        console.log(item)
-    }
-}
-
-
-const UNTIL_CALENDAR_FORMAT = {
-    sameDay: '[Today]',
-    nextDay: '[Tomorrow]',
-    nextWeek: 'dddd',
-    lastDay: '[Yesterday]',
-    lastWeek: '[Last] dddd',
-    sameElse: 'DD/MM/YYYY'
-}
-
-
-const ICAL_CALENDARS = {
-{% for name, cal in ical_calendars %}
-    "{{ name }}" : {
-        "color" : "{{ cal.color }}",
-        'name' : "{{ cal.name }}",
-        'src'  : "{{ cal.src }}",
-        'emoji' : '{{ cal.emoji }}',
-        'proxy_url' : "./icalproxy.php?cal={{ name }}&version=" + VERSION
+  // Application constants
+  constants: {
+    VERSION: (new URLSearchParams(window.location.search)).get("version"),
+    DEBUG: {% if git_branch is not empty %} true {% else %} false {% endif %},
+    LATITUDE: "{{ latitude }}",
+    LONGITUDE: "{{ longitude }}",
+    SECONDS_PER_REFRESH: 300, // in seconds. 300 == 5 minutes
+    
+    // Filter configuration
+    FILTER_OUT_LIST: ["Focus time", "Take a break", "Catch up on messages"],
+    FILTER_OUT_REGEXES: ["^\/"],
+    
+    // Calendar format configuration
+    UNTIL_CALENDAR_FORMAT: {
+      sameDay: '[Today]',
+      nextDay: '[Tomorrow]',
+      nextWeek: 'dddd',
+      lastDay: '[Yesterday]',
+      lastWeek: '[Last] dddd',
+      sameElse: 'DD/MM/YYYY'
     },
+    
+    // iCal calendars configuration
+    ICAL_CALENDARS: {
+{% for name, cal in ical_calendars %}
+      "{{ name }}": {
+        "color": "{{ cal.color }}",
+        "name": "{{ cal.name }}",
+        "src": "{{ cal.src }}",
+        "emoji": "{{ cal.emoji }}",
+        "proxy_url": "./icalproxy.php?cal={{ name }}&version=" + ((new URLSearchParams(window.location.search)).get("version") || "")
+      },
 {% endfor %}
+    }
+  }
+};
+
+/**
+ * Debug logging function
+ */
+function debug(item) {
+  if (RadiatorConfig.constants.DEBUG) {
+    console.log(item);
+  }
 }
-
-const LATITUDE = "{{ latitude }}";
-const LONGITUDE = "{{ longitude }}";
-
-const SECONDS_PER_REFRESH = 300; // in seconds. 300 == 5 minutes
+{# 
+// Backward compatibility - expose constants globally
+var allEvents = RadiatorConfig.allEvents;
+var filter_out_list = RadiatorConfig.constants.FILTER_OUT_LIST;
+var filter_out_regexes = RadiatorConfig.constants.FILTER_OUT_REGEXES;
+var VERSION = RadiatorConfig.constants.VERSION;
+var DEBUG = RadiatorConfig.constants.DEBUG;
+var UNTIL_CALENDAR_FORMAT = RadiatorConfig.constants.UNTIL_CALENDAR_FORMAT;
+var ICAL_CALENDARS = RadiatorConfig.constants.ICAL_CALENDARS;
+var LATITUDE = RadiatorConfig.constants.LATITUDE;
+var LONGITUDE = RadiatorConfig.constants.LONGITUDE;
+var SECONDS_PER_REFRESH = RadiatorConfig.constants.SECONDS_PER_REFRESH; #}
