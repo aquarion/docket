@@ -75,11 +75,14 @@ var DocketUI = {
 	/**
 	 * Update day/night theme based on sun position
 	 */
-	updateTheme: () => {
+	updateTheme: (forceTo) => {
 		var timeOfDay, body;
 
 		timeOfDay = DocketUI.getTimeOfDay();
 		body = document.body;
+		
+		if (forceTo === "day") timeOfDay = "day";
+		if (forceTo === "night") timeOfDay = "night";
 
 		if (timeOfDay === "night" && !body.classList.contains("nighttime")) {
 			body.classList.remove("daytime");
