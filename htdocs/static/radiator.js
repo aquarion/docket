@@ -281,7 +281,7 @@ updateNextUp = function () {
         classes += "txtcal-" + allday.calendars.join("-");
       }
 
-      things.push('<span class="' + classes + '">' + allday.title + "</span>");
+      things.push('<span class="' + classes + '" data="' + encodeURI(JSON.stringify(allday)) + '">' + allday.title + "</span>");
     }
     if (things.length == 0) {
       debug("No allday events");
@@ -343,7 +343,8 @@ updateNextUp = function () {
   output += "</dl>";
   $("#nextUp").html(output);
 
-  $("#nextUp dd").on("click", function (currentdd) {
+  $("#nextUp dd, #nextUp span.day-events span").on("click", function (currentdd) {
+    console.log("Clicked on event:" + currentdd.innerText);
     console.log(JSON.parse(decodeURI(this.getAttribute("data"))));
   });
 
