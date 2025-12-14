@@ -28,6 +28,13 @@ use GuzzleHttp\Client;
 
 // Handle parameters
 
+define('RAW_OUTPUT', isset($_GET['raw']) ? true : false);
+define('USE_CACHE', isset($_GET['nocache']) ? false : true);
+
+if (!isset($_GET['cal'])) {
+    throw new Exception("No cal specified");
+}
+// Cal
 $input_cal = strip_tags($_GET['cal']);
 
 if (!isset($input_cal)) {
@@ -38,12 +45,23 @@ if (!isset($ical_calendars[$input_cal])) {
     throw new Exception("Cal not found");
 }
 
+if (REDIS_HOST && USE_CACHE) {
+    // define('USE_REDIS', true);
+    define('USE_REDIS', false);
+} else {
+    define('USE_REDIS', false);
+}
+
+if (RAW_OUTPUT) {
+    header("Content-Type: text/plain; charset=utf-8");
+}
+
 // No
 // Fetch calendar data
 $calendar = $ical_calendars[$input_cal];
 
 try {
-    if (REDIS_HOST) {
+    if (USE_REDIS) {
         // Setup Caching
         $redis = new Redis();
         //Connecting to Redis
@@ -87,9 +105,11 @@ if (!$res->getStatusCode() == 200) {
 }
 
 
-if (REDIS_HOST) {
+if (USE_REDIS) {
     $redis->setex($input_cal, 3600 / 2, $res->getBody()->getContents());
 }
 
-header("Content-Type: " . $res->getHeader('content-type')[0]);
+if (!RAW_OUTPUT) {
+    header("Content-Type: " . $res->getHeader('content-type')[0]);
+}
 echo $res->getBody();
