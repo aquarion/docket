@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\CalendarService;
+use App\Services\ICalProxyService;
+use App\Services\ThemeService;
+use App\Support\Git;
 use Illuminate\Http\Request;
 
 class CalendarController extends Controller
@@ -10,37 +13,31 @@ class CalendarController extends Controller
   /**
    * Create a new controller instance
    */
-  public function __construct(private CalendarService $calendarService) {}
+  public function __construct(
+    private CalendarService $calendarService,
+    private ThemeService $themeService,
+    private ICalProxyService $icalProxyService
+  ) {}
 
   /**
    * Display the main calendar page
    */
   public function index(Request $request)
   {
-    $availableSetIds = $this->calendarService->getAvailableSetIds();
-
-    $validated = $request->validate([
-      'version' => 'sometimes|in:' . implode(',', $availableSetIds),
-    ]);
-
-    $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
-    $calendarConfig = $this->calendarService->loadCalendarConfig();
-    $filteredConfig = $this->calendarService->filterBySet($calendarConfig, $calendarSetId);
-    $theme = $this->getTheme();
-    $festival = $this->getFestival();
+    $filteredConfig = $this->getFilteredCalendars($request);
 
     $view = [
       'ical_calendars' => $filteredConfig['ical_calendars'],
       'google_calendars' => $filteredConfig['google_calendars'],
       'merged_calendars' => $filteredConfig['merged_calendars'],
-      'theme' => $theme,
-      'festival' => $festival,
-      'calendar_set' => $calendarSetId,
+      'theme' => $this->themeService->getTheme(),
+      'festival' => $this->themeService->getFestival(),
+      'calendar_set' => $filteredConfig['calendar_set_id'],
       'calendar_sets' => config('calendars.calendar_sets', []),
     ];
 
     if (config('app.debug')) {
-      $view['git_branch'] = $this->getGitBranch();
+      $view['git_branch'] = Git::currentBranch();
     }
 
     return view('index', $view);
@@ -69,15 +66,7 @@ class CalendarController extends Controller
    */
   public function css(Request $request)
   {
-    $availableSetIds = $this->calendarService->getAvailableSetIds();
-
-    $validated = $request->validate([
-      'version' => 'sometimes|in:' . implode(',', $availableSetIds),
-    ]);
-
-    $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
-    $calendarConfig = $this->calendarService->loadCalendarConfig();
-    $filteredConfig = $this->calendarService->filterBySet($calendarConfig, $calendarSetId);
+    $filteredConfig = $this->getFilteredCalendars($request);
 
     return response()
       ->view('calendars.css', ['calendars' => $filteredConfig])
@@ -89,22 +78,14 @@ class CalendarController extends Controller
    */
   public function js(Request $request)
   {
-    $availableSetIds = $this->calendarService->getAvailableSetIds();
-
-    $validated = $request->validate([
-      'version' => 'sometimes|in:' . implode(',', $availableSetIds),
-    ]);
-
-    $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
-    $calendarConfig = $this->calendarService->loadCalendarConfig();
-    $filteredConfig = $this->calendarService->filterBySet($calendarConfig, $calendarSetId);
+    $filteredConfig = $this->getFilteredCalendars($request);
 
     return response()
       ->view('docket.js', [
         'ical_calendars' => $filteredConfig['ical_calendars'],
         'google_calendars' => $filteredConfig['google_calendars'],
         'merged_calendars' => $filteredConfig['merged_calendars'],
-        'calendar_set' => $calendarSetId,
+        'calendar_set' => $filteredConfig['calendar_set_id'],
       ])
       ->header('Content-Type', 'application/javascript');
   }
@@ -114,8 +95,27 @@ class CalendarController extends Controller
    */
   public function icalProxy(Request $request)
   {
-    // TODO: Implement iCal proxy functionality
-    return response('', 501); // Not Implemented
+    $validated = $request->validate([
+      'cal' => 'required|string',
+      'raw' => 'sometimes|boolean',
+      'nocache' => 'sometimes|boolean',
+    ]);
+
+    $calendarId = $validated['cal'];
+    $raw = $validated['raw'] ?? false;
+    $useCache = ! ($validated['nocache'] ?? false);
+
+    try {
+      $result = $this->icalProxyService->fetchCalendar($calendarId, $raw, $useCache);
+
+      return response($result['content'])
+        ->header('Content-Type', $result['content_type'])
+        ->header('X-Cached', $result['cached'] ? 'Yes' : 'No');
+    } catch (\Exception $e) {
+      return response()->json([
+        'error' => $e->getMessage(),
+      ], 404);
+    }
   }
 
   /**
@@ -128,45 +128,23 @@ class CalendarController extends Controller
   }
 
   /**
-   * Get current theme based on time of day
+   * Get filtered calendars based on request version parameter
    */
-  private function getTheme(): string
+  private function getFilteredCalendars(Request $request): array
   {
-    $lat = config('services.location.latitude', 51.5074);
-    $lon = config('services.location.longitude', -0.1278);
+    $availableSetIds = $this->calendarService->getAvailableSetIds();
 
-    $sunInfo = date_sun_info(time(), $lat, $lon);
-    $sunset = $sunInfo['sunset'];
-    $sunrise = $sunInfo['sunrise'];
+    $validated = $request->validate([
+      'version' => 'sometimes|in:' . implode(',', $availableSetIds),
+    ]);
 
-    return (time() > $sunset || time() < $sunrise) ? 'nighttime' : 'daytime';
-  }
+    $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
+    $calendarConfig = $this->calendarService->loadCalendarConfig();
+    $filteredConfig = $this->calendarService->filterBySet($calendarConfig, $calendarSetId);
 
-  /**
-   * Get current festival based on date
-   */
-  private function getFestival(): ?string
-  {
-    return ((int) date('m')) === 12 ? 'christmas' : null;
-  }
+    // Add calendar_set_id for easy access
+    $filteredConfig['calendar_set_id'] = $calendarSetId;
 
-  /**
-   * Get current git branch
-   */
-  private function getGitBranch(): string
-  {
-    $gitHead = base_path('.git/HEAD');
-
-    if (! file_exists($gitHead)) {
-      return 'unknown';
-    }
-
-    $head = file_get_contents($gitHead);
-
-    if ($head === false) {
-      return 'unknown';
-    }
-
-    return trim(str_replace('ref: refs/heads/', '', $head));
+    return $filteredConfig;
   }
 }
