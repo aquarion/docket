@@ -46,20 +46,4 @@ class ColorHelperTest extends TestCase
 
         $this->assertEquals('rgba(255, 136, 0, 0.5)', $css);
     }
-
-    public function test_remove_emoji(): void
-    {
-        $text = 'Hello 👋 World 🌍';
-        $clean = ColorHelper::removeEmoji($text);
-
-        $this->assertEquals('Hello  World ', $clean);
-    }
-
-    public function test_remove_emoji_preserves_regular_text(): void
-    {
-        $text = 'Just regular text';
-        $clean = ColorHelper::removeEmoji($text);
-
-        $this->assertEquals('Just regular text', $clean);
-    }
 }

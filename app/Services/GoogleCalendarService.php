@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Support\ColorHelper;
+use App\Support\StringHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Google_Service_Calendar;
@@ -41,7 +42,7 @@ class GoogleCalendarService
                     $clients[$account] = $this->googleAuth->getCalendarService($account);
                 } catch (\Exception $e) {
                     if ($debug) {
-                        error_log("Failed to get calendar service for account {$account}: ".$e->getMessage());
+                        error_log("Failed to get calendar service for account {$account}: " . $e->getMessage());
                     }
 
                     continue;
@@ -54,7 +55,7 @@ class GoogleCalendarService
                 $this->mergeCalendar($service, $optParams, $cal_id, $calendar, $all_events, $debug);
             } catch (\Exception $e) {
                 if ($debug) {
-                    error_log("Failed to fetch calendar {$cal_id}: ".$e->getMessage());
+                    error_log("Failed to fetch calendar {$cal_id}: " . $e->getMessage());
                 }
 
                 continue;
@@ -161,13 +162,13 @@ class GoogleCalendarService
 
             $summary = $event->summary ?? '';
             if ($declined) {
-                $summary = '<strike>'.$summary.'</strike>';
+                $summary = '<strike>' . $summary . '</strike>';
             }
 
-            $clean_summary = ColorHelper::removeEmoji($summary);
+            $clean_summary = StringHelper::removeEmoji($summary);
             $clean_summary = trim($clean_summary);
 
-            $event_id = sha1($start_obj->format('c').$end_obj->format('c').$clean_summary);
+            $event_id = sha1($start_obj->format('c') . $end_obj->format('c') . $clean_summary);
 
             if (isset($all_events[$event_id])) {
                 $all_events[$event_id]['calendars'][] = $cal_id;
