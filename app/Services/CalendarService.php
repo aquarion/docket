@@ -11,45 +11,11 @@ class CalendarService
      */
     public function loadCalendarConfig(): array
     {
-        // Check if legacy config should be used
-        if (config('calendars.use_legacy_config')) {
-            return $this->loadLegacyConfig();
-        }
-
         return [
             'ical_calendars' => config('calendars.ical_calendars', []),
             'google_calendars' => config('calendars.google_calendars', []),
             'merged_calendars' => config('calendars.merged_calendars', []),
         ];
-    }
-
-    /**
-     * Load legacy calendar configuration from calendars.inc.php
-     */
-    private function loadLegacyConfig(): array
-    {
-        $configFile = config('calendars.legacy_config_path', base_path('calendars.inc.php'));
-
-        if (! file_exists($configFile)) {
-            return [
-                'ical_calendars' => [],
-                'google_calendars' => [],
-                'merged_calendars' => [],
-            ];
-        }
-
-        // Isolate variables in closure to prevent scope pollution
-        $config = (function () use ($configFile) {
-            $ical_calendars = [];
-            $google_calendars = [];
-            $merged_calendars = [];
-
-            include $configFile;
-
-            return compact('ical_calendars', 'google_calendars', 'merged_calendars');
-        })();
-
-        return $config;
     }
 
     /**
