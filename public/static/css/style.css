@@ -399,6 +399,18 @@ body > * {
 	padding: 0 4pt;
 }
 
+/* Striped background on title only */
+#nextUp .event_title.txtcal-aquarion-fyr,
+#nextUp .event_title.txtcal-fyr-aquarion {
+	background: repeating-linear-gradient(
+		45deg,
+		rgba(80, 110, 173, 0.5),
+		rgba(80, 110, 173, 0.5) 3px,
+		rgba(163, 41, 41, 0.5) 3px,
+		rgba(163, 41, 41, 0.5) 6px
+	);
+}
+
 #nextUp ul {
 	margin: 0;
 	padding-left: 0;
@@ -415,6 +427,14 @@ body > * {
 #nextUp .until {
 	font-size: small;
 	color: #444;
+}
+
+/* Striped merged event styling */
+#nextUp span.txtcal-stripy,
+#nextUp dd.txtcal-stripy {
+	padding: 0.3em 0.6em;
+	border-radius: 6px;
+	display: inline-block;
 }
 
 #nextUp .txtcal-stripy .until {

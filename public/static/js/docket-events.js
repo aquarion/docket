@@ -292,7 +292,7 @@ var DocketEvents = {
    * Render timed events HTML
    */
   renderTimedEvents: (events) => {
-    var output, i, thisEvent, starts, ends, classes, until;
+    var output, i, thisEvent, starts, ends, classes, titleClasses, until;
 
     output = "";
 
@@ -302,7 +302,8 @@ var DocketEvents = {
 
       starts = new Date(thisEvent.start);
       ends = new Date(thisEvent.end);
-      classes = `event ${DocketEvents.getEventClasses(thisEvent)}`;
+      classes = `event`;
+      titleClasses = DocketEvents.getEventClasses(thisEvent);
 
       if (
         DateUtils.getDayOfYear(new Date()) === DateUtils.getDayOfYear(starts)
@@ -314,7 +315,7 @@ var DocketEvents = {
 
       output += `<dd class="${classes}" eventstarts="${starts.toISOString()}" eventends="${ends.toISOString()}" data="${encodeURI(JSON.stringify(thisEvent))}">
 					<span class="event_dt">${DateUtils.formatDate(starts, "HH:mm")}</span> 
-					<span class="event_title">${thisEvent.title}</span> 
+					<span class="event_title ${titleClasses}">${thisEvent.title}</span> 
 					<span class="until">${until}</span>
 				</dd>`;
     }
@@ -331,9 +332,6 @@ var DocketEvents = {
     classes = "";
 
     if (event.calendars && event.calendars.length > 0) {
-      if (event.calendars.length > 1) {
-        classes += "txtcal-stripy ";
-      }
       classes += `txtcal-${event.calendars.join("-")}`;
     }
 

@@ -36,7 +36,8 @@ $beta_dim = "rgba({$beta_rgb[0]}, {$beta_rgb[1]}, {$beta_rgb[2]}, 0.5)";
 @endphp
 
 /* {{ $alpha_name }}_{{ $beta_name }} */
-a.cal-{{ $alpha_name }}-{{ $beta_name }}, a.cal-{{ $beta_name }}-{{ $alpha_name }} {
+a.cal-{{ $alpha_name }}-{{ $beta_name }}, a.cal-{{ $beta_name }}-{{ $alpha_name }},
+.txtcal-{{ $alpha_name }}-{{ $beta_name }}, .txtcal-{{ $beta_name }}-{{ $alpha_name }} {
 background: repeating-linear-gradient(
 45deg,
 {{ $alpha_dim }},
@@ -49,9 +50,9 @@ background: repeating-linear-gradient(
 @endforeach
 @endforeach
 
-/* Explicit Merged Calendar Colors */
+/* Explicit Merged Calendar Colors - Override text color only */
 @foreach($calendars['merged_calendars'] ?? [] as $merge_key => $merge_data)
-a.cal-{{ $merge_key }} {
-background-color: {{ $merge_data['color'] ?? '#888888' }};
+.txtcal-{{ $merge_key }} {
+color: {{ $merge_data['color'] ?? '#888888' }};
 }
 @endforeach
