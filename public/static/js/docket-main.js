@@ -96,10 +96,40 @@ var Docket = {
         } else {
           NotificationUtils.debug("Refreshing");
           CircleProgress.trackPercent = 0;
+          this.checkFestivalChange();
           DocketCalendar.setup();
         }
       }, this.config.refreshIntervalMs),
     );
+  },
+
+  /**
+   * Check if festival has changed and reload if needed
+   */
+  checkFestivalChange: function () {
+    fetch("/docket.js?version=" + DocketConfig.constants.VERSION, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/javascript",
+      },
+    })
+      .then((response) => response.text())
+      .then((text) => {
+        // Extract current festival from response
+        const festivalMatch = text.match(/FESTIVAL:\s*"([^"]*)"/);
+        const currentFestival = festivalMatch ? festivalMatch[1] : "";
+        const previousFestival = DocketConfig.constants.FESTIVAL;
+
+        if (currentFestival !== previousFestival) {
+          NotificationUtils.debug(
+            `Festival changed from '${previousFestival}' to '${currentFestival}', reloading...`,
+          );
+          window.location.reload(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to check festival change:", error);
+      });
   },
 
   /**

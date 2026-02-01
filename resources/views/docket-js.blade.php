@@ -10,6 +10,7 @@ allEvents: {},
 // Application constants
 constants: {
 VERSION: (new URLSearchParams(window.location.search)).get("version") || "{{ $calendar_set ?? 'all' }}",
+FESTIVAL: "{{ $festival ?? '' }}",
 DEBUG: @if(isset($git_branch)) true @else false @endif,
 LATITUDE: "{{ config('services.location.latitude', 51.5074) }}",
 LONGITUDE: "{{ config('services.location.longitude', -0.1278) }}",
