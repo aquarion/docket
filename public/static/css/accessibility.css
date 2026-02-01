@@ -38,7 +38,7 @@ canvas:focus {
 
 /* Improve contrast for better accessibility */
 .devmode-ribbon {
-	background: rgba(0, 0, 0, 0.8);
+	background: transparent;
 	color: white;
 	padding: 4px 8px;
 }

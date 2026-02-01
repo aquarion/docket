@@ -239,7 +239,6 @@ body.token img {
 }
 
 #rightbar img {
-	/*max-width: 100%;*/
 	float: right;
 }
 #rightbar h2 {
@@ -388,8 +387,6 @@ body > * {
 
 #nextUp dd,
 #nextUp dt {
-	/* overflow: hidden;
-	white-space: nowrap; */
 	width: fit-content;
 	padding-left: 3em;
 	text-indent: -3em;
@@ -429,18 +426,6 @@ body > * {
 	color: #444;
 }
 
-/* Striped merged event styling */
-#nextUp span.txtcal-stripy,
-#nextUp dd.txtcal-stripy {
-	padding: 0.3em 0.6em;
-	border-radius: 6px;
-	display: inline-block;
-}
-
-#nextUp .txtcal-stripy .until {
-	color: rgb(191, 191, 191);
-}
-
 #switch {
 	position: absolute;
 	bottom: 5px;
@@ -458,6 +443,7 @@ body > * {
 	height: 150px;
 	overflow: hidden;
 	z-index: 99999;
+	background: transparent;
 }
 .devmode-ribbon a {
 	display: inline-block;
