@@ -8,327 +8,330 @@
 
 // biome-ignore-start lint/correctness/noUnusedVariables: DocketCalendar is used globally
 var DocketCalendar = {
-	// biome-ignore-end lint/correctness/noUnusedVariables: DocketCalendar is used globally
-	/**
-	 * Setup and refresh calendar data
-	 */
-	setup: function () {
-		var twoWeeks, _name, _cal;
+  // biome-ignore-end lint/correctness/noUnusedVariables: DocketCalendar is used globally
+  /**
+   * Setup and refresh calendar data
+   */
+  setup: function () {
+    var twoWeeks, _name, _cal;
 
-		twoWeeks = DateUtils.addDays(new Date(), 30);
+    twoWeeks = DateUtils.addDays(new Date(), 30);
 
-		// Fetch JSON calendar data
-		fetch(
-			"/all-calendars.php?end=" +
-				DateUtils.formatDate(twoWeeks, "YYYY-MM-DD") +
-				"&version=" +
-				DocketConfig.constants.VERSION,
-		)
-			.then((response) => {
-				if (!response.ok) throw new Error(`HTTP ${response.status}`);
-				return response.json();
-			})
-			.then(this.updateCallback.bind(this))
-			.catch((error) => {
-				console.error("Failed to fetch calendar data:", error);
-			});
+    // Fetch JSON calendar data
+    fetch(
+      "/all-calendars?end=" +
+        DateUtils.formatDate(twoWeeks, "YYYY-MM-DD") +
+        "&version=" +
+        DocketConfig.constants.VERSION,
+    )
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then(this.updateCallback.bind(this))
+      .catch((error) => {
+        console.error("Failed to fetch calendar data:", error);
+      });
 
-		// Fetch iCal calendar data
-		if (DocketConfig.constants.ICAL_CALENDARS) {
-			for (const [name, cal] of Object.entries(
-				DocketConfig.constants.ICAL_CALENDARS,
-			)) {
-				DocketCalendar.updateIcal(
-					cal.proxy_url,
-					new Date(),
-					twoWeeks,
-					"GMT",
-					name,
-					DocketEvents.updateNextUp,
-				);
-			}
-		}
-	},
+    // Fetch iCal calendar data
+    if (DocketConfig.constants.ICAL_CALENDARS) {
+      for (const [name, cal] of Object.entries(
+        DocketConfig.constants.ICAL_CALENDARS,
+      )) {
+        DocketCalendar.updateIcal(
+          cal.proxy_url,
+          new Date(),
+          twoWeeks,
+          "GMT",
+          name,
+          DocketEvents.updateNextUp,
+        );
+      }
+    }
+  },
 
-	/**
-	 * Callback for JSON calendar updates
-	 * @param {Object} data - Calendar data
-	 */
-	updateCallback: (data, _info, _third) => {
-		DocketConfig.allEvents.json_cals = data;
-		DocketEvents.updateNextUp();
-	},
+  /**
+   * Callback for JSON calendar updates
+   * @param {Object} data - Calendar data
+   */
+  updateCallback: (data, _info, _third) => {
+    DocketConfig.allEvents.json_cals = data;
+    DocketEvents.updateNextUp();
+  },
 
-	/**
-	 * Update iCal calendar data
-	 * @param {string} calendarUrl - URL to fetch calendar from
-	 * @param {Date} start - Start date range
-	 * @param {Date} end - End date range
-	 * @param {string} timezone - Timezone
-	 * @param {string} name - Calendar name
-	 * @param {Function} callback - Success callback
-	 */
-	updateIcal: (calendarUrl, start, end, timezone, name, callback) => {
-		NotificationUtils.debug(
-			`Updating ${calendarUrl} from ${start} to ${end} in ${timezone} as ${name}`,
-		);
+  /**
+   * Update iCal calendar data
+   * @param {string} calendarUrl - URL to fetch calendar from
+   * @param {Date} start - Start date range
+   * @param {Date} end - End date range
+   * @param {string} timezone - Timezone
+   * @param {string} name - Calendar name
+   * @param {Function} callback - Success callback
+   */
+  updateIcal: (calendarUrl, start, end, timezone, name, callback) => {
+    NotificationUtils.debug(
+      `Updating ${calendarUrl} from ${start} to ${end} in ${timezone} as ${name}`,
+    );
 
-		fetch(calendarUrl)
-			.then((response) => {
-				if (!response.ok)
-					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-				return response.text();
-			})
-			.then((data) => {
-				var jcalData,
-					comp,
-					eventComps,
-					tzid,
-					tz,
-					localTimeZone,
-					msPerDay,
-					approxDaysInMonth,
-					endRange,
-					rangeStart,
-					rangeEnd,
-					allDayMinutes,
-					events,
-					index,
-					item,
-					event,
-					summary,
-					skipEvent,
-					regex,
-					duration;
+    fetch(calendarUrl)
+      .then((response) => {
+        if (!response.ok)
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        return response.text();
+      })
+      .then((data) => {
+        var jcalData,
+          comp,
+          eventComps,
+          tzid,
+          tz,
+          localTimeZone,
+          msPerDay,
+          approxDaysInMonth,
+          endRange,
+          rangeStart,
+          rangeEnd,
+          allDayMinutes,
+          events,
+          index,
+          item,
+          event,
+          summary,
+          skipEvent,
+          regex,
+          duration;
 
-				try {
-					jcalData = ICAL.parse(data);
-					comp = new ICAL.Component(jcalData);
-					eventComps = comp.getAllSubcomponents("vevent");
-				} catch (_error) {
-					NotificationUtils.warning(`Couldn't parse calendar: ${name}`);
-					console.warn(`Couldn't Parse ${calendarUrl}`);
-					return;
-				}
+        try {
+          jcalData = ICAL.parse(data);
+          comp = new ICAL.Component(jcalData);
+          eventComps = comp.getAllSubcomponents("vevent");
+        } catch (_error) {
+          NotificationUtils.warning(`Couldn't parse calendar: ${name}`);
+          console.warn(`Couldn't Parse ${calendarUrl}`);
+          return;
+        }
 
-				// Register timezones
-				if (comp.getFirstSubcomponent("vtimezone")) {
-					for (const tzComponent of comp.getAllSubcomponents("vtimezone")) {
-						tzid = tzComponent.getFirstPropertyValue("tzid");
-						NotificationUtils.debug(`Registering Timezone: ${tzid}`);
+        // Register timezones
+        if (comp.getFirstSubcomponent("vtimezone")) {
+          for (const tzComponent of comp.getAllSubcomponents("vtimezone")) {
+            tzid = tzComponent.getFirstPropertyValue("tzid");
+            NotificationUtils.debug(`Registering Timezone: ${tzid}`);
 
-						tz = new ICAL.Timezone({
-							tzid: tzid,
-							component: tzComponent,
-						});
+            tz = new ICAL.Timezone({
+              tzid: tzid,
+              component: tzComponent,
+            });
 
-						if (!ICAL.TimezoneService.has(tz.tzid)) {
-							ICAL.TimezoneService.register(tz.tzid, tz);
-						}
-					}
-				}
+            if (!ICAL.TimezoneService.has(tz.tzid)) {
+              ICAL.TimezoneService.register(tz.tzid, tz);
+            }
+          }
+        }
 
-				comp = ICAL.helpers.updateTimezones(comp);
-				localTimeZone = ICAL.Timezone.utcTimezone;
-				msPerDay = 86400000;
-				approxDaysInMonth = 30;
-				endRange = new Date(Date.now() + msPerDay * approxDaysInMonth);
-				rangeStart = ICAL.Time.fromJSDate(start);
-				rangeEnd = ICAL.Time.fromJSDate(endRange);
-				allDayMinutes = 1440;
-				events = [];
+        comp = ICAL.helpers.updateTimezones(comp);
+        localTimeZone = ICAL.Timezone.utcTimezone;
+        msPerDay = 86400000;
+        approxDaysInMonth = 30;
+        endRange = new Date(Date.now() + msPerDay * approxDaysInMonth);
+        rangeStart = ICAL.Time.fromJSDate(start);
+        rangeEnd = ICAL.Time.fromJSDate(endRange);
+        allDayMinutes = 1440;
+        events = [];
 
-				// Process events
-				for (index = 0; index < eventComps.length; index++) {
-					item = eventComps[index];
-					event = new ICAL.Event(item);
-					summary = item.getFirstPropertyValue("summary");
+        // Process events
+        for (index = 0; index < eventComps.length; index++) {
+          item = eventComps[index];
+          event = new ICAL.Event(item);
+          summary = item.getFirstPropertyValue("summary");
 
-					NotificationUtils.debug(`Event: ${summary}`); // Skip private events
-					if (item.getFirstPropertyValue("class") === "PRIVATE") {
-						NotificationUtils.debug("Skipped: Private");
-						continue;
-					}
+          NotificationUtils.debug(`Event: ${summary}`); // Skip private events
+          if (item.getFirstPropertyValue("class") === "PRIVATE") {
+            NotificationUtils.debug("Skipped: Private");
+            continue;
+          }
 
-					// Skip recurrence exceptions
-					if (event.isRecurrenceException()) {
-						NotificationUtils.debug("Skipped: Exception");
-						continue;
-					}
+          // Skip recurrence exceptions
+          if (event.isRecurrenceException()) {
+            NotificationUtils.debug("Skipped: Exception");
+            continue;
+          }
 
-					// Skip filtered events
-					if (
-						DocketConfig.constants.FILTER_OUT_LIST &&
-						DocketConfig.constants.FILTER_OUT_LIST.indexOf(summary) !== -1
-					) {
-						NotificationUtils.debug("Skipped: Filtered");
-						continue;
-					}
+          // Skip filtered events
+          if (
+            DocketConfig.constants.FILTER_OUT_LIST &&
+            DocketConfig.constants.FILTER_OUT_LIST.indexOf(summary) !== -1
+          ) {
+            NotificationUtils.debug("Skipped: Filtered");
+            continue;
+          }
 
-					if (DocketConfig.constants.FILTER_OUT_REGEXES) {
-						skipEvent = false;
-						for (const regexString of DocketConfig.constants
-							.FILTER_OUT_REGEXES) {
-							regex = new RegExp(regexString);
-							if (regex.test(summary)) {
-								NotificationUtils.debug(
-									`Skipped: Filtered by regex ${regexString}`,
-								);
-								skipEvent = true;
-								break;
-							}
-						}
-						if (skipEvent) continue;
-					}
+          if (DocketConfig.constants.FILTER_OUT_REGEXES) {
+            skipEvent = false;
+            for (const regexString of DocketConfig.constants
+              .FILTER_OUT_REGEXES) {
+              regex = new RegExp(regexString);
+              if (regex.test(summary)) {
+                NotificationUtils.debug(
+                  `Skipped: Filtered by regex ${regexString}`,
+                );
+                skipEvent = true;
+                break;
+              }
+            }
+            if (skipEvent) continue;
+          }
 
-					// Skip events with / prefix
-					if (summary && summary[0] === "/") {
-						NotificationUtils.debug("Skipped: Filtered for / prefix");
-						continue;
-					}
+          // Skip events with / prefix
+          if (summary && summary[0] === "/") {
+            NotificationUtils.debug("Skipped: Filtered for / prefix");
+            continue;
+          }
 
-					duration = event.duration;
+          duration = event.duration;
 
-					if (event.isRecurring()) {
-						DocketCalendar.processRecurringEvent(
-							item,
-							event,
-							duration,
-							rangeStart,
-							rangeEnd,
-							localTimeZone,
-							allDayMinutes,
-							name,
-							events,
-						);
-					} else {
-						DocketCalendar.processSingleEvent(
-							item,
-							allDayMinutes,
-							name,
-							events,
-						);
-					}
-					NotificationUtils.debug(`/Event: ${summary}`);
-				}
+          if (event.isRecurring()) {
+            DocketCalendar.processRecurringEvent(
+              item,
+              event,
+              duration,
+              rangeStart,
+              rangeEnd,
+              localTimeZone,
+              allDayMinutes,
+              name,
+              events,
+            );
+          } else {
+            DocketCalendar.processSingleEvent(
+              item,
+              allDayMinutes,
+              name,
+              events,
+            );
+          }
+          NotificationUtils.debug(`/Event: ${summary}`);
+        }
 
-				DocketConfig.allEvents[calendarUrl] = events;
-				DocketEvents.updateNextUp();
-				callback(events);
-			})
-			.catch((error) => {
-				var errortext;
+        DocketConfig.allEvents[calendarUrl] = events;
+        DocketEvents.updateNextUp();
+        callback(events);
+      })
+      .catch((error) => {
+        var errortext;
 
-				errortext = error.message;
-				NotificationUtils.error(
-					`Failed to load calendar: ${name} - ${errortext}`,
-				);
-			});
-	},
+        errortext = error.message;
+        NotificationUtils.error(
+          `Failed to load calendar: ${name} - ${errortext}`,
+        );
+      });
+  },
 
-	/**
-	 * Process a recurring event
-	 */
-	processRecurringEvent: (
-		item,
-		_event,
-		duration,
-		rangeStart,
-		rangeEnd,
-		localTimeZone,
-		allDayMinutes,
-		name,
-		events,
-	) => {
-		var expand, next, end, minutesLength, title, allDay;
+  /**
+   * Process a recurring event
+   */
+  processRecurringEvent: (
+    item,
+    _event,
+    duration,
+    rangeStart,
+    rangeEnd,
+    localTimeZone,
+    allDayMinutes,
+    name,
+    events,
+  ) => {
+    var expand, next, end, minutesLength, title, allDay;
 
-		expand = new ICAL.RecurExpansion({
-			component: item,
-			dtstart: item.getFirstPropertyValue("dtstart"),
-		});
+    expand = new ICAL.RecurExpansion({
+      component: item,
+      dtstart: item.getFirstPropertyValue("dtstart"),
+    });
 
-		next = true;
+    next = true;
 
-		while (next) {
-			next = expand.next();
-			if (!next) break;
+    while (next) {
+      next = expand.next();
+      if (!next) break;
 
-			next = next.convertToZone(localTimeZone);
+      next = next.convertToZone(localTimeZone);
 
-			if (next.compare(rangeStart) < 0) {
-				NotificationUtils.debug(`>> Too early ${rangeStart.toString()}`);
-				continue;
-			} else if (next.compare(rangeEnd) > 0) {
-				NotificationUtils.debug(`>> Too late ${rangeEnd.toString()}`);
-				break;
-			}
+      if (next.compare(rangeStart) < 0) {
+        NotificationUtils.debug(`>> Too early ${rangeStart.toString()}`);
+        continue;
+      } else if (next.compare(rangeEnd) > 0) {
+        NotificationUtils.debug(`>> Too late ${rangeEnd.toString()}`);
+        break;
+      }
 
-			NotificationUtils.debug(`Repeating ${next.toString()}`);
+      NotificationUtils.debug(`Repeating ${next.toString()}`);
 
-			end = next.clone();
-			end.addDuration(duration);
-			minutesLength = duration.toSeconds() / 60;
-			title = item.getFirstPropertyValue("summary");
-			allDay = DocketCalendar.determineAllDay(
-				item,
-				minutesLength,
-				allDayMinutes,
-				title,
-			);
+      end = next.clone();
+      end.addDuration(duration);
+      minutesLength = duration.toSeconds() / 60;
+      title = item.getFirstPropertyValue("summary");
+      allDay = DocketCalendar.determineAllDay(
+        item,
+        minutesLength,
+        allDayMinutes,
+        title,
+      );
 
-			events.push({
-				title: title,
-				start: next.toJSDate(),
-				end: end.toJSDate(),
-				location: item.getFirstPropertyValue("location"),
-				calendars: [name],
-				allDay: allDay,
-			});
-		}
-	},
+      events.push({
+        title: title,
+        start: next.toJSDate(),
+        end: end.toJSDate(),
+        location: item.getFirstPropertyValue("location"),
+        calendars: [name],
+        allDay: allDay,
+      });
+    }
+  },
 
-	/**
-	 * Process a single (non-recurring) event
-	 */
-	processSingleEvent: (item, allDayMinutes, name, events) => {
-		var dtstart, dtend, minutesLength, eventTitle, allDay;
+  /**
+   * Process a single (non-recurring) event
+   */
+  processSingleEvent: (item, allDayMinutes, name, events) => {
+    var dtstart, dtend, minutesLength, eventTitle, allDay;
 
-		dtstart = item.getFirstPropertyValue("dtstart").toJSDate();
-		dtend = item.getFirstPropertyValue("dtend").toJSDate();
-		minutesLength = (dtend - dtstart) / (1000 * 60);
-		eventTitle = item.getFirstPropertyValue("summary");
-		allDay = minutesLength >= allDayMinutes;
+    dtstart = item.getFirstPropertyValue("dtstart").toJSDate();
+    dtend = item.getFirstPropertyValue("dtend").toJSDate();
+    minutesLength = (dtend - dtstart) / (1000 * 60);
+    eventTitle = item.getFirstPropertyValue("summary");
+    allDay = minutesLength >= allDayMinutes;
 
-		events.push({
-			title: eventTitle,
-			start: dtstart,
-			end: dtend,
-			location: item.getFirstPropertyValue("location"),
-			calendars: [name],
-			allDay: allDay,
-		});
-	},
+    events.push({
+      title: eventTitle,
+      start: dtstart,
+      end: dtend,
+      location: item.getFirstPropertyValue("location"),
+      calendars: [name],
+      allDay: allDay,
+    });
+  },
 
-	/**
-	 * Determine if an event should be marked as all-day
-	 */
-	determineAllDay: (item, minutesLength, allDayMinutes, title) => {
-		if (item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") === "TRUE") {
-			NotificationUtils.debug(
-				`Setting all day for: ${title} from Microsoft Calendar flag`,
-			);
-			return true;
-		} else if (item.getFirstPropertyValue("x-apple-allday") === "TRUE") {
-			NotificationUtils.debug(
-				`Setting all day for: ${title} from Apple Calendar flag`,
-			);
-			return true;
-		} else if (minutesLength >= allDayMinutes) {
-			NotificationUtils.warning(
-				`All-day flag not found for long event: ${title}`,
-			);
-			return false;
-		}
-		return false;
-	},
+  /**
+   * Determine if an event should be marked as all-day
+   */
+  determineAllDay: (item, minutesLength, allDayMinutes, title) => {
+    if (item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") === "TRUE") {
+      NotificationUtils.debug(
+        `Setting all day for: ${title} from Microsoft Calendar flag`,
+      );
+      return true;
+    } else if (item.getFirstPropertyValue("x-apple-allday") === "TRUE") {
+      NotificationUtils.debug(
+        `Setting all day for: ${title} from Apple Calendar flag`,
+      );
+      return true;
+    } else if (minutesLength >= allDayMinutes) {
+      NotificationUtils.warning(
+        `All-day flag not found for long event: ${title}`,
+      );
+      return false;
+    }
+    return false;
+  },
 };
+
+// Make DocketCalendar available globally
+window.DocketCalendar = DocketCalendar;

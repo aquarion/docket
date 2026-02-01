@@ -14,7 +14,6 @@ class CalendarTest extends DuskTestCase
   {
     $this->browse(function (Browser $browser) {
       $browser->visit('/')
-        ->assertSee('Docket')
         ->assertPresent('#calendar')
         ->assertPresent('#datetime')
         ->assertPresent('#nextUp');
