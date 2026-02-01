@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 
 class GoogleAuthService
 {
-    protected string $credentialsPath;
+    protected string $defaultCredentialsPath;
 
     protected string $redirectUri;
 
@@ -26,13 +26,49 @@ class GoogleAuthService
 
     public function __construct()
     {
-        $this->credentialsPath = config('services.google.credentials_path', base_path('etc/credentials.json'));
+        $this->defaultCredentialsPath = config('services.google.credentials_path', base_path('etc/credentials.json'));
         $this->redirectUri = config('services.google.redirect_uri', url('/token'));
         $this->scopes = config('services.google.scopes', []);
+    }
 
-        // Validate credentials file exists
-        if (! file_exists($this->credentialsPath)) {
-            throw new InvalidCredentialsException($this->credentialsPath);
+    /**
+     * Get credentials path for a specific account
+     * Supports account-specific credentials files (e.g., credentials_aqcom.json)
+     * Falls back to default credentials.json
+     */
+    protected function getCredentialsPath(?string $account = null): string
+    {
+        if ($account) {
+            // Try account-specific credentials first
+            $accountSpecificPath = base_path("etc/credentials_{$account}.json");
+            if (file_exists($accountSpecificPath)) {
+                return $accountSpecificPath;
+            }
+        }
+
+        // Fall back to default credentials
+        return $this->defaultCredentialsPath;
+    }
+
+    /**
+     * Validate credentials file exists and is properly formatted
+     */
+    protected function validateCredentials(string $credentialsPath): void
+    {
+        if (! file_exists($credentialsPath)) {
+            throw new InvalidCredentialsException($credentialsPath);
+        }
+
+        // Validate credentials file is valid JSON with required fields
+        $contents = file_get_contents($credentialsPath);
+        $credentials = json_decode($contents, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON format)');
+        }
+
+        if (! isset($credentials['installed']) && ! isset($credentials['web'])) {
+            throw new InvalidCredentialsException($credentialsPath . ' (missing OAuth client configuration)');
         }
     }
 
@@ -41,6 +77,9 @@ class GoogleAuthService
      */
     public function createClient(?string $account = null): Google_Client
     {
+        $credentialsPath = $this->getCredentialsPath($account);
+        $this->validateCredentials($credentialsPath);
+
         $client = new Google_Client;
         $client->setApplicationName(config('app.name', 'Docket'));
 
@@ -48,7 +87,7 @@ class GoogleAuthService
             $client->addScope($scope);
         }
 
-        $client->setAuthConfig($this->credentialsPath);
+        $client->setAuthConfig($credentialsPath);
         $client->setAccessType('offline');
         $client->setRedirectUri($this->redirectUri);
 
@@ -73,7 +112,7 @@ class GoogleAuthService
      */
     public function getAuthorizationUrl(?string $account = null): string
     {
-        $client = $this->createClient();
+        $client = $this->createClient($account);
 
         // Add account to state parameter for callback
         if ($account) {
@@ -89,7 +128,7 @@ class GoogleAuthService
     public function fetchAccessToken(string $code, ?string $account = null): array
     {
         try {
-            $client = $this->createClient();
+            $client = $this->createClient($account);
             $accessToken = $client->fetchAccessTokenWithAuthCode($code);
 
             if (array_key_exists('error', $accessToken)) {
@@ -103,7 +142,7 @@ class GoogleAuthService
                     event(new AuthenticationFailed($account, $error));
                 }
 
-                throw new \Exception('OAuth error: '.$error);
+                throw new \Exception('OAuth error: ' . $error);
             }
 
             // Save token if account provided
@@ -267,7 +306,7 @@ class GoogleAuthService
             return false;
         }
 
-        $client = $this->createClient();
+        $client = $this->createClient($account);
         $client->setAccessToken($token);
 
         return ! $client->isAccessTokenExpired();
