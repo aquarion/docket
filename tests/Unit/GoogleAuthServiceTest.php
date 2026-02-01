@@ -102,7 +102,7 @@ class GoogleAuthServiceTest extends TestCase
         // Create a dummy credentials file for testing in storage
         $disk = Storage::disk('local');
         $credentialsPath = 'google/credentials.json';
-        
+
         if (! $disk->exists($credentialsPath)) {
             $disk->put($credentialsPath, json_encode(['installed' => ['client_id' => 'test']]));
         }
