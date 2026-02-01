@@ -107,7 +107,7 @@ var Docket = {
    * Check if festival has changed and reload if needed
    */
   checkFestivalChange: function () {
-    fetch("/docket.js?version=" + DocketConfig.constants.VERSION, {
+    fetch("/docket.js?calendar_set=" + DocketConfig.constants.CALENDAR_SET, {
       cache: "no-store",
       headers: {
         Accept: "application/javascript",

@@ -82,7 +82,7 @@ class CalendarController extends Controller
             'start' => 'sometimes|date',
             'end' => 'sometimes|date',
             'debug' => 'sometimes|boolean',
-            'version' => 'sometimes|string',
+            'calendar_set' => 'sometimes|string',
         ]);
 
         try {
@@ -169,17 +169,17 @@ class CalendarController extends Controller
     }
 
     /**
-     * Get filtered calendars based on request version parameter
+     * Get filtered calendars based on request calendar_set parameter
      */
     private function getFilteredCalendars(Request $request): array
     {
         $availableSetIds = $this->calendarService->getAvailableSetIds();
 
         $validated = $request->validate([
-            'version' => 'sometimes|in:' . implode(',', $availableSetIds),
+            'calendar_set' => 'sometimes|in:' . implode(',', $availableSetIds),
         ]);
 
-        $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
+        $calendarSetId = $validated['calendar_set'] ?? $this->calendarService->getDefaultSetId();
         $calendarConfig = $this->calendarService->loadCalendarConfig();
         $filteredConfig = $this->calendarService->filterBySet($calendarConfig, $calendarSetId);
 

@@ -27,7 +27,7 @@
   <title>Docket - Personal Calendar</title>
 
   <!-- Dynamic Calendar Styles -->
-  <link rel="stylesheet" href="{{ route('calendars.css') }}?version={{ $calendar_set }}">
+  <link rel="stylesheet" href="{{ route('calendars.css') }}?calendar_set={{ $calendar_set }}">
   @if($festival == 'christmas')
   <link rel="stylesheet" href="/static/generated/christmas.css">
   @endif
@@ -90,7 +90,7 @@
         <ul class="calendar-set-list">
           @foreach($calendar_sets as $set_id => $set_config)
           <li class="calendar-set-item {{ $set_id === $calendar_set ? 'active' : '' }}" data-set-id="{{ $set_id }}">
-            <a href="/?version={{ $set_id }}" class="calendar-set-link">
+            <a href="/?calendar_set={{ $set_id }}" class="calendar-set-link">
               @if(isset($set_config['emoji']))
               <span class="calendar-set-emoji">{{ $set_config['emoji'] }}</span>
               @endif
@@ -108,7 +108,7 @@
 
   <canvas id="countdown" width="50" height="50" aria-label="Refresh countdown indicator"></canvas>
 
-  <script type="text/javascript" src="{{ route('docket.js') }}?version={{ $calendar_set }}"></script>
+  <script type="text/javascript" src="{{ route('docket.js') }}?calendar_set={{ $calendar_set }}"></script>
 </body>
 
 </html>

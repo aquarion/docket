@@ -9,7 +9,7 @@ allEvents: {},
 
 // Application constants
 constants: {
-VERSION: (new URLSearchParams(window.location.search)).get("version") || "{{ $calendar_set ?? 'all' }}",
+CALENDAR_SET: (new URLSearchParams(window.location.search)).get("calendar_set") || "{{ $calendar_set ?? 'all' }}",
 FESTIVAL: "{{ $festival ?? '' }}",
 DEBUG: @if(isset($git_branch)) true @else false @endif,
 LATITUDE: "{{ config('services.location.latitude', 51.5074) }}",
@@ -38,7 +38,7 @@ ICAL_CALENDARS: {
 "name": "{{ $cal['name'] ?? $name }}",
 "src": "{{ $cal['src'] ?? '' }}",
 "emoji": "{{ $cal['emoji'] ?? '' }}",
-"proxy_url": "{{ route('icalproxy', ['cal' => $name]) }}&version=" + ((new URLSearchParams(window.location.search)).get("version") || "")
+"proxy_url": "{{ route('icalproxy', ['cal' => $name]) }}&calendar_set=" + ((new URLSearchParams(window.location.search)).get("calendar_set") || "")
 }@if(!$loop->last),@endif
 
 @endforeach

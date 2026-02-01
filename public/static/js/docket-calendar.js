@@ -21,8 +21,8 @@ var DocketCalendar = {
     fetch(
       "/all-calendars?end=" +
         DateUtils.formatDate(twoWeeks, "YYYY-MM-DD") +
-        "&version=" +
-        DocketConfig.constants.VERSION,
+        "&calendar_set=" +
+        DocketConfig.constants.CALENDAR_SET,
     )
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
