@@ -281,11 +281,12 @@ After HTML/component changes, verify related tests still match structure:
 
 For Google Calendar API multi-account support:
 
-- Account-specific credentials: `credentials_{account}.json`
-- Account-specific tokens: `tokens/token_{account}.json`
+- Account-specific credentials: `storage/app/google/credentials_{account}.json`
+- Account-specific tokens: `storage/app/google/tokens/token_{account}.json`
 - Implement fallback: specific path → default path
 - Pass account parameter through entire auth chain
 - Test both account-specific and default paths
+- All credentials and tokens are accessed via Laravel Storage facade
 
 ## Cache Design for Calendar Data
 
