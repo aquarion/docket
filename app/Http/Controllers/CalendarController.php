@@ -2,35 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CalendarService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
 
 class CalendarController extends Controller
 {
+  /**
+   * Create a new controller instance
+   */
+  public function __construct(private CalendarService $calendarService) {}
+
   /**
    * Display the main calendar page
    */
   public function index(Request $request)
   {
-    // Calendar version logic
-    $calendarSet = $request->get('version') === 'work' ? 'work' : 'home';
+    $availableSetIds = $this->calendarService->getAvailableSetIds();
 
-    // Load calendar configuration
-    $calendarConfig = $this->loadCalendarConfig();
+    $validated = $request->validate([
+      'version' => 'sometimes|in:' . implode(',', $availableSetIds),
+    ]);
 
-    // Get sun info for theme
+    $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
+    $calendarConfig = $this->calendarService->loadCalendarConfig();
+    $filteredConfig = $this->calendarService->filterBySet($calendarConfig, $calendarSetId);
     $theme = $this->getTheme();
-
-    // Festival detection
-    $festival = date('m') == 12 ? 'christmas' : false;
+    $festival = $this->getFestival();
 
     $view = [
-      'ical_calendars'   => $calendarConfig['ical_calendars'] ?? [],
-      'google_calendars' => $calendarConfig['google_calendars'] ?? [],
-      'merged_calendars' => $calendarConfig['merged_calendars'] ?? [],
+      'ical_calendars' => $filteredConfig['ical_calendars'],
+      'google_calendars' => $filteredConfig['google_calendars'],
+      'merged_calendars' => $filteredConfig['merged_calendars'],
       'theme' => $theme,
       'festival' => $festival,
-      'calendar_set' => $calendarSet
+      'calendar_set' => $calendarSetId,
+      'calendar_sets' => config('calendars.calendar_sets', []),
     ];
 
     if (config('app.debug')) {
@@ -63,10 +69,18 @@ class CalendarController extends Controller
    */
   public function css(Request $request)
   {
-    $calendarConfig = $this->loadCalendarConfig();
+    $availableSetIds = $this->calendarService->getAvailableSetIds();
+
+    $validated = $request->validate([
+      'version' => 'sometimes|in:' . implode(',', $availableSetIds),
+    ]);
+
+    $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
+    $calendarConfig = $this->calendarService->loadCalendarConfig();
+    $filteredConfig = $this->calendarService->filterBySet($calendarConfig, $calendarSetId);
 
     return response()
-      ->view('calendars.css', ['calendars' => $calendarConfig])
+      ->view('calendars.css', ['calendars' => $filteredConfig])
       ->header('Content-Type', 'text/css');
   }
 
@@ -75,8 +89,23 @@ class CalendarController extends Controller
    */
   public function js(Request $request)
   {
+    $availableSetIds = $this->calendarService->getAvailableSetIds();
+
+    $validated = $request->validate([
+      'version' => 'sometimes|in:' . implode(',', $availableSetIds),
+    ]);
+
+    $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
+    $calendarConfig = $this->calendarService->loadCalendarConfig();
+    $filteredConfig = $this->calendarService->filterBySet($calendarConfig, $calendarSetId);
+
     return response()
-      ->view('docket.js')
+      ->view('docket.js', [
+        'ical_calendars' => $filteredConfig['ical_calendars'],
+        'google_calendars' => $filteredConfig['google_calendars'],
+        'merged_calendars' => $filteredConfig['merged_calendars'],
+        'calendar_set' => $calendarSetId,
+      ])
       ->header('Content-Type', 'application/javascript');
   }
 
@@ -85,8 +114,8 @@ class CalendarController extends Controller
    */
   public function icalProxy(Request $request)
   {
-    // Implementation for icalproxy.php functionality
-    return response('', 200);
+    // TODO: Implement iCal proxy functionality
+    return response('', 501); // Not Implemented
   }
 
   /**
@@ -94,40 +123,17 @@ class CalendarController extends Controller
    */
   public function token(Request $request)
   {
-    // Implementation for token.php functionality
-    return response('', 200);
-  }
-
-  /**
-   * Load calendar configuration
-   */
-  private function loadCalendarConfig()
-  {
-    $configFile = base_path('calendars.inc.php');
-
-    if (file_exists($configFile)) {
-      include $configFile;
-      return [
-        'ical_calendars' => $ical_calendars ?? [],
-        'google_calendars' => $google_calendars ?? [],
-        'merged_calendars' => $merged_calendars ?? []
-      ];
-    }
-
-    return [
-      'ical_calendars' => [],
-      'google_calendars' => [],
-      'merged_calendars' => []
-    ];
+    // TODO: Implement token functionality
+    return response('', 501); // Not Implemented
   }
 
   /**
    * Get current theme based on time of day
    */
-  private function getTheme()
+  private function getTheme(): string
   {
-    $lat = config('services.location.latitude', env('MY_LAT', 51.5074));
-    $lon = config('services.location.longitude', env('MY_LON', -0.1278));
+    $lat = config('services.location.latitude', 51.5074);
+    $lon = config('services.location.longitude', -0.1278);
 
     $sunInfo = date_sun_info(time(), $lat, $lon);
     $sunset = $sunInfo['sunset'];
@@ -137,15 +143,30 @@ class CalendarController extends Controller
   }
 
   /**
+   * Get current festival based on date
+   */
+  private function getFestival(): ?string
+  {
+    return ((int) date('m')) === 12 ? 'christmas' : null;
+  }
+
+  /**
    * Get current git branch
    */
-  private function getGitBranch()
+  private function getGitBranch(): string
   {
     $gitHead = base_path('.git/HEAD');
-    if (file_exists($gitHead)) {
-      $head = file_get_contents($gitHead);
-      return trim(str_replace('ref: refs/heads/', '', $head));
+
+    if (! file_exists($gitHead)) {
+      return 'unknown';
     }
-    return 'unknown';
+
+    $head = file_get_contents($gitHead);
+
+    if ($head === false) {
+      return 'unknown';
+    }
+
+    return trim(str_replace('ref: refs/heads/', '', $head));
   }
 }
