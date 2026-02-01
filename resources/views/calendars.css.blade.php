@@ -1,38 +1,57 @@
-/* Calendar CSS - Generated from calendars configuration */
-/* This file is dynamically generated based on calendar settings */
+/* Calendar CSS - Dynamically generated from calendar configuration */
 
-body {
-margin: 0;
-padding: 0;
-font-family: 'Sometype Mono', monospace;
+/* Google Calendar Colors */
+@foreach($calendars['google_calendars'] ?? [] as $name => $data)
+a.cal-{{ $name }} {
+background-color: {{ $data['color'] ?? '#000000' }};
 }
-
-.theme-daytime {
-background-color: #ffffff;
-color: #333333;
+.txtcal-{{ $name }} {
+color: {{ $data['color'] ?? '#000000' }};
 }
+@endforeach
 
-.theme-nighttime {
-background-color: #1a1a1a;
-color: #e0e0e0;
+/* iCal Calendar Colors */
+@foreach($calendars['ical_calendars'] ?? [] as $name => $data)
+a.cal-{{ $name }} {
+background-color: {{ $data['color'] ?? '#000000' }};
 }
-
-.calendar {
-margin: 20px;
-padding: 15px;
-border-radius: 8px;
-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.txtcal-{{ $name }} {
+color: {{ $data['color'] ?? '#000000' }};
 }
+@endforeach
 
-@if(config('app.debug'))
-.debug-info {
-position: fixed;
-bottom: 10px;
-right: 10px;
-padding: 5px 10px;
-background: rgba(0,0,0,0.7);
-color: #fff;
-font-size: 12px;
-border-radius: 4px;
+/* Merged Calendar Colors - Striped backgrounds for overlapping events */
+@php
+$all_calendars = array_merge($calendars['google_calendars'] ?? [], $calendars['ical_calendars'] ?? []);
+@endphp
+
+@foreach($all_calendars as $alpha_name => $alpha_data)
+@foreach($all_calendars as $beta_name => $beta_data)
+@if($alpha_name != $beta_name)
+@php
+$alpha_rgb = App\Support\ColorHelper::hexToRGBA($alpha_data['color'] ?? '#000000');
+$beta_rgb = App\Support\ColorHelper::hexToRGBA($beta_data['color'] ?? '#000000');
+$alpha_dim = "rgba({$alpha_rgb[0]}, {$alpha_rgb[1]}, {$alpha_rgb[2]}, 0.5)";
+$beta_dim = "rgba({$beta_rgb[0]}, {$beta_rgb[1]}, {$beta_rgb[2]}, 0.5)";
+@endphp
+
+/* {{ $alpha_name }}_{{ $beta_name }} */
+a.cal-{{ $alpha_name }}-{{ $beta_name }}, a.cal-{{ $beta_name }}-{{ $alpha_name }} {
+background: repeating-linear-gradient(
+45deg,
+{{ $alpha_dim }},
+{{ $alpha_dim }} 3px,
+{{ $beta_dim }} 3px,
+{{ $beta_dim }} 6px
+);
 }
 @endif
+@endforeach
+@endforeach
+
+/* Explicit Merged Calendar Colors */
+@foreach($calendars['merged_calendars'] ?? [] as $merge_key => $merge_data)
+a.cal-{{ $merge_key }} {
+background-color: {{ $merge_data['color'] ?? '#888888' }};
+}
+@endforeach

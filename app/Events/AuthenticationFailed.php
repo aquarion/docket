@@ -7,10 +7,10 @@ use Illuminate\Queue\SerializesModels;
 
 class AuthenticationFailed
 {
-  use Dispatchable, SerializesModels;
+    use Dispatchable, SerializesModels;
 
-  public function __construct(
-    public string $account,
-    public string $error
-  ) {}
+    public function __construct(
+        public string $account,
+        public string $error
+    ) {}
 }

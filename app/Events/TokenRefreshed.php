@@ -7,10 +7,10 @@ use Illuminate\Queue\SerializesModels;
 
 class TokenRefreshed
 {
-  use Dispatchable, SerializesModels;
+    use Dispatchable, SerializesModels;
 
-  public function __construct(
-    public string $account,
-    public array $token
-  ) {}
+    public function __construct(
+        public string $account,
+        public array $token
+    ) {}
 }

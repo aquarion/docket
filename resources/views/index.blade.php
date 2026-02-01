@@ -49,14 +49,14 @@
 <body class="theme-{{ $theme }} @if($festival) festival-{{ $festival }} @endif">
   <div id="app">
     <div id="calendars">
-      @foreach($ical_calendars as $calendar)
-      <div class="calendar" data-calendar="{{ $calendar['id'] }}">
+      @foreach($ical_calendars as $calId => $calendar)
+      <div class="calendar" data-calendar="{{ $calId }}">
         <!-- Calendar content will be loaded via JavaScript -->
       </div>
       @endforeach
 
-      @foreach($google_calendars as $calendar)
-      <div class="calendar" data-calendar="{{ $calendar['id'] }}">
+      @foreach($google_calendars as $calId => $calendar)
+      <div class="calendar" data-calendar="{{ $calId }}">
         <!-- Calendar content will be loaded via JavaScript -->
       </div>
       @endforeach

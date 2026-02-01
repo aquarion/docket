@@ -7,9 +7,9 @@ use Illuminate\Queue\SerializesModels;
 
 class TokenExpired
 {
-  use Dispatchable, SerializesModels;
+    use Dispatchable, SerializesModels;
 
-  public function __construct(
-    public string $account
-  ) {}
+    public function __construct(
+        public string $account
+    ) {}
 }
