@@ -10,6 +10,7 @@ window.twemoji = twemoji;
 
 // Import application JavaScript files
 // These files depend on the global variables set above
+import "./festival-utilities.js";
 import "./date-utils.js";
 import "./notification-utils.js";
 import "./circle-progress.js";

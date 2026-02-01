@@ -165,6 +165,19 @@ if (document.getElementById("countdown")) {
 function initWhenReady() {
   var requiredElements, allPresent;
 
+  // Check if SunCalc is loaded
+  if (typeof window.SunCalc === "undefined") {
+    if (!initWhenReady.retryCount) initWhenReady.retryCount = 0;
+    initWhenReady.retryCount++;
+    if (initWhenReady.retryCount > 50) {
+      console.warn("SunCalc not loaded after retries, initializing anyway");
+      Docket.init();
+      return;
+    }
+    setTimeout(initWhenReady, 10);
+    return;
+  }
+
   // Check if essential DOM elements exist
   requiredElements = ["datetime", "nextUp"];
   allPresent = requiredElements.every(

@@ -56,9 +56,6 @@
     console.log('[index.blade] FestivalUtils stub created');
   </script>
 
-  <!-- Load festival utilities -->
-  <script type="text/javascript" async src="/static/js/festival-utilities.js"></script>
-
   <!-- Vite Assets -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
