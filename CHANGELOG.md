@@ -1,5 +1,69 @@
 # Changelog - Laravel Conversion
 
+## [Unreleased]
+
+### Added
+
+#### Easter Festival Theme
+- Easter theme with animated egg emoji decorations replacing zeros in timestamps
+- Easter egg bouncing animation (0.6s ease-in-out)
+- Animated grass decoration at bottom of page with swaying motion
+- Festival-specific CSS in `templates/scss/easter.scss`
+
+#### Festival System
+- New `config/festivals.php` configuration for managing seasonal themes
+- Festival detection based on actual calendar dates using `easter_date()` function
+- Easter theme: Good Friday through Easter Monday (4 days)
+- Christmas theme: Full month of December
+- Debug query parameter support: `?festival=easter|christmas|none`
+- Extensible architecture for adding new festivals
+
+#### JavaScript Improvements
+- `resources/js/festival-utilities.js` - Festival callback system for DOM transformations
+- Festival utilities now included in Vite bundle instead of separate script
+- Callback hooks: `afterRenderDateTime`, `afterRenderEvents`
+
+#### Build System Improvements
+- Vite configuration now watches and compiles SCSS files automatically
+- SCSS compiler integrated into Vite dev server
+- Vite output changed to `public/static/build/` with proper structure
+- Updated `package.json` build:sass to process all SCSS files in `templates/scss/`
+- Build process now auto-compiles all festival themes
+
+#### Bug Fixes
+- Fixed SunCalc loading timing issue - now waits for library to load before initializing theme
+- Fixed Easter egg alignment in timestamps with proper CSS kerning
+- Fixed query parameter propagation to `/docket.js` route for festival detection
+- Fixed festival-utilities script loading order (now bundled with Vite)
+
+#### Documentation
+- Created consolidated `MIGRATIONS.md` with all migration guides
+- Includes Laravel conversion, calendar configuration, and Google credentials storage guides
+
+### Changed
+
+- `app/Services/ThemeService.php` - Now uses festival configuration system
+- `vite.config.js` - Added SCSS compilation plugin and output directory configuration
+- `index.blade.php` - Festival selector UI for debug mode, Vite bundle now includes festival utilities
+- `docket-main.js` - Enhanced initialization to wait for SunCalc library
+- `.gitignore` - Added `/public/static/build` for Vite-generated files
+- Holiday detection uses proper Easter date calculation instead of hard-coded date range
+
+### Fixed
+
+- Easter eggs no longer display in February (now only during Easter weekend)
+- SunCalc "not yet loaded" warnings eliminated
+- CSS asset path issues with Vite rebuild
+
+### Developer Experience
+
+- SCSS changes now hot-reload via Vite dev server
+- Festival configuration centralized for easy customization
+- New festival themes can be added by updating `config/festivals.php`
+- Cleaner separation between source files (`resources/`) and built assets
+
+---
+
 ## [2.0.0] - 2026-02-01
 
 ### Major Changes - Laravel 11 Conversion

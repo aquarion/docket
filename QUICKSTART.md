@@ -1,103 +1,164 @@
 # Quick Start Guide - Laravel Docket
 
-## ✅ Conversion Complete!
+## ✅ System Ready!
 
-Your Docket application has been successfully converted to Laravel 11.
+Docket is a Laravel 11 calendar application with seasonal themes and multi-calendar support.
 
-## 🚀 Quick Start
+## 🚀 Get Started in 5 Minutes
 
-### 1. Basic Setup
+### Step 1: Install Dependencies
+
 ```bash
-# Install dependencies (if not already done)
 composer install
-
-# Create environment file
-cp .env.example .env
-
-# Generate application key
-php artisan key:generate
-
-# Set permissions
-chmod -R 775 storage bootstrap/cache
+npm install
 ```
 
-### 2. Configure Application
+### Step 2: Configure Environment
 
-Edit `.env` file:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Edit `.env`:
+
 ```env
 APP_NAME=Docket
 APP_URL=http://localhost:8000
 
-# Your location for sunrise/sunset
+# Location for sunrise/sunset calculations
 MY_LAT=51.5074
 MY_LON=-0.1278
-
-# Google Calendar (optional)
-GOOGLE_API_KEY=your_key_here
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_secret
 ```
 
-### 3. Configure Calendars
+### Step 3: Add Calendars
 
-Copy and edit calendar configuration:
+**Option A: Simple (Legacy)**
 ```bash
 cp calendars.inc.example.php calendars.inc.php
-# Edit calendars.inc.php with your calendar sources
+# Edit with your calendar sources
 ```
 
-### 4. Start Development Server
+**Option B: Modern (Recommended)**
+```php
+// Edit config/calendars.php - add your calendars
+// Add sources to .env: GCAL_WORK_SRC=your-id@gmail.com
+```
+
+### Step 4: Set Permissions
+
 ```bash
+chmod -R 775 storage bootstrap/cache
+```
+
+### Step 5: Start Server
+
+**Development Mode:**
+```bash
+# Terminal 1: Backend
 php artisan serve
+
+# Terminal 2: Frontend (Vite)
+npm run dev
+```
+
+**Or with Docker:**
+```bash
+sail up
+sail npm run dev
 ```
 
 Visit: **http://localhost:8000**
 
-## 📁 New Structure at a Glance
+## 🎨 Test Seasonal Themes
 
 ```
-docket/
-├── app/                      # Application code
-│   ├── Http/Controllers/     # Controllers (CalendarController)
-│   ├── Models/              # Database models
-│   └── Services/            # Business logic services
-├── config/                   # Configuration files
-├── database/                # Migrations, seeders
-├── public/                  # Web root (was htdocs/)
-│   ├── index.php           # Entry point
-│   └── static/             # Static assets
-├── resources/
-│   └── views/              # Blade templates
-├── routes/
-│   ├── web.php             # Web routes
-│   └── api.php             # API routes
-├── storage/                # Logs, cache, uploads
-├── tests/                  # PHPUnit tests
-├── .env                    # Environment config
-├── artisan                 # CLI tool
-└── composer.json           # Dependencies
+http://localhost:8000/?festival=easter
+http://localhost:8000/?festival=christmas
 ```
 
-## 🔧 Common Commands
+## 📁 Project Structure
 
+```
+app/
+  Http/Controllers/CalendarController.php    Main logic
+  Services/                                  Business logic
+config/
+  calendars.php                              Calendars definition
+  festivals.php                              Festival config
+public/
+  static/                                    Assets
+resources/
+  js/                                        JavaScript source
+  views/                                     Blade templates
+routes/web.php                              Route definitions
+templates/scss/                             Theme styles
+```
+
+## 🔧 Essential Commands
+
+**Development**
 ```bash
-# Development server
-php artisan serve
-
-# Clear caches
-php artisan cache:clear
-php artisan config:clear
-php artisan view:clear
-
-# View routes
-php artisan route:list
-
-# Code formatting
-./vendor/bin/pint
-
-# Run tests (when added)
-php artisan test
+php artisan serve              # Start backend server
+npm run dev                    # Start Vite dev server
+npm run build                  # Build for production
 ```
+
+**Maintenance**
+```bash
+php artisan cache:clear       # Clear all caches
+php artisan config:clear      # Clear config cache
+php artisan route:list        # View all routes
+./vendor/bin/pint             # Format code
+php artisan test              # Run tests
+```
+
+**Debugging**
+```bash
+php artisan tinker            # Interactive shell
+tail -f storage/logs/laravel.log    # View logs
+```
+
+## 🎯 Next Steps
+
+1. **[Read Full Documentation](README.md)**
+2. **[View Migration Guides](MIGRATIONS.md)**
+   - Calendar Configuration
+   - Google Credentials Storage
+   - Laravel Conversion Details
+3. **[Configure Your Calendars](config/calendars.php)**
+4. **[Add Festival Themes](config/festivals.php)**
+
+## 🐛 Troubleshooting
+
+**Port Already in Use**
+```bash
+php artisan serve --port=8001
+```
+
+**Permission Denied**
+```bash
+chmod -R 775 storage bootstrap/cache public/static
+```
+
+**Assets Not Loading**
+```bash
+npm run build
+php artisan cache:clear
+```
+
+**Calendars Not Showing**
+```bash
+php artisan config:clear
+php artisan cache:clear
+```
+
+## 📚 Documentation
+
+- [README](README.md) - Full documentation
+- [MIGRATIONS.md](MIGRATIONS.md) - Configuration guides
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+- [Laravel Docs](https://laravel.com/docs/11.x) - Framework documentation
 
 ## 🌐 Available Routes
 

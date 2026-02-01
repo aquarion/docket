@@ -1,102 +1,163 @@
 # Docket - Laravel Calendar Application
 
-A personal calendar dashboard application built with Laravel.
+A personal calendar dashboard application built with Laravel 11. Features seasonal themes, Google Calendar integration, and responsive design.
 
-## Installation
+## Requirements
 
-### Requirements
-
-- PHP >= 8.1
+- PHP 8.3+
 - Composer
-- Node.js & npm (for frontend assets)
+- Node.js 20+ (for frontend assets)
+- Docker & Docker Compose (optional, for Laravel Sail)
 
-### Setup Steps
+## Quick Start
 
-1. **Install Dependencies**
-   ```bash
-   composer install
-   npm install
-   ```
+### 1. Install Dependencies
 
-2. **Environment Configuration**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
+```bash
+composer install
+npm install
+```
 
-3. **Configure Calendar Settings**
-   Copy the example calendar configuration:
-   ```bash
-   cp calendars.inc.example.php calendars.inc.php
-   ```
-   
-   Edit `calendars.inc.php` to add your calendar sources.
+### 2. Environment Setup
 
-4. **Configure Location**
-   Update your latitude and longitude in `.env`:
-   ```
-   MY_LAT=51.5074
-   MY_LON=-0.1278
-   ```
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-5. **Set Permissions**
-   ```bash
-   chmod -R 775 storage bootstrap/cache
-   ```
+### 3. Configure Location
 
-6. **Migrate Static Assets**
-   Copy static files from `htdocs/static/` to `public/static/`:
-   ```bash
-   mkdir -p public/static
-   cp -r htdocs/static/* public/static/
-   ```
+Edit `.env` with your location for sunrise/sunset calculations:
 
-7. **Start Development Server**
-   ```bash
-   php artisan serve
-   ```
-   
-   Visit http://localhost:8000
+```env
+MY_LAT=51.5074
+MY_LON=-0.1278
+```
 
-## Laravel Conversion Notes
+### 4. Configure Calendars
 
-This application has been converted from a custom PHP application to Laravel 11. Key changes:
+Copy the calendar configuration template:
+
+```bash
+cp calendars.inc.example.php calendars.inc.php
+```
+
+Or use the modern Laravel config system (recommended):
+
+- Edit `config/calendars.php` to define your calendars
+- Add calendar IDs/URLs to `.env`
+
+For detailed instructions, see [MIGRATIONS.md](MIGRATIONS.md)
+
+### 5. Set Permissions
+
+```bash
+chmod -R 775 storage bootstrap/cache public/static
+```
+
+### 6. Start Development Server
+
+```bash
+# Traditional
+php artisan serve
+
+# Or with Docker (Laravel Sail)
+sail up
+```
+
+Visit: **http://localhost:8000**
+
+## Features
+
+### 📅 Calendar Display
+- Multiple calendar support (Google Calendar, iCal)
+- Sunrise/sunset calculations
+- Time-of-day theming (day/night modes)
+- Next upcoming event display
+
+### 🎨 Seasonal Themes
+- **Easter:** Animated eggs (Good Friday - Easter Monday)
+- **Christmas:** Winter holiday decorations (December)
+- Extensible festival system for custom themes
+- Debug mode: `?festival=easter|christmas|none` to test themes
+
+### 🔧 Modern Build System
+- Vite for JavaScript bundling
+- SCSS compilation with automatic hot-reload
+- Optimized asset pipeline
+- Static asset organization
+
+## Architecture
 
 ### Directory Structure
 
-- **Old:** `htdocs/` → **New:** `public/`
-- **Old:** `lib/` → **New:** `app/Services/` and controllers
-- **Old:** `templates/` (Twig) → **New:** `resources/views/` (Blade)
+```
+app/
+  Http/Controllers/    # Main application logic
+  Services/           # Business logic (GoogleCalendarService, ThemeService, etc.)
+  Models/             # Database models
+config/
+  calendars.php       # Calendar configuration
+  festivals.php       # Festival definitions
+resources/
+  js/                 # JavaScript source files
+  css/                # CSS source files
+routes/
+  web.php             # Web routes
+public/
+  static/             # Static assets (images, fonts)
+  index.php           # Entry point
+templates/
+  scss/               # SCSS files for themes
+```
 
-### Routing
+### Key Routes
 
-All routes are now defined in `routes/web.php`:
 - `/` - Main calendar view
-- `/calendar` - Individual calendar view
-- `/all-calendars` - All calendars view
-- `/calendars.css` - Dynamic CSS
-- `/docket.js` - Dynamic JavaScript
-- `/icalproxy` - iCal proxy endpoint
-- `/token` - Token endpoint
+- `/calendar` - Individual calendar
+- `/all-calendars` - All calendars overview
+- `/docket.js` - Dynamic JavaScript with festival config
+- `/calendars.css` - Dynamic CSS styling
+- `/icalproxy` - iCal feed proxy
+- `/token` - Token management
 
-### Configuration
+## Development
 
-- Calendar configuration: `calendars.inc.php` (root directory)
-- Environment variables: `.env` file
-- Application config: `config/` directory
+### Asset Building
 
-### Controllers
+```bash
+# Development with hot reload
+npm run dev
 
-Main application logic is in `app/Http/Controllers/CalendarController.php`
+# Build for production
+npm run build
 
-### Views
+# SCSS compilation
+npm run build:sass
 
-Blade templates are in `resources/views/`:
-- `index.blade.php` - Main calendar page
-- `calendar.blade.php` - Single calendar view
-- `all-calendars.blade.php` - All calendars view
-- `calendars.css.blade.php` - Dynamic CSS
-- `docket.js.blade.php` - Dynamic JavaScript
+# Watch SCSS changes
+npm run build:watch
+```
+
+### Code Quality
+
+```bash
+# Format code
+./vendor/bin/pint
+
+# Run tests
+php artisan test
+
+# View logs
+tail -f storage/logs/laravel.log
+```
+
+## Configuration
+
+See [MIGRATIONS.md](MIGRATIONS.md) for detailed configuration guides:
+- [Calendar Configuration Migration](MIGRATIONS.md#calendar-configuration-migration-guide)
+- [Google Credentials Storage](MIGRATIONS.md#google-credentials-storage-migration)
+- [Laravel Conversion Overview](MIGRATIONS.md#laravel-conversion-migration-guide)
 
 ## Development
 
