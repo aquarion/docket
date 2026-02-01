@@ -28,7 +28,9 @@ class GoogleAuthServiceTest extends TestCase
 
         $this->expectException(InvalidCredentialsException::class);
 
-        new GoogleAuthService;
+        $service = new GoogleAuthService;
+        // Exception is thrown when trying to use the service
+        $service->createClient();
     }
 
     public function test_load_token_returns_null_if_file_not_exists(): void
