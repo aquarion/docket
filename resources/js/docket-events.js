@@ -209,6 +209,10 @@ var DocketEvents = {
     nextUpEl = document.getElementById("nextUp");
     if (nextUpEl) {
       nextUpEl.innerHTML = output;
+      const callback = FestivalUtils?.getCallback?.("afterRenderEvents");
+      if (callback && typeof callback === "function") {
+        callback(nextUpEl);
+      }
     }
   },
 

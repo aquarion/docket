@@ -26,6 +26,10 @@ var DocketUI = {
     if (timeEl) timeEl.innerHTML = time;
     if (datetimeEl) {
       datetimeEl.innerHTML = `<div class="dt_time">${time}</div><div class="dt_date">${strToday}</div>`;
+      const callback = FestivalUtils?.getCallback?.("afterRenderDateTime");
+      if (callback && typeof callback === "function") {
+        callback(datetimeEl);
+      }
     }
   },
 

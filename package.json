@@ -14,9 +14,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && npm run build:sass && npm run build:toastify",
-    "build:sass": "sass templates/scss/christmas.scss:public/static/generated/christmas.css",
+    "build:sass": "sass templates/scss:public/static/generated --no-source-map",
     "build:toastify": "cp node_modules/toastify-js/src/toastify.js public/static/generated/ && cp node_modules/toastify-js/src/toastify.css public/static/generated/",
-    "build:watch": "sass --watch templates/scss/christmas.scss:public/static/generated/christmas.css",
+    "build:watch": "sass --watch templates/scss:public/static/generated --no-source-map",
     "lint": "biome check",
     "lint:fix": "biome check --write"
   },

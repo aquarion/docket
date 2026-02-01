@@ -2,7 +2,9 @@
 <html>
 
 <head>
-  <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://dailyphoto.aquarionics.com https://live.dailyphoto.aquarionics.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
+  @if (!config("app.debug"))
+  <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://dailyphoto.aquarionics.com https://live.dailyphoto.aquarionics.com {{ config('app.url') }}; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com; ">
+  @endif
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <link href="https://fonts.googleapis.com/css?family=Playfair Display" rel="stylesheet">
@@ -30,7 +32,32 @@
   <link rel="stylesheet" href="{{ route('calendars.css') }}?calendar_set={{ $calendar_set }}">
   @if($festival == 'christmas')
   <link rel="stylesheet" href="/static/generated/christmas.css">
+  @elseif($festival == 'easter')
+  <link rel="stylesheet" href="/static/generated/easter.css">
   @endif
+
+  <script type="text/javascript">
+    // Initialize DocketConfig stub with festival value - must be before Vite bundle loads
+    if (typeof DocketConfig === 'undefined') {
+      window.DocketConfig = {
+        constants: {
+          FESTIVAL: "{{ $festival ?? '' }}",
+        },
+      };
+    }
+    console.log('[index.blade] DocketConfig.constants.FESTIVAL:', window.DocketConfig.constants.FESTIVAL, 'type:', typeof window.DocketConfig.constants.FESTIVAL);
+
+    // Initialize FestivalUtils stub - must be before Vite bundle loads
+    if (typeof FestivalUtils === 'undefined') {
+      window.FestivalUtils = {
+        getCallback: () => null,
+      };
+    }
+    console.log('[index.blade] FestivalUtils stub created');
+  </script>
+
+  <!-- Load festival utilities -->
+  <script type="text/javascript" async src="/static/js/festival-utilities.js"></script>
 
   <!-- Vite Assets -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -52,6 +79,8 @@
 
   @if($festival == 'christmas')
   @include('christmas')
+  @elseif($festival == 'easter')
+  @include('easter')
   @endif
 
   @if(config('app.debug') && isset($git_branch))
@@ -65,8 +94,9 @@
   <div class="debug-festival-selector" role="toolbar" aria-label="Festival selector">
     <label for="festival-select">Festival:</label>
     <select id="festival-select" aria-label="Select festival for testing">
-      <option value="none" @selected(!$festival || $festival !=='christmas' )>None</option>
+      <option value="none" @selected(!$festival || ($festival !=='christmas' && $festival !=='easter' ))>None</option>
       <option value="christmas" @selected($festival==='christmas' )>🎄 Christmas</option>
+      <option value="easter" @selected($festival==='easter' )>🐰 Easter</option>
     </select>
   </div>
   @endif
@@ -117,7 +147,7 @@
 
   <canvas id="countdown" width="50" height="50" aria-label="Refresh countdown indicator"></canvas>
 
-  <script type="text/javascript" src="{{ route('docket.js') }}?calendar_set={{ $calendar_set }}"></script>
+  <script type="text/javascript" src="{{ route('docket.js') }}?calendar_set={{ $calendar_set }}&festival={{ $festival ?? '' }}"></script>
 </body>
 
 </html>
