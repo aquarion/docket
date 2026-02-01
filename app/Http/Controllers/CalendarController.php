@@ -112,7 +112,7 @@ class CalendarController extends Controller
         $filteredConfig = $this->getFilteredCalendars($request);
 
         return response()
-            ->view('calendars.css', ['calendars' => $filteredConfig])
+            ->view('calendars-css', ['calendars' => $filteredConfig])
             ->header('Content-Type', 'text/css');
     }
 
@@ -124,7 +124,7 @@ class CalendarController extends Controller
         $filteredConfig = $this->getFilteredCalendars($request);
 
         return response()
-            ->view('docket.js', [
+            ->view('docket-js', [
                 'ical_calendars' => $filteredConfig['ical_calendars'],
                 'google_calendars' => $filteredConfig['google_calendars'],
                 'merged_calendars' => $filteredConfig['merged_calendars'],
@@ -169,7 +169,7 @@ class CalendarController extends Controller
         $availableSetIds = $this->calendarService->getAvailableSetIds();
 
         $validated = $request->validate([
-            'version' => 'sometimes|in:'.implode(',', $availableSetIds),
+            'version' => 'sometimes|in:' . implode(',', $availableSetIds),
         ]);
 
         $calendarSetId = $validated['version'] ?? $this->calendarService->getDefaultSetId();
