@@ -60,6 +60,15 @@
       Branch {{ $git_branch }}
     </a>
   </div>
+
+  <!-- Festival Selector (Debug Mode) -->
+  <div class="debug-festival-selector" role="toolbar" aria-label="Festival selector">
+    <label for="festival-select">Festival:</label>
+    <select id="festival-select" aria-label="Select festival for testing">
+      <option value="none" @selected(!$festival || $festival !=='christmas' )>None</option>
+      <option value="christmas" @selected($festival==='christmas' )>🎄 Christmas</option>
+    </select>
+  </div>
   @endif
 
   <main id="main-content">

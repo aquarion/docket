@@ -72,7 +72,40 @@ initCalendars();
 if (typeof twemoji !== 'undefined') {
 twemoji.parse(document.body);
 }
+
+// Initialize festival selector in debug mode
+initFestivalSelector();
 });
+
+/**
+* Initialize the festival selector for debug mode testing
+*/
+function initFestivalSelector() {
+const festivalSelect = document.getElementById('festival-select');
+if (!festivalSelect) {
+console.warn('Festival selector element not found');
+return;
+}
+
+console.log('Festival selector initialized, current value:', festivalSelect.value);
+
+festivalSelect.addEventListener('change', function(e) {
+console.log('Festival changed to:', e.target.value);
+const selectedFestival = e.target.value;
+const url = new URL(window.location.href);
+const params = new URLSearchParams(url.search);
+
+if (selectedFestival === 'none') {
+params.delete('festival');
+} else {
+params.set('festival', selectedFestival);
+}
+
+url.search = params.toString();
+console.log('Navigating to:', url.toString());
+window.location.href = url.toString();
+});
+}
 
 function initCalendars() {
 const calendars = document.querySelectorAll('.calendar');

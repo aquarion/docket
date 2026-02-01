@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Request;
+
 class ThemeService
 {
     /**
@@ -20,10 +22,22 @@ class ThemeService
     }
 
     /**
-     * Get current festival based on date
+     * Get current festival based on date, with debug override support
+     *
+     * In debug mode, allows overriding the festival via query parameter:
+     * ?festival=christmas or ?festival=none
      */
     public function getFestival(): ?string
     {
+        // Allow debug mode to override festival via query parameter
+        if (config('app.debug')) {
+            $requestFestival = request()->query('festival');
+            if ($requestFestival && in_array($requestFestival, ['christmas', 'none'])) {
+                return $requestFestival === 'none' ? null : $requestFestival;
+            }
+        }
+
+        // Default: Christmas in December
         return ((int) date('m')) === 12 ? 'christmas' : null;
     }
 }
