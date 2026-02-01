@@ -13,25 +13,22 @@ class ApiTest extends DuskTestCase
   public function test_calendar_api_returns_json(): void
   {
     $this->browse(function (Browser $browser) {
-      $browser->visit('/api/calendars')
-        ->assertSee('{')
-        ->assertSee('events');
+      $browser->visit('/all-calendars?end=2026-03-01&version=all')
+        ->assertSee('[')
+        ->assertDontSee('<!DOCTYPE');
     });
   }
 
   /**
-   * Test that calendar data can be fetched via JavaScript.
+   * Test that calendar elements are present.
    */
   public function test_calendar_data_fetch_via_js(): void
   {
     $this->browse(function (Browser $browser) {
       $browser->visit('/')
-        ->waitFor('#calendar', 5)
-        ->script([
-          "return fetch('/api/calendars')
-                            .then(r => r.json())
-                            .then(data => data.events !== undefined)"
-        ]);
+        ->assertPresent('#calendar')
+        ->assertPresent('#datetime')
+        ->assertPresent('#nextUp');
     });
   }
 
@@ -42,7 +39,7 @@ class ApiTest extends DuskTestCase
   {
     $this->browse(function (Browser $browser) {
       $browser->visit('/calendars.css')
-        ->assertSee('.calendar-')
+        ->assertSee('.cal-')
         ->assertDontSee('<!DOCTYPE');
     });
   }

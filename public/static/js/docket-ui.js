@@ -102,8 +102,14 @@ var DocketUI = {
     var now, sunstate;
 
     try {
+      // Check if SunCalc is available
+      if (typeof window.SunCalc === "undefined") {
+        console.warn("SunCalc not yet loaded, defaulting to day");
+        return "day";
+      }
+
       now = new Date();
-      sunstate = SunCalc.getTimes(
+      sunstate = window.SunCalc.getTimes(
         now,
         DocketConfig.constants.LATITUDE,
         DocketConfig.constants.LONGITUDE,
