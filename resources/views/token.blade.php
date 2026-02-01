@@ -88,12 +88,21 @@
 <body class="token">
   <h1>Hey Look, An Auth Token!</h1>
 
-  <pre>
-        <a href="#" id="copyCode" title="Copy auth code to clipboard">
-            <img src="/static/icons/copy.svg" alt="Copy">
-        </a>
-        <code id="code">{{ $code }}</code>
-    </pre>
+  @if($message)
+  <div style="background: {{ str_contains($message, 'Error') ? '#f8d7da' : '#d4edda' }}; 
+                    color: {{ str_contains($message, 'Error') ? '#721c24' : '#155724' }}; 
+                    padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+    {{ $message }}
+  </div>
+  @endif
+
+  @if($account)
+  <p style="margin-bottom: 1rem;">Account: <strong>{{ $account }}</strong></p>
+  @endif
+
+  </a>
+  <code id="code">{{ $code }}</code>
+  </pre>
 
   <p>Enter that into the terminal that's waiting for it</p>
   <p class="success-message" id="successMessage">✓ Code copied to clipboard!</p>

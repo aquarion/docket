@@ -2,7 +2,7 @@
 
 return [
 
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Third Party Services
     |--------------------------------------------------------------------------
@@ -14,17 +14,18 @@ return [
     |
     */
 
-  'location' => [
-    'latitude' => env('MY_LAT', 51.5074),
-    'longitude' => env('MY_LON', -0.1278),
-  ],
-
-  'google' => [
-    'calendar' => [
-      'api_key' => env('GOOGLE_API_KEY'),
-      'client_id' => env('GOOGLE_CLIENT_ID'),
-      'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    'location' => [
+        'latitude' => env('MY_LAT', 51.5074),
+        'longitude' => env('MY_LON', -0.1278),
     ],
-  ],
+
+    'google' => [
+        'credentials_path' => env('GOOGLE_CREDENTIALS_PATH', base_path('etc/credentials.json')),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/token'),
+        'scopes' => [
+            'https://www.googleapis.com/auth/photoslibrary.readonly',
+            'https://www.googleapis.com/auth/calendar.readonly',
+        ],
+    ],
 
 ];

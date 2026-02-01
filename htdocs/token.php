@@ -54,7 +54,7 @@
 
   <h1>Hey Look, An Auth Token!</h1>
 
-  <pre><a href="#" id="copyCode" title="Copy auth code to clipboard" ><img src="/static/icons/copy.svg"></a><code id="code"><?PHP echo $_GET['code'] ?></code></pre>
+  <pre><a href="#" id="copyCode" title="Copy auth code to clipboard" ><img src="/static/icons/copy.svg"></a><code id="code"><?php echo $_GET['code'] ?></code></pre>
   <p>Enter that into the terminal that's waiting for it</p>
 
   <script>

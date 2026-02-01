@@ -5,40 +5,39 @@
  * php version 7.2
  *
  * @category Personal
- * @package  Docket
+ *
  * @author   "Nicholas Avenell" <nicholas@istic.net>
  * @license  BSD-3-Clause https://opensource.org/license/bsd-3-clause
+ *
  * @link     https://docket.hubris.house
  */
+define('HOME_DIR', __DIR__.'/..');
 
-define('HOME_DIR', __DIR__ . '/..');
-
-require HOME_DIR . '/vendor/autoload.php';
-require HOME_DIR . '/lib/docket.lib.php';
+require HOME_DIR.'/vendor/autoload.php';
+require HOME_DIR.'/lib/docket.lib.php';
 
 $twig_config = [];
 
-if (!DEV_MODE) {
-    $twig_config['cache']  = HOME_DIR . '/cache';
+if (! DEV_MODE) {
+    $twig_config['cache'] = HOME_DIR.'/cache';
 }
 
 if (isset($_GET['clear_cache'])) {
-    $files = clearCacheFiles(HOME_DIR . '/cache');
-    echo "Cache cleared";
-    echo "<pre>";
+    $files = clearCacheFiles(HOME_DIR.'/cache');
+    echo 'Cache cleared';
+    echo '<pre>';
     echo implode("\n", $files);
-    echo "</pre>";
-    die();
+    echo '</pre>';
+    exit();
 }
 
 if (date('m') == 12) {
-    define("FESTIVAL", "christmas");
+    define('FESTIVAL', 'christmas');
 } else {
-    define("FESTIVAL", false);
+    define('FESTIVAL', false);
 }
 
-
-$loader = new \Twig\Loader\FilesystemLoader(HOME_DIR . '/templates');
+$loader = new \Twig\Loader\FilesystemLoader(HOME_DIR.'/templates');
 $twig = new \Twig\Environment(
     $loader,
     $twig_config
@@ -47,12 +46,12 @@ $twig = new \Twig\Environment(
 $template = $twig->load('index.html.twig');
 
 $view = [
-    'ical_calendars'   => $ical_calendars,
+    'ical_calendars' => $ical_calendars,
     'google_calendars' => $google_calendars,
     'merged_calendars' => $merged_calendars,
     'theme' => THEME,
     'festival' => FESTIVAL,
-    'calendar_set' => CALENDAR_SET
+    'calendar_set' => CALENDAR_SET,
 ];
 
 if (DEV_MODE) {

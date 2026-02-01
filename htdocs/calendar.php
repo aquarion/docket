@@ -1,10 +1,9 @@
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/lib/gcal.lib.php';
-require __DIR__ . '/lib/docket.lib.php';
+require __DIR__.'/vendor/autoload.php';
+require __DIR__.'/lib/gcal.lib.php';
+require __DIR__.'/lib/docket.lib.php';
 define('SEND_JSON_ERRORS', true);
-
 
 // Print the next events on the user's calendar.
 $calendarId = $_GET['cal'];
@@ -14,25 +13,24 @@ $accountId = $_GET['account'];
 $client = getClient($accountId);
 $service = new Google_Service_Calendar($client);
 
-if (!isset($_GET['start'])) {
-    $_GET['start'] = date("Y-m-01");
+if (! isset($_GET['start'])) {
+    $_GET['start'] = date('Y-m-01');
 }
-if (!isset($_GET['end'])) {
-    $_GET['end'] = date("Y-m-30");
+if (! isset($_GET['end'])) {
+    $_GET['end'] = date('Y-m-30');
 }
 
-$optParams = array(
+$optParams = [
     'orderBy' => 'startTime',
     'singleEvents' => true,
-    'timeMin' =>  date('c', strtotime($_GET['start'])),
-    'timeMax' =>  date('c', strtotime($_GET['end']))
-);
-
+    'timeMin' => date('c', strtotime($_GET['start'])),
+    'timeMax' => date('c', strtotime($_GET['end'])),
+];
 
 $results = $service->events->listEvents($calendarId, $optParams);
 $events = $results->getItems();
 
-$events_out = array();
+$events_out = [];
 
 /* ,
     {
@@ -48,13 +46,13 @@ foreach ($events as $event) {
     $start = $event->start->dateTime ? $event->start->dateTime : $event->start->date;
     $end = $event->end->dateTime ? $event->end->dateTime : $event->end->date;
 
-    $events_out[] = array(
-        "allDay" => $event->start->date ? true : false,
-        "title"  => $event->summary,
-        "id"     => $event->id,
-        "end"    => $end,
-        "start"  => $start
-    );
+    $events_out[] = [
+        'allDay' => $event->start->date ? true : false,
+        'title' => $event->summary,
+        'id' => $event->id,
+        'end' => $end,
+        'start' => $start,
+    ];
 }
 
 header('content-type: text/json');
