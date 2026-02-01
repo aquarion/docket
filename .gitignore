@@ -18,6 +18,9 @@ yarn-error.log
 /.idea
 /.vscode
 
+# Generated files
+public/static/generated/
+
 # Legacy paths
 composer.lock
 etc

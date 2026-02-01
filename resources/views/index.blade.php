@@ -5,9 +5,6 @@
   <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://dailyphoto.aquarionics.com https://live.dailyphoto.aquarionics.com; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com ;">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/ical.js@1.5.0/build/ical.min.js" crossorigin="anonymous"></script>
-
   <link href="https://fonts.googleapis.com/css?family=Playfair Display" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Sometype+Mono&amp;display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -29,10 +26,14 @@
 
   <title>Docket - Personal Calendar</title>
 
-  <link rel="stylesheet" href="{{ route('calendars.css') }}">
+  <!-- Dynamic Calendar Styles -->
+  <link rel="stylesheet" href="{{ route('calendars.css') }}?version={{ $calendar_set }}">
   @if($festival == 'christmas')
-  <link rel="stylesheet" href="/static/css/christmas.css">
+  <link rel="stylesheet" href="/static/generated/christmas.css">
   @endif
+
+  <!-- Vite Assets -->
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   <script type="application/ld+json">
     {
@@ -46,27 +47,41 @@
   </script>
 </head>
 
-<body class="theme-{{ $theme }} @if($festival) festival-{{ $festival }} @endif">
-  <div id="app">
-    <div id="calendars">
-      @foreach($ical_calendars as $calId => $calendar)
-      <div class="calendar" data-calendar="{{ $calId }}">
-        <!-- Calendar content will be loaded via JavaScript -->
-      </div>
-      @endforeach
+<body class="{{ $theme }}" role="application" aria-label="Calendar Dashboard">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
-      @foreach($google_calendars as $calId => $calendar)
-      <div class="calendar" data-calendar="{{ $calId }}">
-        <!-- Calendar content will be loaded via JavaScript -->
-      </div>
-      @endforeach
-    </div>
-  </div>
-
-  <script src="{{ route('docket.js') }}"></script>
-  @if(config('app.debug') && isset($git_branch))
-  <div class="debug-info">Branch: {{ $git_branch }}</div>
+  @if($festival == 'christmas')
+  @include('christmas')
   @endif
+
+  @if(config('app.debug') && isset($git_branch))
+  <div class="devmode-ribbon" role="banner" aria-label="Development mode indicator">
+    <a target="_blank" href="https://github.com/aquarion/docket" rel="noopener noreferrer">
+      Branch {{ $git_branch }}
+    </a>
+  </div>
+  @endif
+
+  <main id="main-content">
+    <div id='calendar' role="img" aria-label="Calendar visualization"></div>
+    <div id="datetime" role="timer" aria-live="polite" aria-label="Current date and time"></div>
+    <div id='nextUp' role="region" aria-label="Upcoming events" aria-live="polite"></div>
+  </main>
+
+  <nav id='switch' role="navigation" aria-label="View switcher">
+    @php
+    $available_sets = array_keys($calendar_sets);
+    $current_index = array_search($calendar_set, $available_sets);
+    $next_index = ($current_index + 1) % count($available_sets);
+    $next_set = $available_sets[$next_index] ?? $available_sets[0];
+    $next_emoji = $calendar_sets[$next_set]['emoji'] ?? '🔄';
+    @endphp
+    <a href="/?version={{ $next_set }}" aria-label="Switch to {{ $next_set }} calendar view">{{ $next_emoji }}</a>
+  </nav>
+
+  <canvas id="countdown" width="50" height="50" aria-label="Refresh countdown indicator"></canvas>
+
+  <script type="text/javascript" src="{{ route('docket.js') }}?version={{ $calendar_set }}"></script>
 </body>
 
 </html>
