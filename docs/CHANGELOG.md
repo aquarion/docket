@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-02-01
+
 ### Changed
 - **Upgraded to Laravel 12** - Minimum PHP version updated to 8.2
 - Updated all framework dependencies for Laravel 12 compatibility
@@ -33,16 +35,13 @@
 - Vite output changed to `public/static/build/` with proper structure
 - Updated `package.json` build:sass to process all SCSS files in `templates/scss/`
 - Build process now auto-compiles all festival themes
-
-#### Bug Fixes
-- Fixed SunCalc loading timing issue - now waits for library to load before initializing theme
-- Fixed Easter egg alignment in timestamps with proper CSS kerning
-- Fixed query parameter propagation to `/docket.js` route for festival detection
-- Fixed festival-utilities script loading order (now bundled with Vite)
+- Added GitHub Actions workflow for Vite builds and Selenium/Dusk browser tests
 
 #### Documentation
 - Created consolidated `MIGRATIONS.md` with all migration guides
 - Includes Laravel conversion, calendar configuration, and Google credentials storage guides
+- Organized root directory: moved documentation to `docs/` folder
+- Updated README and QUICKSTART with modern setup guides
 
 ### Changed
 

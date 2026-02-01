@@ -44,6 +44,14 @@ This project has domain-specific skills available. You MUST activate the relevan
 
 - You must only create documentation files if explicitly requested by the user.
 
+## Changelog Management
+
+- Keep [docs/CHANGELOG.md](../docs/CHANGELOG.md) up to date with all changes
+- Add entries to the `[Unreleased]` section before completing work
+- Use existing sections: Added, Changed, Fixed, Removed, Deprecated
+- Create new subsections as needed (e.g., "Easter Festival Theme", "Laravel 12 Upgrade")
+- Update this file in the same PR/commit as the feature implementation
+
 ## Replies
 
 - Be concise in your explanations - focus on what's important rather than explaining obvious details.
