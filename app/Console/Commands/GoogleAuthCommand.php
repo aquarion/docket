@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\GoogleAuthService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 
 class GoogleAuthCommand extends Command
 {
@@ -40,13 +41,13 @@ class GoogleAuthCommand extends Command
             $this->line('3. Create OAuth 2.0 credentials (Desktop application type)');
             $this->line('4. Download the credentials JSON file');
             $this->line('5. Save it to one of the following locations:');
-            $this->line("   - Account-specific: etc/credentials_{$account}.json (recommended)");
-            $this->line('   - Default: etc/credentials.json (used by all accounts)');
+            $this->line("   - Account-specific: storage/app/google/credentials_{$account}.json (recommended)");
+            $this->line('   - Default: storage/app/google/credentials.json (used by all accounts)');
             $this->newLine();
             $this->line('Account-specific credentials allow different OAuth apps per account.');
             $this->line("For account '{$account}', looking for:");
-            $this->line('  1. ' . base_path("etc/credentials_{$account}.json"));
-            $this->line('  2. ' . base_path('etc/credentials.json') . ' (fallback)');
+            $this->line('  1. ' . storage_path("app/google/credentials_{$account}.json"));
+            $this->line('  2. ' . storage_path('app/google/credentials.json') . ' (fallback)');
             $this->newLine();
             $this->line('For detailed instructions, see:');
             $this->info('https://developers.google.com/calendar/api/quickstart/php');
@@ -59,9 +60,10 @@ class GoogleAuthCommand extends Command
             $this->info("✓ Account '{$account}' already has a valid token.");
 
             // Show which credentials file is being used
-            $accountSpecificPath = base_path("etc/credentials_{$account}.json");
-            $defaultPath = base_path('etc/credentials.json');
-            $usingPath = file_exists($accountSpecificPath) ? $accountSpecificPath : $defaultPath;
+            $disk = Storage::disk('local');
+            $accountSpecificPath = "google/credentials_{$account}.json";
+            $defaultPath = 'google/credentials.json';
+            $usingPath = $disk->exists($accountSpecificPath) ? $accountSpecificPath : $defaultPath;
             $this->line('Using credentials: ' . basename($usingPath));
 
             $this->line('Testing with calendar API...');
@@ -96,9 +98,10 @@ class GoogleAuthCommand extends Command
 
         // Need to authorize - get the auth URL
         // Show which credentials file is being used
-        $accountSpecificPath = base_path("etc/credentials_{$account}.json");
-        $defaultPath = base_path('etc/credentials.json');
-        $usingPath = file_exists($accountSpecificPath) ? $accountSpecificPath : $defaultPath;
+        $disk = Storage::disk('local');
+        $accountSpecificPath = "google/credentials_{$account}.json";
+        $defaultPath = 'google/credentials.json';
+        $usingPath = $disk->exists($accountSpecificPath) ? $accountSpecificPath : $defaultPath;
 
         $authUrl = $googleAuth->getAuthorizationUrl($account);
 

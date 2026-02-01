@@ -26,7 +26,7 @@ class GoogleAuthService
 
     public function __construct()
     {
-        $this->defaultCredentialsPath = config('services.google.credentials_path', base_path('etc/credentials.json'));
+        $this->defaultCredentialsPath = config('services.google.credentials_path', 'google/credentials.json');
         $this->redirectUri = config('services.google.redirect_uri', url('/token'));
         $this->scopes = config('services.google.scopes', []);
     }
@@ -38,10 +38,12 @@ class GoogleAuthService
      */
     protected function getCredentialsPath(?string $account = null): string
     {
+        $disk = Storage::disk('local');
+
         if ($account) {
             // Try account-specific credentials first
-            $accountSpecificPath = base_path("etc/credentials_{$account}.json");
-            if (file_exists($accountSpecificPath)) {
+            $accountSpecificPath = "google/credentials_{$account}.json";
+            if ($disk->exists($accountSpecificPath)) {
                 return $accountSpecificPath;
             }
         }
@@ -55,12 +57,14 @@ class GoogleAuthService
      */
     protected function validateCredentials(string $credentialsPath): void
     {
-        if (! file_exists($credentialsPath)) {
+        $disk = Storage::disk('local');
+
+        if (! $disk->exists($credentialsPath)) {
             throw new InvalidCredentialsException($credentialsPath);
         }
 
         // Validate credentials file is valid JSON with required fields
-        $contents = file_get_contents($credentialsPath);
+        $contents = $disk->get($credentialsPath);
         $credentials = json_decode($contents, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -87,7 +91,9 @@ class GoogleAuthService
             $client->addScope($scope);
         }
 
-        $client->setAuthConfig($credentialsPath);
+        // Load credentials from storage
+        $credentialsJson = Storage::disk('local')->get($credentialsPath);
+        $client->setAuthConfig(json_decode($credentialsJson, true));
         $client->setAccessType('offline');
         $client->setRedirectUri($this->redirectUri);
 
@@ -175,7 +181,7 @@ class GoogleAuthService
             return $cached;
         }
 
-        $relativePath = "tokens/token_{$account}.json";
+        $relativePath = "google/tokens/token_{$account}.json";
 
         if (! Storage::disk('local')->exists($relativePath)) {
             Log::debug('Token file not found', [
@@ -217,7 +223,7 @@ class GoogleAuthService
     public function saveToken(string $account, array $token): void
     {
         try {
-            $relativePath = "tokens/token_{$account}.json";
+            $relativePath = "google/tokens/token_{$account}.json";
             $encrypted = Crypt::encryptString(json_encode($token));
 
             Storage::disk('local')->put($relativePath, $encrypted);
@@ -351,7 +357,7 @@ class GoogleAuthService
             }
 
             // Delete token file
-            $relativePath = "tokens/token_{$account}.json";
+            $relativePath = "google/tokens/token_{$account}.json";
             if (Storage::disk('local')->exists($relativePath)) {
                 Storage::disk('local')->delete($relativePath);
             }

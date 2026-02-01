@@ -24,7 +24,7 @@ class GoogleAuthServiceTest extends TestCase
 
     public function test_constructor_throws_exception_if_credentials_missing(): void
     {
-        config(['services.google.credentials_path' => '/nonexistent/path.json']);
+        config(['services.google.credentials_path' => 'nonexistent/path.json']);
 
         $this->expectException(InvalidCredentialsException::class);
 
@@ -80,7 +80,7 @@ class GoogleAuthServiceTest extends TestCase
 
         // Create client will fail without actual Google setup, so we can't fully test this
         // But we can verify the file is created
-        $this->assertTrue(Storage::disk('local')->exists('tokens/token_test_account.json'));
+        $this->assertTrue(Storage::disk('local')->exists('google/tokens/token_test_account.json'));
 
         // Cache should contain the token
         $this->assertNotNull(Cache::get('google_token_test_account'));
@@ -99,14 +99,12 @@ class GoogleAuthServiceTest extends TestCase
 
     protected function createService(): GoogleAuthService
     {
-        // Create a dummy credentials file for testing
-        $credentialsPath = base_path('etc/credentials.json');
-        if (! file_exists($credentialsPath)) {
-            $dir = dirname($credentialsPath);
-            if (! file_exists($dir)) {
-                mkdir($dir, 0755, true);
-            }
-            file_put_contents($credentialsPath, json_encode(['installed' => ['client_id' => 'test']]));
+        // Create a dummy credentials file for testing in storage
+        $disk = Storage::disk('local');
+        $credentialsPath = 'google/credentials.json';
+        
+        if (! $disk->exists($credentialsPath)) {
+            $disk->put($credentialsPath, json_encode(['installed' => ['client_id' => 'test']]));
         }
 
         return new GoogleAuthService;

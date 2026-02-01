@@ -20,11 +20,11 @@ return [
     ],
 
     'google' => [
-        // Default credentials file path
-        // Account-specific credentials can be placed at: etc/credentials_{account}.json
-        // Example: etc/credentials_aqcom.json for account 'aqcom'
+        // Default credentials file path (relative to storage/app directory)
+        // Account-specific credentials can be placed at: google/credentials_{account}.json
+        // Example: google/credentials_aqcom.json for account 'aqcom'
         // Falls back to this default if account-specific file doesn't exist
-        'credentials_path' => env('GOOGLE_CREDENTIALS_PATH', base_path('etc/credentials.json')),
+        'credentials_path' => env('GOOGLE_CREDENTIALS_PATH', 'google/credentials.json'),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/token'),
         'scopes' => [
             'https://www.googleapis.com/auth/photoslibrary.readonly',
