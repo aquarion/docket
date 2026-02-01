@@ -4,7 +4,7 @@ A personal calendar dashboard application built with Laravel 11. Features season
 
 ## Requirements
 
-- PHP 8.3+
+- PHP 8.2+
 - Composer
 - Node.js 20+ (for frontend assets)
 - Docker & Docker Compose (optional, for Laravel Sail)
@@ -47,7 +47,7 @@ Or use the modern Laravel config system (recommended):
 - Edit `config/calendars.php` to define your calendars
 - Add calendar IDs/URLs to `.env`
 
-For detailed instructions, see [MIGRATIONS.md](MIGRATIONS.md)
+For detailed instructions, see [MIGRATIONS.md](docs/MIGRATIONS.md)
 
 ### 5. Set Permissions
 
@@ -66,6 +66,12 @@ sail up
 ```
 
 Visit: **http://localhost:8000**
+
+## 📚 Documentation
+
+- **[Quick Start](docs/QUICKSTART.md)** - 5-minute setup guide
+- **[Migrations & Configuration](docs/MIGRATIONS.md)** - Detailed setup and configuration
+- **[Changelog](docs/CHANGELOG.md)** - Version history and features
 
 ## Features
 
@@ -154,10 +160,10 @@ tail -f storage/logs/laravel.log
 
 ## Configuration
 
-See [MIGRATIONS.md](MIGRATIONS.md) for detailed configuration guides:
-- [Calendar Configuration Migration](MIGRATIONS.md#calendar-configuration-migration-guide)
-- [Google Credentials Storage](MIGRATIONS.md#google-credentials-storage-migration)
-- [Laravel Conversion Overview](MIGRATIONS.md#laravel-conversion-migration-guide)
+See [MIGRATIONS.md](docs/MIGRATIONS.md) for detailed configuration guides:
+- [Calendar Configuration Migration](docs/MIGRATIONS.md#calendar-configuration-migration-guide)
+- [Google Credentials Storage](docs/MIGRATIONS.md#google-credentials-storage-migration)
+- [Laravel Conversion Overview](docs/MIGRATIONS.md#laravel-conversion-migration-guide)
 
 ## Development
 

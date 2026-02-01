@@ -2,7 +2,7 @@
 
 ## ✅ System Ready!
 
-Docket is a Laravel 11 calendar application with seasonal themes and multi-calendar support.
+Docket is a Laravel 12 calendar application with seasonal themes and multi-calendar support.
 
 ## 🚀 Get Started in 5 Minutes
 

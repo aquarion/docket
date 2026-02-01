@@ -16,7 +16,7 @@ This document consolidates all migration guides for the Docket project.
 
 ## Overview
 
-This workspace has been successfully converted from a custom PHP application to Laravel 11. This document explains the changes and how to work with the new structure.
+This workspace has been successfully converted from a custom PHP application to Laravel 12. This document explains the changes and how to work with the new structure.
 
 ## What Changed
 

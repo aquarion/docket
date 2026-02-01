@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+- **Upgraded to Laravel 12** - Minimum PHP version updated to 8.2
+- Updated all framework dependencies for Laravel 12 compatibility
+
 ### Added
 
 #### Easter Festival Theme
