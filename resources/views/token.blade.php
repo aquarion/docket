@@ -100,9 +100,11 @@
   <p style="margin-bottom: 1rem;">Account: <strong>{{ $account }}</strong></p>
   @endif
 
+  <pre><code id="code">{{ $code }}</code></pre>
+
+  <a href="#" id="copyCode" role="button" aria-label="Copy auth token to clipboard">
+    📋 Copy code
   </a>
-  <code id="code">{{ $code }}</code>
-  </pre>
 
   <p>Enter that into the terminal that's waiting for it</p>
   <p class="success-message" id="successMessage">✓ Code copied to clipboard!</p>
