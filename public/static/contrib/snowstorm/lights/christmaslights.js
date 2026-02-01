@@ -1,468 +1,422 @@
-// Christmas Light Smashfest
-// Adapted from XLSF 2007 as originally used on http://schillmania.com/?theme=2007&christmas=1
+// Christmas Light Smashfest - Optimized
+// Original: Adapted from XLSF 2007 as originally used on http://schillmania.com/?theme=2007&christmas=1
 
-function $(sID) {
-  return document.getElementById(sID);
-}
+// Constants - pulled out for better caching and minification
+const LIGHT_CLASSES = { pico: 32, tiny: 50, small: 64, medium: 72, large: 96 };
+const FRAGMENT_SIZE = 50;
+const ANIMATION_DURATION = 1000;
+const BURST_PHASES = 4;
+const VELOCITY_MULTIPLIER = 1.5;
+const EASING_POWER = 3;
 
-var Y = {
- // shortcuts
- A: YAHOO.util.Anim,
- D: YAHOO.util.Dom,
- E: YAHOO.util.Event,
- UE: YAHOO.util.Easing,
- CA: YAHOO.util.ColorAnim,
- BG: YAHOO.util.BgPosAnim
-}
+class ExplosionFragment {
+  constructor(type, lightClass, velocityX, velocityY) {
+    this.type = type;
+    this.burstPhase = 1;
+    this.vX = velocityX * (VELOCITY_MULTIPLIER + Math.random());
+    this.vY = velocityY * (VELOCITY_MULTIPLIER + Math.random());
 
-function XLSF(oTarget,urlBase) {
-  var writeDebug = soundManager._wD;
-  var urlBase = (urlBase?urlBase:'lights/');
-  writeDebug('XLSF()');
-  var IS_MOON_COMPUTER = false;
-  var isIE = navigator.userAgent.match(/msie/i);
-  var self = this;
-  var xlsf = self;
-  var animDuration = 1;
-  this.oFrag = document.createDocumentFragment();
-  this.oTarget = (oTarget?oTarget:document.documentElement);
-  this.oExplosionBox = document.createElement('div');
-  this.oExplosionBox.className = 'xlsf-fragment-box';
-  this.oExplosionFrag = document.createElement('div');
-  this.oExplosionFrag.className = 'xlsf-fragment';
-  this.lights = [];
-  this.lightClasses = {
-    pico: 32,
-    tiny: 50,
-    small: 64,
-    medium: 72,
-    large: 96	
-  }
-
-  if (window.innerWidth || window.innerHeight) {
-    var screenX = window.innerWidth; // -(!isIE?24:2);
-    var screenY = window.innerHeight;
-  } else {
-    var screenX = (document.documentElement.clientWidth||document.body.clientWidth||document.body.scrollWidth); // -(!isIE?8:0);
-    var screenY = (document.documentElement.clientHeight||document.body.clientHeight||document.body.scrollHeight);
-  }
-
-  this.lightClass = (screenX>1800?'small':'pico'); // kind of light to show (32px to 96px square)
-
-  if (window.location.href.match(/size=/i)) {
-    this.lightClass = window.location.href.substr(window.location.href.indexOf('size=')+5);
-  }
-
-  this.lightXY = this.lightClasses[this.lightClass]; // shortcut to w/h
-
-  this.lightGroups = {
-    left: [],
-    top: [],
-    right: [],
-    bottom: []
-  }
-  this.lightSmashCounter = 0;
-  this.lightIndex = 0;
-  this.lightInterval = 500;
-  this.timer = null;
-  this.bgBaseX = 0;
-  this.bgBaseY = 0;
-  this.soundIDs = 0;
-  this.soundPan = {
-    panValue: 75,
-    left: 0,
-    mid: 481,
-    right: 962
-  }
-
-  this.cover = document.createElement('div');
-  this.cover.className = 'xlsf-cover';
-  document.documentElement.appendChild(this.cover);
-
-  this.initSounds = function() {
-	for (var i=0; i<6; i++) {
-	  soundManager.createSound({
-	    id: 'smash'+i,
-	    url: urlBase+'sound/glass'+i+'.mp3',
-	    autoLoad: true,
-	    multiShot: true,
-		volume:50
-	  });
-	}
-    self.initSounds = function() {} // safety net
-  }
-
-  this.appendLights = function() {
-	writeDebug('xlsf.appendLights()');
-    self.oTarget.appendChild(self.oFrag);
-    self.oFrag = document.createDocumentFragment();
-  }
-
-  function ExplosionFragment(nType,sClass,x,y,vX,vY) {
-    var self = this;
-    this.o = xlsf.oExplosionFrag.cloneNode(true);
-    this.nType = nType;
-    this.sClass = sClass;
-    this.x = x;
-    this.y = y;
-    this.w = 50;
-    this.h = 50;
-    this.bgBaseX = 0;
-    this.bgBaseY = this.h*this.nType;
-    this.vX = vX*(1.5+Math.random());
-    this.vY = vY*(1.5+Math.random());
-    this.oA = null;
-    this.oA2 = null;
-    this.burstPhase = 1; // starting background offset point
-    this.burstPhases = 4; // 1+offset (ignore large size)
-    this.o.style.backgroundPosition = ((this.w*-this.burstPhase)+'px '+(this.h*-nType)+'px');
-
-    // boundary checks
-    if (self.sClass == 'left') {
+    // Adjust velocity based on light class
+    if (lightClass === "left") {
       this.vX = Math.abs(this.vX);
-    } else if (self.sClass == 'right') {
-      this.vX = Math.abs(this.vX)*-1;
+    } else if (lightClass === "right") {
+      this.vX = -Math.abs(this.vX);
     }
 
-    this.burstTween = function() {
-      // determine frame to show
-      var phase = 1+Math.floor((this.currentFrame/this.totalFrames)*self.burstPhases);
-      if (phase != self.burstPhase) {
-        self.burstPhase = phase;
-        self.o.style.backgroundPosition = ((self.w*-self.burstPhase)+'px '+(self.h*-nType)+'px');
-      }
-    }
-
-    this.burst = function() {
-      self.oA = new Y.A(self.o,{marginLeft:{to:(self.vX*8)},marginTop:{to:(self.vY*8)}},animDuration,Y.UE.easeOutStrong);
-      self.oA.onTween.subscribe(self.burstTween);
-      self.oA.animate();
-    }
-
-    this.hide = function() {
-      if (!isIE) self.o.style.opacity = 0;
-    }
-
-    this.reset = function() {
-      self.o.style.left = '0px';
-      self.o.style.top = '0px';
-      self.o.style.marginLeft = '0px';
-      self.o.style.marginTop = '0px';
-      if (!isIE) self.o.style.opacity = 1;
-    }
-
-    this.animate = function() {
-      self.reset();
-      self.burst();
-    }
-
+    this.element = document.createElement("div");
+    this.element.className = "xlsf-fragment";
+    this.element.style.willChange = "transform";
+    this.updateBurstPhase();
   }
 
-  function Explosion(nType,sClass,x,y) {
-    var oParent = this;
-    var self = this;
-    this.o = null;
-    this.nType = nType;
-    this.sClass = sClass;
+  updateBurstPhase() {
+    this.element.style.backgroundPosition = `${FRAGMENT_SIZE * -this.burstPhase}px ${FRAGMENT_SIZE * -this.type}px`;
+  }
+
+  animate() {
+    const startTime = performance.now();
+    const targetX = this.vX * 8;
+    const targetY = this.vY * 8;
+
+    const animationStep = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / ANIMATION_DURATION, 1);
+
+      // Easing: 1 - (1-t)^3 (easeOutStrong)
+      const eased = 1 - Math.pow(1 - progress, EASING_POWER);
+
+      // Use transform for GPU acceleration - much faster than margin/left/top
+      this.element.style.transform = `translate(${targetX * eased}px, ${targetY * eased}px)`;
+
+      // Update burst phase
+      const newPhase = 1 + Math.floor(progress * BURST_PHASES);
+      if (newPhase !== this.burstPhase) {
+        this.burstPhase = newPhase;
+        this.updateBurstPhase();
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animationStep);
+      }
+    };
+
+    requestAnimationFrame(animationStep);
+  }
+
+  reset() {
+    this.element.style.transform = "translate(0, 0)";
+    this.burstPhase = 1;
+    this.updateBurstPhase();
+  }
+}
+
+class Explosion {
+  static VELOCITY_VECTORS = [
+    [-5, -5],
+    [0, -5],
+    [5, -5],
+    [-5, 0],
+    [0, 0],
+    [5, 0],
+    [5, -5],
+    [5, 0],
+    [5, 5],
+  ];
+
+  constructor(type, lightClass, x, y, explosionTemplate) {
+    this.type = type;
+    this.lightClass = lightClass;
     this.x = x;
     this.y = y;
-    this.boxVX = 0;
-    this.boxVY = 0;
-    this.o = xlsf.oExplosionBox.cloneNode(true);
-    this.o.style.left = x+'px';
-    this.o.style.top = y+'px';
+    this.vX = 0;
+    this.vY = 0;
     this.fragments = [];
 
-    var mX = x;
-    var mY = y;
+    this.element = explosionTemplate.cloneNode(true);
+    this.element.style.left = `${x}px`;
+    this.element.style.top = `${y}px`;
+    this.element.style.willChange = "transform";
 
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,-5,-5));
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,0,-5));
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,5,-5));
-
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,-5,0));
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,0,0));
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,5,0));
-
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,5,-5));
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,5,0));
-    this.fragments.push(new ExplosionFragment(nType,sClass,mX,mY,5,5));
-
-    this.init = function() {
-      for (var i=self.fragments.length; i--;) {
-        self.o.appendChild(self.fragments[i].o);
-      }
-      if (!IS_MOON_COMPUTER) {
-        // faster rendering, particles get cropped
-        xlsf.oFrag.appendChild(self.o);
-      } else {
-        // slower rendering, can overlay body
-        xlsf.oFrag.appendChild(self.o);
-      }
-    }
-
-    this.reset = function() {
-      // clean-up
-      // self.o.parentNode.removeChild(self.o);
-      self.o.style.display = 'none';
-      self.o.style.marginLeft = '0px';
-      self.o.style.marginTop = '0px';
-      self.o.style.left = self.x+'px';
-      self.o.style.top = self.y+'px';
-      if (!isIE) self.o.style.opacity = 1;
-      for (var i=self.fragments.length; i--;) {
-        self.fragments[i].reset();
-      }
-    }
-
-    this.trigger = function(boxVX,boxVY) {
-      self.o.style.display = 'block';
-      self.boxVX = boxVX;
-      self.boxVY = boxVY;
-      // boundary checks
-      if (self.sClass == 'right') {
-        self.boxVX = Math.abs(self.boxVX)*-1;
-      } else if (self.sClass == 'left') {
-        self.boxVX = Math.abs(self.boxVX);
-      }
-      for (var i=self.fragments.length; i--;) {
-        self.fragments[i].animate();
-      }
-      if (!isIE && (IS_MOON_COMPUTER)) {
-        var oAExplode = new Y.A(self.o,{marginLeft:{to:100*self.boxVX},marginTop:{to:150*self.boxVY},opacity:{to:0.01}},animDuration,Y.UE.easeInStrong);
-      } else {
-        // even IE 7 sucks w/alpha-transparent PNG + CSS opacity. Boo urns.
-        var oAExplode = new Y.A(self.o,{marginLeft:{to:100*self.boxVX},marginTop:{to:150*self.boxVY}},animDuration,Y.UE.easeInStrong);
-      }
-      oAExplode.onComplete.subscribe(self.reset);
-      oAExplode.animate();
-    }
-
-    this.init();
-
+    // Create fragments from static velocity vectors
+    Explosion.VELOCITY_VECTORS.forEach(([vx, vy]) => {
+      const fragment = new ExplosionFragment(type, lightClass, vx, vy);
+      this.fragments.push(fragment);
+      this.element.appendChild(fragment.element);
+    });
   }
 
-  function Light(sSizeClass,sClass,nType,x,y) {
-    var self = this;
-    this.o = document.createElement('div');
-    this.sClass = sClass;
-    this.sSizeClass = sSizeClass;
-    this.nType = (nType||0);
-    this.useY = (sClass == 'left' || sClass == 'right');
+  trigger(boxVX, boxVY) {
+    this.element.style.display = "block";
+    this.vX = boxVX;
+    this.vY = boxVY;
+
+    // Adjust velocity for light class
+    if (this.lightClass === "right") {
+      this.vX = -Math.abs(this.vX);
+    } else if (this.lightClass === "left") {
+      this.vX = Math.abs(this.vX);
+    }
+
+    // Animate fragments
+    this.fragments.forEach((f) => f.animate());
+
+    // Animate container
+    const startTime = performance.now();
+    const targetX = 100 * this.vX;
+    const targetY = 150 * this.vY;
+
+    const containerStep = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / ANIMATION_DURATION, 1);
+
+      // Easing: t^3 (easeInStrong)
+      const eased = Math.pow(progress, EASING_POWER);
+
+      this.element.style.transform = `translate(${targetX * eased}px, ${targetY * eased}px)`;
+
+      if (progress < 1) {
+        requestAnimationFrame(containerStep);
+      } else {
+        this.reset();
+      }
+    };
+
+    requestAnimationFrame(containerStep);
+  }
+
+  reset() {
+    this.element.style.display = "none";
+    this.element.style.transform = "translate(0, 0)";
+    this.element.style.left = `${this.x}px`;
+    this.element.style.top = `${this.y}px`;
+    this.fragments.forEach((f) => f.reset());
+  }
+}
+
+class Light {
+  constructor(sizeClass, lightClass, type, x, y, urlBase, explosionTemplate) {
+    this.lightClass = lightClass;
+    this.type = type;
+    this.useY = lightClass === "left" || lightClass === "right";
     this.state = null;
-    this.broken = 0;
-    this.w = xlsf.lightClasses[sSizeClass];
-    this.h = xlsf.lightClasses[sSizeClass];
-    this.x = x;
-    this.y = y;
-    this.bg = urlBase+'image/bulbs-'+this.w+'x'+this.h+'-'+this.sClass+'.png';
-    this.o.style.width = this.w+'px';
-    this.o.style.height = this.h+'px';
-    this.o.style.background = 'url('+this.bg+') no-repeat 0px 0px';
-    this.bgBaseX = (self.useY?-self.w*this.nType:0);
-    this.bgBaseY = (!self.useY?-self.h*this.nType:0);
-    this.glassType = parseInt(Math.random()*6);
-    this.oExplosion = null;
-    this.soundID = 'smash'+this.glassType;
-    var panValue = xlsf.soundPan.panValue; // eg. +/- 80%
-    this.pan = parseInt(this.x<=xlsf.soundPan.mid?-panValue+((this.x/xlsf.soundPan.mid)*panValue):(this.x-xlsf.soundPan.mid)/(xlsf.soundPan.right-xlsf.soundPan.mid)*panValue);
+    this.broken = false;
+    this.glassType = Math.floor(Math.random() * 6);
+    this.soundId = `smash${this.glassType}`;
 
-    this.initSound = function() {
-    }
+    const size = LIGHT_CLASSES[sizeClass];
+    this.w = size;
+    this.h = size;
 
-    this.setBGPos = function(x,y) {
-      self.o.style.backgroundPosition = ((self.bgBaseX+x)+'px '+(self.bgBaseY+y)+'px');
-    }
+    // Calculate background positions
+    this.bgBaseX = this.useY ? -this.w * type : 0;
+    this.bgBaseY = !this.useY ? -this.h * type : 0;
 
-    this.setLight = function(bOn) {
-      if (self.broken || self.state == bOn) return false;
-      if (!self.w || !self.h) self.getDimensions();
-      self.state = bOn;
-      if (self.useY) {
-        self.setBGPos(0,-this.h*(bOn?0:1));
-      } else {
-        self.setBGPos(-this.w*(bOn?0:1),0);
-      }
-    }
+    // Create element using cssText for better performance
+    this.element = document.createElement("div");
+    this.element.className = `xlsf-light ${sizeClass} ${lightClass}`;
+    this.element.style.cssText =
+      `left:${x}px;top:${y}px;width:${this.w}px;height:${this.h}px;` +
+      `background:url(${urlBase}image/bulbs-${this.w}x${this.h}-${lightClass}.png) no-repeat 0 0;` +
+      `will-change:background-position`;
 
-    this.getDimensions = function() {
-      self.w = self.o.offsetWidth;
-      self.h = self.o.offsetHeight;
-      self.bgBaseX = (self.useY?-self.w*self.nType:0);
-      self.bgBaseY = (!self.useY?-self.h*self.nType:0);
-    }
+    // Calculate audio pan
+    const panValue = 75;
+    const mid = 481;
+    const right = 962;
+    this.pan =
+      x <= mid
+        ? -panValue + (x / mid) * panValue
+        : ((x - mid) / (right - mid)) * panValue;
 
-    this.on = function() {
-      self.setLight(1);
-    }
+    this.explosion = new Explosion(type, lightClass, x, y, explosionTemplate);
 
-    this.off = function() {
-      self.setLight(0);
-    }
+    // Store bound handler for removal
+    this.smashHandler = () => this.smash();
+    this.element.addEventListener("click", this.smashHandler);
 
-    this.flickr = function() {
-      self.setLight(Math.random()>=0.5?1:0);
-    }
-
-    this.toggle = function() {
-      self.setLight(!self.state?1:0);
-    }
-
-    this.explode = function(e) {
-      self.oExplosion.trigger(0,1); // boooom!
-    }
-
-    this.smash = function(e) {
-      if (self.broken) return false;
-      self.broken = true;
-      if (soundManager && soundManager.ok()) {
-        soundManager.play(self.soundID,{pan:self.pan});
-        // soundManager.sounds[self.soundID].play({pan:self.pan});
-        // if (self.bonusSound != null) window.setTimeout(self.smashBonus,1000);
-      }
-      self.explode(e);
-      var rndFrame = 2; // +parseInt(Math.random()*3);
-      if (self.useY) {
-        self.setBGPos(0,self.h*-rndFrame);
-      } else {
-        self.setBGPos(self.w*-rndFrame,0);
-      }
-      xlsf.lightSmashCounter++;
-    }
-
-    this.smashBonus = function() {
-      // soundManager.play(self.bonusSounds[self.bonusSound],urlBase+'sound/'+self.bonusSounds[self.bonusSound]+'.mp3');
-    }
-
-    this.reset = function() {
-      if (!self.broken) return false;
-      self.broken = false;
-      self.state = null;
-      xlsf.lightSmashCounter--;
-      self.flickr();
-    }
-
-    this.init = function() {
-      self.o.className = 'xlsf-light '+this.sizeClass+' '+this.sClass;
-      self.o.style.left = self.x+'px';
-      self.o.style.top = self.y+'px';
-      self.o.style.width = self.w+'px';
-      self.o.style.height = self.h+'px';
-      self.o.onmouseover = self.smash;
-      self.o.onclick = self.smash;
-      self.flickr();
-      xlsf.oFrag.appendChild(self.o);
-      self.oExplosion = new Explosion(self.nType,self.sClass,self.x,self.y);
-    }
-
-    this.init();
-    
-  } // Light()
-
-  this.createLight = function(sClass,nType,x,y) {
-    var oLight = new Light(self.lightClass,sClass,nType,x,y);
-    self.lightGroups[sClass].push(oLight);
-    self.lights.push(oLight);
-    return oLight;
+    this.flicker();
   }
 
-  this.rotateLights = function() {
-    self.lights[self.lightIndex==self.lights.length?self.lights.length-1:self.lightIndex].off();
-    self.lightIndex++;
-    if (self.lightIndex == self.lights.length) {
-      self.lightIndex = 0;
-    }
-    self.lights[self.lightIndex].on();
+  setBackgroundPosition(offsetX, offsetY) {
+    this.element.style.backgroundPosition = `${this.bgBaseX + offsetX}px ${this.bgBaseY + offsetY}px`;
   }
 
-  this.randomLights = function() {
-    self.lights[parseInt(Math.random()*self.lights.length)].toggle();
-  }
+  setLight(isOn) {
+    if (this.broken || this.state === isOn) return false;
 
-  
-  this.destroyLights = function() {
-    self.startSequence(self.destroyLight,20);
-  }
-
-  this.destroyLight = function() {
-    var groupSize = 2; // # to smash at a time
-    if (self.lightSmashCounter<self.lights.length) {
-      var limit = Math.min(self.lightSmashCounter+groupSize,self.lights.length);
-      for (var i=self.lightSmashCounter; i<limit; i++) {
-        self.lights[self.lightSmashCounter].smash();
-      }
+    this.state = isOn;
+    if (this.useY) {
+      this.setBackgroundPosition(0, -this.h * (isOn ? 0 : 1));
     } else {
-      self.stopSequence();
+      this.setBackgroundPosition(-this.w * (isOn ? 0 : 1), 0);
+    }
+    return true;
+  }
+
+  on() {
+    this.setLight(true);
+  }
+  off() {
+    this.setLight(false);
+  }
+  toggle() {
+    this.setLight(!this.state);
+  }
+  flicker() {
+    this.setLight(Math.random() >= 0.5);
+  }
+
+  smash() {
+    if (this.broken) return;
+
+    this.broken = true;
+
+    // Play sound if available
+    if (window.soundManager?.ok?.()) {
+      soundManager.play(this.soundId, { pan: this.pan });
     }
 
-  }
+    this.explosion.trigger(0, 1);
 
-  this.uberSmash = function() {
-    // make everything explode - including your CPU.
-    self.stopSequence();
-    var ebCN = Y.D.getElementsByClassName;
-  }
-
-  this.smashGroup = function(oGroup) {
-    for (var i=oGroup.length; i--;) {
-      oGroup[i].smash();
+    const brokenFrame = 2;
+    if (this.useY) {
+      this.setBackgroundPosition(0, this.h * -brokenFrame);
+    } else {
+      this.setBackgroundPosition(this.w * -brokenFrame, 0);
     }
   }
 
-  this.startSequence = function(fSequence,nInterval) {
-    if (self.timer) self.stopSequence();
-    self.timer = window.setInterval(fSequence,(typeof nInterval != 'undefined'?nInterval:self.lightInterval));
+  reset() {
+    if (!this.broken) return;
+    this.broken = false;
+    this.state = null;
+    this.flicker();
   }
 
-  this.stopSequence = function() {
-    if (self.timer) {
-      window.clearInterval(self.timer);
-      self.timer = null;
-    }
+  destroy() {
+    this.element.removeEventListener("click", this.smashHandler);
   }
-
-  var i=0;
-  var j=0;
-
-  $('lights').style.display = 'block';
-
-  // start lights to the right of <h1>
-  var offset = 0; // parseInt(document.getElementsByTagName('h1')[0].offsetWidth)+16;
-
-  var jMax = Math.floor((screenX-offset-16)/self.lightXY);
-  var iMax = Math.floor((screenY-offset-16)/self.lightXY);
-
-  for (j=0; j<jMax; j++) {
-    this.createLight('top',parseInt(j/3)%4,offset+j*self.lightXY,0);
-  }
-
-  this.appendLights();
-  this.startSequence(self.randomLights);
-  
 }
 
-var xlsf = null;
-var urlBase = null;
+class ChristmasLights {
+  constructor(targetElement, urlBase = "lights/") {
+    this.targetElement = targetElement;
+    this.urlBase = urlBase;
+    this.lights = [];
+    this.lightGroups = { left: [], top: [], right: [], bottom: [] };
+    this.sequenceTimer = null;
+    this.lightIndex = 0;
 
-function smashInit() {
-  if (navigator.userAgent.match(/msie 6/i)) {
-    return false;
+    // Get screen dimensions once
+    const { screenX, screenY } = this.getScreenDimensions();
+
+    // Determine light size
+    const lightClass = screenX > 1800 ? "small" : "pico";
+    const lightSize = LIGHT_CLASSES[lightClass];
+
+    // Create reusable template
+    const explosionTemplate = document.createElement("div");
+    explosionTemplate.className = "xlsf-fragment-box";
+
+    // Create cover
+    const cover = document.createElement("div");
+    cover.className = "xlsf-cover";
+    document.documentElement.appendChild(cover);
+
+    // Create lights using DocumentFragment for batch insertion - huge performance boost
+    const fragment = document.createDocumentFragment();
+    const offset = 0;
+    const jMax = Math.floor((screenX - offset - 16) / lightSize);
+
+    for (let j = 0; j < jMax; j++) {
+      const light = new Light(
+        lightClass,
+        "top",
+        Math.floor(j / 3) % 4,
+        offset + j * lightSize,
+        0,
+        urlBase,
+        explosionTemplate,
+      );
+
+      this.lights.push(light);
+      this.lightGroups.top.push(light);
+      fragment.appendChild(light.element);
+      fragment.appendChild(light.explosion.element);
+    }
+
+    // Single DOM insertion instead of many
+    targetElement.appendChild(fragment);
+
+    // Initialize sounds
+    this.initSounds();
+
+    // Start animation
+    this.startSequence(() => this.randomLights(), 500);
   }
-  xlsf = new XLSF(document.getElementById('lights'),urlBase?urlBase:null);
-  if ($('loading')) {
-    $('loading').style.display = 'none';	
+
+  getScreenDimensions() {
+    return {
+      screenX:
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.body.clientWidth,
+      screenY:
+        window.innerHeight ||
+        document.documentElement.clientHeight ||
+        document.body.clientHeight,
+    };
   }
-  xlsf.initSounds();
+
+  initSounds() {
+    if (!window.soundManager) return;
+
+    for (let i = 0; i < 6; i++) {
+      soundManager.createSound({
+        id: `smash${i}`,
+        url: `${this.urlBase}sound/glass${i}.mp3`,
+        autoLoad: true,
+        multiShot: true,
+        volume: 50,
+      });
+    }
+  }
+
+  randomLights() {
+    if (this.lights.length === 0) return;
+    this.lights[Math.floor(Math.random() * this.lights.length)].toggle();
+  }
+
+  rotateLights() {
+    if (this.lights.length === 0) return;
+    this.lights[this.lightIndex].off();
+    this.lightIndex = (this.lightIndex + 1) % this.lights.length;
+    this.lights[this.lightIndex].on();
+  }
+
+  destroyLights() {
+    let index = 0;
+    const groupSize = 2;
+    const step = () => {
+      const limit = Math.min(index + groupSize, this.lights.length);
+      for (let i = index; i < limit; i++) {
+        this.lights[i].smash();
+      }
+      index = limit;
+      if (index < this.lights.length) {
+        this.sequenceTimer = setTimeout(step, 20);
+      }
+    };
+    step();
+  }
+
+  startSequence(callback, interval) {
+    this.stopSequence();
+    this.sequenceTimer = setInterval(callback, interval);
+  }
+
+  stopSequence() {
+    if (this.sequenceTimer) {
+      clearInterval(this.sequenceTimer);
+      this.sequenceTimer = null;
+    }
+  }
+
+  destroy() {
+    this.stopSequence();
+    this.lights.forEach((light) => light.destroy());
+    this.lights = [];
+  }
 }
 
-soundManager.setup({
-  flashVersion: 9,
-  preferFlash: false,
-  url: 'lights/',
-  onready: function() {
-    smashInit();
-  },
-  ontimeout: function() {
-    smashInit();
+// Initialize
+function initChristmasLights() {
+  const lightsElement = document.getElementById("lights");
+  if (!lightsElement) {
+    console.warn("Christmas lights container not found");
+    return;
   }
-});
+
+  const urlBase = window.LIGHTS_URL_BASE || "lights/";
+  window.christmasLights = new ChristmasLights(lightsElement, urlBase);
+
+  const loadingElement = document.getElementById("loading");
+  if (loadingElement) {
+    loadingElement.style.display = "none";
+  }
+}
+
+// Auto-initialize when ready
+if (window.soundManager) {
+  soundManager.setup({
+    flashVersion: 9,
+    preferFlash: false,
+    url: "lights/",
+    onready: initChristmasLights,
+    ontimeout: initChristmasLights,
+  });
+} else if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initChristmasLights);
+} else {
+  initChristmasLights();
+}
