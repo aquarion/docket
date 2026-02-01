@@ -1,0 +1,118 @@
+name: Laravel Unit Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      # Node Setup
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.x"
+      - name: NPM - Install dependencies
+        run: npm ci
+      - name: Build assets with Vite
+        run: npm run build
+      - name: Verify Vite build output
+        run: |
+          test -d public/build || (echo "Vite build directory not found"; exit 1)
+          test -f public/build/manifest.json || (echo "Vite manifest not found"; exit 1)
+      # PHP Setup
+      - name: PHP - Install Dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: 8.3
+          args: --ignore-platform-reqs
+          version: 2
+      - name: PHP - Configure Version
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+      # Laravel Setup
+      - name: Generate key
+        run: php artisan key:generate
+      - name: Directory Permissions
+        run: sudo chmod -R 777 storage bootstrap/cache
+      - name: Create Database
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+      # Run tests
+      - name: Execute tests (Unit and Feature tests) via PHPUnit
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: vendor/bin/phpunit
+
+  browser-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      chromedriver:
+        image: selenium/standalone-chrome:latest
+        options: >-
+          --health-cmd "curl http://127.0.0.1:4444/status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+        ports:
+          - 4444:4444
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      # Node Setup
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.x"
+      - name: NPM - Install dependencies
+        run: npm ci
+      - name: Build assets with Vite
+        run: npm run build
+      # PHP Setup
+      - name: PHP - Install Dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: 8.3
+          args: --ignore-platform-reqs
+          version: 2
+      - name: PHP - Configure Version
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+      # Laravel Setup
+      - name: Generate key
+        run: php artisan key:generate
+      - name: Directory Permissions
+        run: sudo chmod -R 777 storage bootstrap/cache
+      - name: Create Database
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+      # Browser Tests
+      - name: Start Laravel server
+        run: php artisan serve &
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+      - name: Wait for server
+        run: sleep 2 && curl -f http://127.0.0.1:8000 || exit 1
+      - name: Execute browser tests via Dusk
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+          APP_URL: http://127.0.0.1:8000
+          DUSK_DRIVER_URL: http://127.0.0.1:4444
+        run: php artisan dusk

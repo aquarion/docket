@@ -1,1 +1,7 @@
 *   @aquarion
+
+# Package and dependency files don't require review
+package.json
+package-lock.json
+composer.json
+composer.lock

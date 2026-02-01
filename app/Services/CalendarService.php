@@ -1,0 +1,157 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Facades\Cache;
+
+class CalendarService
+{
+    /**
+     * Load calendar configuration from Laravel config
+     */
+    public function loadCalendarConfig(): array
+    {
+        // Check if legacy config should be used
+        if (config('calendars.use_legacy_config')) {
+            return $this->loadLegacyConfig();
+        }
+
+        return [
+            'ical_calendars' => config('calendars.ical_calendars', []),
+            'google_calendars' => config('calendars.google_calendars', []),
+            'merged_calendars' => config('calendars.merged_calendars', []),
+        ];
+    }
+
+    /**
+     * Load legacy calendar configuration from calendars.inc.php
+     */
+    private function loadLegacyConfig(): array
+    {
+        $configFile = config('calendars.legacy_config_path', base_path('calendars.inc.php'));
+
+        if (! file_exists($configFile)) {
+            return [
+                'ical_calendars' => [],
+                'google_calendars' => [],
+                'merged_calendars' => [],
+            ];
+        }
+
+        // Isolate variables in closure to prevent scope pollution
+        $config = (function () use ($configFile) {
+            $ical_calendars = [];
+            $google_calendars = [];
+            $merged_calendars = [];
+
+            include $configFile;
+
+            return compact('ical_calendars', 'google_calendars', 'merged_calendars');
+        })();
+
+        return $config;
+    }
+
+    /**
+     * Filter calendars based on calendar set configuration
+     */
+    public function filterBySet(array $calendarConfig, string $setId): array
+    {
+        $cacheKey = "calendars:filtered:{$setId}";
+        $cacheTTL = 15 * 60; // 15 minutes in seconds
+
+        // Try to get from cache first
+        $cached = Cache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $calendarSets = config('calendars.calendar_sets', []);
+
+        // If set doesn't exist or no filtering needed, return all calendars
+        if (! isset($calendarSets[$setId])) {
+            $result = $calendarConfig;
+            Cache::put($cacheKey, $result, $cacheTTL);
+            return $result;
+        }
+
+        $setConfig = $calendarSets[$setId];
+        $allowedCalendars = $setConfig['calendars'] ?? [];
+
+        // If '*' is specified, include all calendars
+        if (in_array('*', $allowedCalendars)) {
+            Cache::put($cacheKey, $calendarConfig, $cacheTTL);
+            return $calendarConfig;
+        }
+
+        // Filter google_calendars
+        $filteredGoogle = [];
+        foreach ($calendarConfig['google_calendars'] as $id => $calendar) {
+            if (in_array($id, $allowedCalendars)) {
+                $filteredGoogle[$id] = $calendar;
+            }
+        }
+
+        // Filter ical_calendars
+        $filteredIcal = [];
+        foreach ($calendarConfig['ical_calendars'] as $id => $calendar) {
+            if (in_array($id, $allowedCalendars)) {
+                $filteredIcal[$id] = $calendar;
+            }
+        }
+
+        // Filter merged_calendars (only include if both calendars are in the set)
+        $filteredMerged = [];
+        foreach ($calendarConfig['merged_calendars'] as $mergeKey => $mergeConfig) {
+            $calendarIds = explode('-', $mergeKey);
+            $allIncluded = true;
+            foreach ($calendarIds as $calId) {
+                if (! in_array($calId, $allowedCalendars)) {
+                    $allIncluded = false;
+                    break;
+                }
+            }
+            if ($allIncluded) {
+                $filteredMerged[$mergeKey] = $mergeConfig;
+            }
+        }
+
+        $result = [
+            'google_calendars' => $filteredGoogle,
+            'ical_calendars' => $filteredIcal,
+            'merged_calendars' => $filteredMerged,
+        ];
+
+        // Cache the filtered result for 15 minutes
+        Cache::put($cacheKey, $result, $cacheTTL);
+
+        return $result;
+    }
+
+    /**
+     * Get available calendar set IDs
+     */
+    public function getAvailableSetIds(): array
+    {
+        return array_keys(config('calendars.calendar_sets', []));
+    }
+
+    /**
+     * Get default calendar set ID
+     */
+    public function getDefaultSetId(): string
+    {
+        return config('calendars.default_calendar_set', 'all');
+    }
+
+    /**
+     * Clear all cached calendar filters
+     */
+    public function clearCache(): void
+    {
+        $availableSets = $this->getAvailableSetIds();
+        foreach ($availableSets as $setId) {
+            Cache::forget("calendars:filtered:{$setId}");
+        }
+    }
+}

@@ -3,5 +3,11 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"settings": {
+		"chat.tools.terminal.autoApprove": {
+			"./vendor/bin/pint": true,
+			"./vendor/bin/sail": true
+		}
+	}
 }
