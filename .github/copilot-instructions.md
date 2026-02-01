@@ -96,7 +96,7 @@ This project has domain-specific skills available. You MUST activate the relevan
 ## Constructors
 
 - Use PHP 8 constructor property promotion in `__construct()`.
-    - <code-snippet>public function __construct(public GitHub $github) { }</code-snippet>
+  - <code-snippet>public function \_\_construct(public GitHub $github) { }</code-snippet>
 - Do not allow empty `__construct()` methods with zero parameters unless the constructor is private.
 
 ## Type Declarations
@@ -206,9 +206,9 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ## New Artisan Commands
 
 - List Artisan commands using Boost's MCP tool, if available. New commands available in Laravel 11:
-    - `php artisan make:enum`
-    - `php artisan make:class`
-    - `php artisan make:interface`
+  - `php artisan make:enum`
+  - `php artisan make:class`
+  - `php artisan make:interface`
 
 === pint/core rules ===
 
@@ -234,4 +234,162 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - To run all tests: `php artisan test --compact`.
 - To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
-</laravel-boost-guidelines>
+
+=== docket-specific lessons ===
+
+# Docket Development Lessons
+
+## Parameter Refactoring Across Layers
+
+When renaming parameters (e.g., `version` → `calendar_set`), search comprehensively:
+
+- Backend controllers: validation rules and parameter access
+- Frontend JavaScript: constant names and fetch URLs
+- HTML templates/views: query parameters and generated links
+- Dynamic JS generation: blade templates that output JavaScript
+- Comments and docstrings
+
+**Search all file types**: `.php`, `.js`, `.blade.php` - use `grep_search` with broad patterns first.
+
+## Lazy-Loading vs Eager Validation
+
+The GoogleAuthService uses lazy validation (validates in methods, not constructor) for better performance:
+
+- Do not change implementation to match test expectations
+- Update tests to match implementation instead
+- If testing validation, call the validating method within the test
+- Document lazy-loading behavior in method comments
+- This pattern is preferred: validate only when needed
+
+## Tests Can Drift from Implementation
+
+After HTML/component changes, verify related tests still match structure:
+
+- Browser tests are fragile - they break when DOM selectors change
+- Always search for test files referencing changed elements
+- Run browser tests when making UI structure changes
+- Check test selectors: `#switch a` → `#calendar-selector-btn` after button conversion
+
+## File State Changes Between Requests
+
+- Always use `read_file` to check current state before editing
+- Context warnings about file modifications should trigger a read
+- Auto-formatters (Pint, Biome) may modify files between requests
+- Don't assume file content from previous reads
+
+## Multi-Account Support Pattern
+
+For Google Calendar API multi-account support:
+
+- Account-specific credentials: `credentials_{account}.json`
+- Account-specific tokens: `tokens/token_{account}.json`
+- Implement fallback: specific path → default path
+- Pass account parameter through entire auth chain
+- Test both account-specific and default paths
+
+## Cache Design for Calendar Data
+
+- Cache keys include filtered value: `calendars:filtered:{$setId}`
+- Use reasonable TTL: 15 minutes for calendar data
+- Provide manual clearing method: `clearCache()`
+- Document cache invalidation strategy for future enhancements
+- Use Redis for performance optimization on frequently accessed data
+
+## Festival/Theme Detection
+
+- Festival is server-side determined value
+- Pass to JavaScript via config constant: `CALENDAR_SET` and `FESTIVAL`
+- Browser periodically checks if festival changed during refresh cycle
+- Force full reload on change: `window.location.reload(true)`
+- Check happens every 5 minutes (refresh cycle interval)
+
+## Pre-Change Verification Checklist
+
+- [ ] Search all references to changed parameter/variable names
+- [ ] Update comments and docstrings to reflect actual behavior
+- [ ] Verify tests match implementation (not vice versa)
+- [ ] Check related tests in different files remain valid
+- [ ] Run build: `npm run build` for JS changes
+- [ ] Run full test suite before finalizing
+- [ ] Verify backward compatibility where needed
+- [ ] Cache keys are unique and descriptive
+
+## Key Files for Refactoring
+
+When making changes, these files often need updates:
+
+1. `app/Http/Controllers/CalendarController.php` - validation and response
+2. `resources/views/index.blade.php` - HTML template
+3. `resources/views/docket-js.blade.php` - dynamic JS generation
+4. `public/static/js/docket-*.js` - JavaScript logic
+5. `tests/Browser/*.php` - browser tests with selectors
+6. `tests/Unit/*.php` - unit tests
+7. `app/Services/*.php` - business logic
+
+## Vite and Asset Bundling
+
+When working with Vite for asset bundling:
+
+### Import Path Resolution
+
+- Vite expects all source files in `resources/` directory (resources/js/, resources/css/)
+- Files in `public/` are for built/static assets, not source files
+- From `resources/js/app.js`, import other files in resources using relative paths: `import './date-utils.js'`
+- To import from `public/` directory: use `../../public/static/js/file.js` (go up from resources/js/ to project root)
+- NEVER use paths like `../../../public/` - that goes too far up the directory tree
+- Test imports with `npm run build` before committing
+
+### ES Module Imports
+
+- Import libraries correctly: `import ICAL from 'ical.js'` or `import SunCalc from 'suncalc'`
+- Not: `import 'ical.js'` (unless you only want side effects)
+- Assign to window if needed: `window.ICAL = ICAL;`
+- For libraries with default exports, use named imports when appropriate
+
+### Generated Files Organization
+
+- All generated files should go in `public/static/generated/`
+- This includes: Sass output (christmas.css), copied dependencies (toastify), etc.
+- Update .gitignore to ignore entire `public/static/generated/` directory
+- Update references in views when moving generated files
+
+### Node.js Version Compatibility
+
+- Vite 7+ requires Node.js 20.19+ or 22.12+
+- If user encounters version errors, they need to upgrade Node.js (via nvm or system package manager)
+- Don't try to downgrade Vite - let user upgrade Node.js
+
+### Build Process
+
+- After changes to JS/CSS: run `npm run build` to compile
+- For development: `npm run dev` starts Vite dev server with HMR (requires compatible Node.js version)
+- Laravel serves built assets from `public/build/` automatically via @vite directive
+- Test that application works after Vite build before considering migration complete
+
+## VS Code Terminal Configuration
+
+- VS Code terminals are non-login shells by default (don't source ~/.bash_profile)
+- To enable login shells: add to user settings (not workspace settings):
+  ```json
+  {
+    "terminal.integrated.profiles.linux": {
+      "bash": {
+        "path": "bash",
+        "args": ["-l"]
+      }
+    },
+    "terminal.integrated.defaultProfile.linux": "bash"
+  }
+  ```
+- Alternative: source bash_profile from bashrc (but user preference is settings-based solution)
+
+## Browser Testing with Dusk
+
+- Laravel Dusk is installed for browser testing (Selenium/ChromeDriver based)
+- Test files go in `tests/Browser/`
+- Run with: `php artisan dusk`
+- Application must be running (`php artisan serve`) before running Dusk tests
+- Wait for elements with `->waitFor('.selector', seconds)` before assertions
+- Use `->pause(milliseconds)` when testing animations or transitions
+- Browser tests are fragile - keep selectors specific but stable
+  </laravel-boost-guidelines>
