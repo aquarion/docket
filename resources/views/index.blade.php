@@ -76,7 +76,6 @@
     $next_set = $available_sets[$next_index] ?? $available_sets[0];
     $next_emoji = $calendar_sets[$next_set]['emoji'] ?? '🔄';
     @endphp
-    <a href="/?version={{ $next_set }}" aria-label="Switch to {{ $next_set }} calendar view">{{ $next_emoji }}</a>
     <button id="calendar-selector-btn" aria-label="Select calendar set" title="Select calendar set">📅</button>
   </nav>
 

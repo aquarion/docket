@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
+
 class CalendarService
 {
     /**
@@ -55,11 +57,22 @@ class CalendarService
      */
     public function filterBySet(array $calendarConfig, string $setId): array
     {
+        $cacheKey = "calendars:filtered:{$setId}";
+        $cacheTTL = 15 * 60; // 15 minutes in seconds
+
+        // Try to get from cache first
+        $cached = Cache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
         $calendarSets = config('calendars.calendar_sets', []);
 
         // If set doesn't exist or no filtering needed, return all calendars
         if (! isset($calendarSets[$setId])) {
-            return $calendarConfig;
+            $result = $calendarConfig;
+            Cache::put($cacheKey, $result, $cacheTTL);
+            return $result;
         }
 
         $setConfig = $calendarSets[$setId];
@@ -67,6 +80,7 @@ class CalendarService
 
         // If '*' is specified, include all calendars
         if (in_array('*', $allowedCalendars)) {
+            Cache::put($cacheKey, $calendarConfig, $cacheTTL);
             return $calendarConfig;
         }
 
@@ -102,11 +116,16 @@ class CalendarService
             }
         }
 
-        return [
+        $result = [
             'google_calendars' => $filteredGoogle,
             'ical_calendars' => $filteredIcal,
             'merged_calendars' => $filteredMerged,
         ];
+
+        // Cache the filtered result for 15 minutes
+        Cache::put($cacheKey, $result, $cacheTTL);
+
+        return $result;
     }
 
     /**
@@ -123,5 +142,16 @@ class CalendarService
     public function getDefaultSetId(): string
     {
         return config('calendars.default_calendar_set', 'all');
+    }
+
+    /**
+     * Clear all cached calendar filters
+     */
+    public function clearCache(): void
+    {
+        $availableSets = $this->getAvailableSetIds();
+        foreach ($availableSets as $setId) {
+            Cache::forget("calendars:filtered:{$setId}");
+        }
     }
 }
