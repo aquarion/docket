@@ -119,15 +119,6 @@ class CalendarController extends Controller
   }
 
   /**
-   * Token endpoint
-   */
-  public function token(Request $request)
-  {
-    // TODO: Implement token functionality
-    return response('', 501); // Not Implemented
-  }
-
-  /**
    * Get filtered calendars based on request version parameter
    */
   private function getFilteredCalendars(Request $request): array
