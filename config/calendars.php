@@ -148,7 +148,20 @@ return [
         'all' => [
             'name' => 'All Calendars',
             'calendars' => ['*'],
+            'emoji' => '📅',
         ],
+        // Add more calendar sets in etc/config/calendars.php to override
+        // Example:
+        // 'work' => [
+        //     'name' => 'Work Only',
+        //     'calendars' => ['work', 'holidays'],
+        //     'emoji' => '💼',
+        // ],
+        // 'personal' => [
+        //     'name' => 'Personal',
+        //     'calendars' => ['personal', 'family', 'holidays'],
+        //     'emoji' => '🏠',
+        // ],
     ],
 
     /*

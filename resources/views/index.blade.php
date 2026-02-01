@@ -77,7 +77,35 @@
     $next_emoji = $calendar_sets[$next_set]['emoji'] ?? '🔄';
     @endphp
     <a href="/?version={{ $next_set }}" aria-label="Switch to {{ $next_set }} calendar view">{{ $next_emoji }}</a>
+    <button id="calendar-selector-btn" aria-label="Select calendar set" title="Select calendar set">📅</button>
   </nav>
+
+  <!-- Calendar Selector Modal -->
+  <div id="calendar-selector-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Select Calendar Set</h2>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="calendar-set-list">
+          @foreach($calendar_sets as $set_id => $set_config)
+          <li class="calendar-set-item {{ $set_id === $calendar_set ? 'active' : '' }}" data-set-id="{{ $set_id }}">
+            <a href="/?version={{ $set_id }}" class="calendar-set-link">
+              @if(isset($set_config['emoji']))
+              <span class="calendar-set-emoji">{{ $set_config['emoji'] }}</span>
+              @endif
+              <span class="calendar-set-name">{{ $set_config['name'] ?? ucfirst($set_id) }}</span>
+              @if($set_id === $calendar_set)
+              <span class="calendar-set-active-indicator">✓</span>
+              @endif
+            </a>
+          </li>
+          @endforeach
+        </ul>
+      </div>
+    </div>
+  </div>
 
   <canvas id="countdown" width="50" height="50" aria-label="Refresh countdown indicator"></canvas>
 

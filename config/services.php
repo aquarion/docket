@@ -25,7 +25,7 @@ return [
         // Example: etc/credentials_aqcom.json for account 'aqcom'
         // Falls back to this default if account-specific file doesn't exist
         'credentials_path' => env('GOOGLE_CREDENTIALS_PATH', base_path('etc/credentials.json')),
-        'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/token'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/token'),
         'scopes' => [
             'https://www.googleapis.com/auth/photoslibrary.readonly',
             'https://www.googleapis.com/auth/calendar.readonly',

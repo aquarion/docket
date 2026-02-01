@@ -35,6 +35,7 @@ var Docket = {
     // Initialize UI
     DocketUI.updateDateTime();
     DocketUI.updateTheme();
+    DocketUI.initCalendarSelector();
 
     // Setup calendar
     DocketCalendar.setup();

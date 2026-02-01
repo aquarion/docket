@@ -128,6 +128,63 @@ var DocketUI = {
       return "day";
     }
   },
+
+  /**
+   * Initialize calendar selector modal
+   */
+  initCalendarSelector: () => {
+    var modal, btn, closeBtn;
+
+    modal = document.getElementById("calendar-selector-modal");
+    btn = document.getElementById("calendar-selector-btn");
+    closeBtn = modal ? modal.querySelector(".modal-close") : null;
+
+    if (!modal || !btn) {
+      return;
+    }
+
+    // Open modal
+    btn.addEventListener("click", function () {
+      modal.style.display = "flex";
+      setTimeout(function () {
+        modal.classList.add("show");
+      }, 10);
+    });
+
+    // Close modal
+    if (closeBtn) {
+      closeBtn.addEventListener("click", function () {
+        DocketUI.closeCalendarSelector();
+      });
+    }
+
+    // Close on background click
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) {
+        DocketUI.closeCalendarSelector();
+      }
+    });
+
+    // Close on escape key
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.classList.contains("show")) {
+        DocketUI.closeCalendarSelector();
+      }
+    });
+  },
+
+  /**
+   * Close calendar selector modal
+   */
+  closeCalendarSelector: () => {
+    var modal = document.getElementById("calendar-selector-modal");
+    if (modal) {
+      modal.classList.remove("show");
+      setTimeout(function () {
+        modal.style.display = "none";
+      }, 300);
+    }
+  },
 };
 
 // Make DocketUI available globally
