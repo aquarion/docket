@@ -7,17 +7,19 @@ version: 2
 updates:
   - package-ecosystem: "composer"
     directory: "/" # Location of package manifests
+    target-branch: "dependabot-updates"
     schedule:
       interval: "daily"
 
   - package-ecosystem: "npm"
     directory: "/" # Location of package manifests
+    target-branch: "dependabot-updates"
     schedule:
       interval: "daily"
 
-
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "dependabot-updates"
     schedule:
       # Check for updates to GitHub Actions every weekday
       interval: "daily"
