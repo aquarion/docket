@@ -19,6 +19,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS in production
+        if (config('app.force_https', false) || !config('app.debug')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+        
         $this->loadConfigOverrides();
     }
 
