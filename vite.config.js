@@ -4,6 +4,13 @@ import legacy from "@vitejs/plugin-legacy";
 import { execSync } from "child_process";
 
 export default defineConfig({
+  server: {
+    host: "0.0.0.0",
+    port: 5173,
+    hmr: {
+      host: "localhost",
+    },
+  },
   build: {
     outDir: "public/build",
     manifest: "manifest.json",
