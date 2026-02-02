@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-02-02
+
+### Fixed
+- Code formatting and consistency improvements
+- Minor JavaScript syntax refinements for better iOS 12 compatibility
+
 ## [2.1.0] - 2026-02-02
 
 ### Added
