@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.force_https', false) || !config('app.debug')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
-        
+
         $this->loadConfigOverrides();
     }
 
@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        $configFiles = glob($overrideDir.'/*.php');
+        $configFiles = glob($overrideDir . '/*.php');
 
         foreach ($configFiles as $file) {
             $configName = basename($file, '.php');
