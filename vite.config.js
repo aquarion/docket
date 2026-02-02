@@ -1,12 +1,11 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import { execSync } from "child_process";
-import fs from "fs";
 
 export default defineConfig({
   build: {
-    outDir: "public/static/build",
-    manifest: true,
+    outDir: "public/build",
+    manifest: "manifest.json",
     rollupOptions: {
       input: ["resources/js/app.js", "resources/css/app.css"],
     },
@@ -15,7 +14,6 @@ export default defineConfig({
     laravel({
       input: ["resources/js/app.js", "resources/css/app.css"],
       refresh: true,
-      buildDirectory: "static/build",
     }),
     {
       name: "scss-compiler",
