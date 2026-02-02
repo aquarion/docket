@@ -60,14 +60,14 @@
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Docket",
-      "description": "Personal Calendar Dashboard",
-      "applicationCategory": "ProductivityApplication",
-      "operatingSystem": "Any"
-    }
+    {!! json_encode([
+      '@context' => 'https://schema.org',
+      '@type' => 'WebApplication',
+      'name' => 'Docket',
+      'description' => 'Personal Calendar Dashboard',
+      'applicationCategory' => 'ProductivityApplication',
+      'operatingSystem' => 'Any'
+    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
   </script>
 </head>
 

@@ -2,6 +2,78 @@
 
 ## [Unreleased]
 
+## [2.1.4] - 2026-02-02
+
+### Added
+- Default Google account configuration to services config
+- Enhanced GoogleCalendarService to use default account settings
+
+### Fixed
+- Improved code formatting and configuration handling in AppServiceProvider
+
+## [2.1.3] - 2026-02-02
+
+### Fixed
+- Config override loading now correctly looks in `storage/app/config/` instead of old `etc/config/` location
+- AppServiceProvider updated to use proper Laravel storage path for config overrides
+
+## [2.1.2] - 2026-02-02
+
+### Changed
+- Moved SCSS files from `templates/scss/` to `resources/css/festivals/` for better Laravel structure
+- Updated build configuration to use new SCSS location
+- Established `storage/app/config/` as the standard location for config overrides
+- Added automatic config migration script for `composer update`
+
+### Removed
+- Legacy Twig template files (replaced by Blade templates)
+- Old `data/` and `etc/` directories
+- Empty `bin/` and `cache/` directories
+
+### Fixed
+- File organization now follows Laravel conventions
+- SCSS compilation works from proper Laravel resource location
+
+## [2.1.1] - 2026-02-02
+
+### Fixed
+- Code formatting and consistency improvements
+- Minor JavaScript syntax refinements for better iOS 12 compatibility
+
+## [2.1.0] - 2026-02-02
+
+### Added
+
+#### iOS 12 Compatibility
+- iOS 12 JavaScript compatibility through comprehensive ES5 conversion
+- `resources/js/ios12-polyfills.js` - Polyfills for modern JavaScript features (Array.includes, String.includes, Array.find, Object.assign, fetch, Promise, Element.closest)
+- Babel configuration for automatic ES5 transpilation targeting iOS 12
+- Vite legacy plugin with iOS 12 browser target for automatic polyfill injection
+- iOS 12 compatibility test page at `/ios12-test.html`
+
+### Changed
+
+#### JavaScript Modernization for Legacy Support
+- Converted all arrow functions to regular `function()` syntax across all JavaScript files
+- Replaced template literals (backticks) with string concatenation for iOS 12 compatibility
+- Replaced optional chaining operators (`?.`) with safe property access checks
+- Converted `const`/`let` declarations to `var` for broader browser support
+- Replaced `for...of` loops with traditional for loops for array/object iteration
+- Replaced modern array methods (`.find()`) with traditional loop-based implementations
+
+#### Build System
+- Updated `vite.config.js` with `@vitejs/plugin-legacy` for automatic legacy bundle generation
+- Added `babel.config.js` with ES5 preset targeting iOS 12 Safari
+- Build process now generates both modern and legacy JavaScript bundles automatically
+- Added iOS 12 polyfills as first import in main application bundle
+
+### Fixed
+- JavaScript runtime errors on iOS 12 Safari due to unsupported ES6+ features
+- Calendar functionality now works on legacy mobile browsers
+- Event processing and display compatibility with older Safari versions
+- Theme switching and festival animations work on iOS 12
+- Modal dialogs and notification system compatible with legacy browsers
+
 ## [2.1.0] - 2026-02-01
 
 ### Changed

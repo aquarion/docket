@@ -43,7 +43,8 @@
     ],
     "post-update-cmd": [
       "Google\\Task\\Composer::cleanup",
-      "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+      "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+      "@php -r \"if (is_dir('etc/config')) { $target = 'storage/app/config'; if (!is_dir($target)) mkdir($target, 0755, true); foreach (glob('etc/config/*') as $file) { if (is_file($file)) { copy($file, $target . '/' . basename($file)); echo 'Migrated: ' . $file . ' -> ' . $target . '/' . basename($file) . PHP_EOL; } } foreach (glob('etc/config/*') as $file) { if (is_file($file)) unlink($file); } rmdir('etc/config'); if (is_dir('etc') && count(scandir('etc')) == 2) rmdir('etc'); echo 'Config migration complete.' . PHP_EOL; }\""
     ],
     "post-root-package-install": [
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""

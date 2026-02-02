@@ -1,27 +1,30 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
+import legacy from "@vitejs/plugin-legacy";
 import { execSync } from "child_process";
-import fs from "fs";
 
 export default defineConfig({
   build: {
-    outDir: "public/static/build",
-    manifest: true,
+    outDir: "public/build",
+    manifest: "manifest.json",
     rollupOptions: {
       input: ["resources/js/app.js", "resources/css/app.css"],
     },
   },
   plugins: [
+    legacy({
+      targets: ["iOS >= 12"],
+      additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
+    }),
     laravel({
       input: ["resources/js/app.js", "resources/css/app.css"],
       refresh: true,
-      buildDirectory: "static/build",
     }),
     {
       name: "scss-compiler",
       apply: "serve",
       configureServer(server) {
-        const scssFiles = ["templates/scss/**/*.scss"];
+        const scssFiles = ["resources/css/festivals/**/*.scss"];
         server.watcher.add(scssFiles);
       },
       handleHotUpdate({ file, server }) {

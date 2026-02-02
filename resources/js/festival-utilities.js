@@ -17,12 +17,17 @@ var FestivalUtils = {
      * Replace zeros with Easter egg emojis in time displays
      * @param {HTMLElement} container - Container element to process
      */
-    replaceZerosWithEggs: (container) => {
-      if (window.DocketConfig?.constants?.FESTIVAL !== "easter") return;
+    replaceZerosWithEggs: function (container) {
+      if (
+        window.DocketConfig &&
+        window.DocketConfig.constants &&
+        window.DocketConfig.constants.FESTIVAL !== "easter"
+      )
+        return;
 
       // Replace zeros in time elements with egg emojis
-      const timeElements = container.querySelectorAll(".event_dt, .dt_time");
-      timeElements.forEach((el) => {
+      var timeElements = container.querySelectorAll(".event_dt, .dt_time");
+      timeElements.forEach(function (el) {
         el.innerHTML = el.innerHTML.replace(
           /0/g,
           '<span class="easter-egg">🥚</span>',
@@ -36,8 +41,11 @@ var FestivalUtils = {
    * @param {string} hook - Hook name (e.g., 'afterRenderEvents')
    * @returns {Function|null} Callback function or null if not applicable
    */
-  getCallback: (hook) => {
-    const festival = window.DocketConfig?.constants?.FESTIVAL;
+  getCallback: function (hook) {
+    var festival =
+      window.DocketConfig &&
+      window.DocketConfig.constants &&
+      window.DocketConfig.constants.FESTIVAL;
     if (!festival) return null;
 
     if (festival === "easter") {

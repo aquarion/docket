@@ -34,7 +34,7 @@ class GoogleCalendarService
         $clients = [];
 
         foreach ($googleCalendars as $cal_id => $calendar) {
-            $account = $calendar['account'] ?? 'default';
+            $account = $calendar['account'] ?? config('services.google.default_account', 'default');
 
             // Get or create calendar service for this account
             if (! isset($clients[$account])) {

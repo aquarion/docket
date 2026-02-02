@@ -13,24 +13,25 @@ var DateUtils = {
    * @param {number} d - Day of month (1-31)
    * @returns {string} Ordinal suffix
    */
-  dateOrdinal: (d) =>
-    31 === d || 21 === d || 1 === d
+  dateOrdinal: function (d) {
+    return 31 === d || 21 === d || 1 === d
       ? "st"
       : 22 === d || 2 === d
         ? "nd"
         : 23 === d || 3 === d
           ? "rd"
-          : "th",
+          : "th";
+  },
 
   /**
    * Get day of year for a given date (1-366)
    * @param {Date} date - The date to calculate day of year for
    * @returns {number} Day of year
    */
-  getDayOfYear: (date) => {
-    const start = new Date(date.getFullYear(), 0, 0);
-    const diff = date - start;
-    const oneDay = 1000 * 60 * 60 * 24;
+  getDayOfYear: function (date) {
+    var start = new Date(date.getFullYear(), 0, 0);
+    var diff = date - start;
+    var oneDay = 1000 * 60 * 60 * 24;
     return Math.floor(diff / oneDay);
   },
 
@@ -40,9 +41,9 @@ var DateUtils = {
    * @param {string} format - Format string ('ddd D', 'YYYY-MM-DD', 'HH:mm')
    * @returns {string} Formatted date string
    */
-  formatDate: (date, format) => {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const _months = [
+  formatDate: function (date, format) {
+    var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    var _months = [
       "Jan",
       "Feb",
       "Mar",
@@ -58,7 +59,7 @@ var DateUtils = {
     ];
 
     if (format === "ddd D") {
-      return `${days[date.getDay()]} ${date.getDate()}`;
+      return days[date.getDay()] + " " + date.getDate();
     } else if (format === "YYYY-MM-DD") {
       return date.toISOString().split("T")[0];
     } else if (format === "HH:mm") {
@@ -72,20 +73,20 @@ var DateUtils = {
    * @param {number} milliseconds - Duration in milliseconds
    * @returns {string} Human-readable duration
    */
-  humanizeDuration: (milliseconds) => {
-    const seconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+  humanizeDuration: function (milliseconds) {
+    var seconds = Math.floor(milliseconds / 1000);
+    var minutes = Math.floor(seconds / 60);
+    var hours = Math.floor(minutes / 60);
+    var days = Math.floor(hours / 24);
 
     if (days > 0) {
-      return days === 1 ? "a day" : `${days} days`;
+      return days === 1 ? "a day" : days + " days";
     } else if (hours > 0) {
-      return hours === 1 ? "an hour" : `${hours} hours`;
+      return hours === 1 ? "an hour" : hours + " hours";
     } else if (minutes > 0) {
-      return minutes === 1 ? "a minute" : `${minutes} minutes`;
+      return minutes === 1 ? "a minute" : minutes + " minutes";
     } else {
-      return seconds === 1 ? "a second" : `${seconds} seconds`;
+      return seconds === 1 ? "a second" : seconds + " seconds";
     }
   },
 
@@ -94,15 +95,15 @@ var DateUtils = {
    * @param {Date} date - The date to compare with now
    * @returns {string} Relative time string
    */
-  fromNow: (date) => {
-    const now = new Date();
-    const diff = date - now;
-    const absDiff = Math.abs(diff);
+  fromNow: function (date) {
+    var now = new Date();
+    var diff = date - now;
+    var absDiff = Math.abs(diff);
 
     if (diff > 0) {
-      return `in ${DateUtils.humanizeDuration(absDiff)}`;
+      return "in " + DateUtils.humanizeDuration(absDiff);
     } else {
-      return `${DateUtils.humanizeDuration(absDiff)} ago`;
+      return DateUtils.humanizeDuration(absDiff) + " ago";
     }
   },
 
@@ -112,8 +113,8 @@ var DateUtils = {
    * @param {number} minutes - Number of minutes to subtract
    * @returns {Date} New date with minutes subtracted
    */
-  subtractMinutes: (date, minutes) => {
-    const result = new Date(date);
+  subtractMinutes: function (date, minutes) {
+    var result = new Date(date);
     result.setMinutes(result.getMinutes() - minutes);
     return result;
   },
@@ -124,8 +125,8 @@ var DateUtils = {
    * @param {number} days - Number of days to add
    * @returns {Date} New date with days added
    */
-  addDays: (date, days) => {
-    const result = new Date(date);
+  addDays: function (date, days) {
+    var result = new Date(date);
     result.setDate(result.getDate() + days);
     return result;
   },
@@ -135,22 +136,18 @@ var DateUtils = {
    * @param {Date} date - The date to format
    * @returns {string} Calendar formatted string
    */
-  calendarFormat: (date) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const dateDay = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-    );
-    const diffDays = (dateDay - today) / (1000 * 60 * 60 * 24);
+  calendarFormat: function (date) {
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    var diffDays = (dateDay - today) / (1000 * 60 * 60 * 24);
 
     if (diffDays === 0) {
-      return `Today at ${DateUtils.formatDate(date, "HH:mm")}`;
+      return "Today at " + DateUtils.formatDate(date, "HH:mm");
     } else if (diffDays === 1) {
-      return `Tomorrow at ${DateUtils.formatDate(date, "HH:mm")}`;
+      return "Tomorrow at " + DateUtils.formatDate(date, "HH:mm");
     } else if (diffDays === -1) {
-      return `Yesterday at ${DateUtils.formatDate(date, "HH:mm")}`;
+      return "Yesterday at " + DateUtils.formatDate(date, "HH:mm");
     } else if (diffDays > 0 && diffDays < 7) {
       return (
         DateUtils.formatDate(date, "ddd D") +
@@ -167,10 +164,10 @@ var DateUtils = {
    * @param {Date} date - The date to format time for
    * @returns {string} Time formatted as HH:MM
    */
-  formatTime: (date) => {
-    const hours = date.getHours().toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
+  formatTime: function (date) {
+    var hours = date.getHours().toString().padStart(2, "0");
+    var minutes = date.getMinutes().toString().padStart(2, "0");
+    return hours + ":" + minutes;
   },
 
   /**
@@ -178,15 +175,15 @@ var DateUtils = {
    * @param {Date} date - The date to format
    * @returns {string} Formatted date with weekday, month, day, and ordinal
    */
-  formatDateWithOrdinal: (date) => {
-    const options = {
+  formatDateWithOrdinal: function (date) {
+    var options = {
       weekday: "long",
       year: "numeric",
       month: "short",
       day: "numeric",
     };
-    const formatter = new Intl.DateTimeFormat("en", options);
-    const parts = formatter.formatToParts(date).reduce((acc, part) => {
+    var formatter = new Intl.DateTimeFormat("en", options);
+    var parts = formatter.formatToParts(date).reduce(function (acc, part) {
       acc[part.type] = part.value;
       return acc;
     }, {});
@@ -209,9 +206,9 @@ var DateUtils = {
    * @param {Object} b - Second event object with start property
    * @returns {number} Sort comparison result (-1, 0, 1)
    */
-  dateSort: (a, b) => {
-    const astart = new Date(a.start);
-    const bstart = new Date(b.start);
+  dateSort: function (a, b) {
+    var astart = new Date(a.start);
+    var bstart = new Date(b.start);
 
     if (astart.getTime() === bstart.getTime()) {
       return 0;
@@ -227,10 +224,10 @@ var DateUtils = {
    * @param {Array} events - Array of event objects with end property
    * @returns {Date} The furthest end date
    */
-  findFurthestDate: (events) => {
-    let max = new Date();
-    for (let i = 0; i < events.length; i++) {
-      const end = new Date(events[i].end);
+  findFurthestDate: function (events) {
+    var max = new Date();
+    for (var i = 0; i < events.length; i++) {
+      var end = new Date(events[i].end);
       if (end > max) {
         max = end;
       }

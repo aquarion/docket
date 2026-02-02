@@ -26,6 +26,7 @@ return [
         // Falls back to this default if account-specific file doesn't exist
         'credentials_path' => env('GOOGLE_CREDENTIALS_PATH', 'google/credentials.json'),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/token'),
+        'default_account' => env('GOOGLE_DEFAULT_ACCOUNT', 'default'),
         'scopes' => [
             'https://www.googleapis.com/auth/photoslibrary.readonly',
             'https://www.googleapis.com/auth/calendar.readonly',

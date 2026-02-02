@@ -175,21 +175,4 @@ return [
 
     'default_calendar_set' => 'all',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Legacy Configuration Support
-    |--------------------------------------------------------------------------
-    |
-    | Enable loading from legacy calendars.inc.php file for backward
-    | compatibility. Set to false to disable.
-    |
-    | When enabled, calendars from calendars.inc.php will be loaded instead
-    | of the configuration defined above.
-    |
-    */
-
-    'use_legacy_config' => env('CALENDAR_USE_LEGACY_CONFIG', false),
-
-    'legacy_config_path' => base_path('calendars.inc.php'),
-
 ];
