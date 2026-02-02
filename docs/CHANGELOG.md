@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [2.1.4] - 2026-02-02
+
+### Added
+- Default Google account configuration to services config
+- Enhanced GoogleCalendarService to use default account settings
+
+### Fixed
+- Improved code formatting and configuration handling in AppServiceProvider
+
 ## [2.1.3] - 2026-02-02
 
 ### Fixed
