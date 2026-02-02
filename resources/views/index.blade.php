@@ -36,6 +36,9 @@
   <link rel="stylesheet" href="/static/generated/easter.css">
   @endif
 
+  <!-- Toastify CSS for notifications -->
+  <link rel="stylesheet" href="/static/generated/toastify.css">
+
   <script type="text/javascript">
     // Initialize DocketConfig stub with festival value - must be before Vite bundle loads
     if (typeof DocketConfig === 'undefined') {
@@ -59,15 +62,20 @@
   <!-- Vite Assets -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+  <!-- Toastify JavaScript for notifications -->
+  <script type="text/javascript" src="/static/generated/toastify.js"></script>
+
   <script type="application/ld+json">
-    {!! json_encode([
-      '@context' => 'https://schema.org',
-      '@type' => 'WebApplication',
-      'name' => 'Docket',
-      'description' => 'Personal Calendar Dashboard',
-      'applicationCategory' => 'ProductivityApplication',
-      'operatingSystem' => 'Any'
-    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    {
+      !!json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'WebApplication',
+        'name' => 'Docket',
+        'description' => 'Personal Calendar Dashboard',
+        'applicationCategory' => 'ProductivityApplication',
+        'operatingSystem' => 'Any'
+      ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!
+    }
   </script>
 </head>
 

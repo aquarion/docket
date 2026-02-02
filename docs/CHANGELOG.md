@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+### Added
+- Calendar authentication status endpoint at `/auth/google/check`
+- Enhanced calendar error handling with user-friendly error notifications
+- Authentication failure detection in GoogleCalendarService with explicit error messages
+- Toastify notification system integration for better user feedback
+- Improved notification styling with modern toast design and positioning
+- Vite development server integration with Laravel Sail
+- Dedicated Vite service in docker-compose.yaml for hot module replacement
+- Sail development helper script at `bin/sail-dev.sh`
+
+### Fixed
+- Calendar refresh no longer silently fails with empty events - now shows proper error messages
+- Authentication failures now display helpful error notifications instead of empty calendars
+- Improved error handling in JavaScript calendar fetching with authentication re-linking guidance
+- Toastify notifications now properly styled with better positioning and visual design
+- Error messages include emoji icons and longer display duration for authentication issues
+
 ## [2.1.4] - 2026-02-02
 
 ### Added

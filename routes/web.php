@@ -15,4 +15,5 @@ Route::get('/icalproxy', [CalendarController::class, 'icalProxy'])->name('icalpr
 Route::get('/token', [AuthController::class, 'token'])->name('token')->middleware('throttle:10,1');
 Route::get('/auth/google/authorize', [AuthController::class, 'authorize'])->name('auth.google.authorize')->middleware('throttle:10,1');
 Route::get('/auth/google/status', [AuthController::class, 'status'])->name('auth.google.status');
+Route::get('/auth/google/check', [CalendarController::class, 'checkAuth'])->name('auth.google.check');
 Route::delete('/auth/google/revoke', [AuthController::class, 'revoke'])->name('auth.google.revoke');

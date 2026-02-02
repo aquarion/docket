@@ -28,9 +28,37 @@ var DocketCalendar = {
         if (!response.ok) throw new Error("HTTP " + response.status);
         return response.json();
       })
+      .then(function (data) {
+        // Check if response contains an error (authentication failures)
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        return data;
+      })
       .then(this.updateCallback.bind(this))
       .catch(function (error) {
         console.error("Failed to fetch calendar data:", error);
+
+        // Check if this is an authentication error
+        if (
+          error.message.includes("authentication") ||
+          error.message.includes("auth") ||
+          error.message.includes("token")
+        ) {
+          NotificationUtils.error(
+            "🔐 Google Calendar authentication expired. Click the settings icon to re-authenticate.",
+            8000,
+          );
+        } else {
+          NotificationUtils.error(
+            "📅 Failed to load calendar events: " + error.message,
+            6000,
+          );
+        }
+
+        // Set empty calendar data so UI doesn't show stale data
+        DocketConfig.allEvents.json_cals = {};
+        DocketEvents.updateNextUp();
       });
 
     // Fetch iCal calendar data

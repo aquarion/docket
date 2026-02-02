@@ -105,6 +105,28 @@ class CalendarController extends Controller
     }
 
     /**
+     * Check Google Calendar authentication status
+     */
+    public function checkAuth(Request $request)
+    {
+        try {
+            $filteredConfig = $this->getFilteredCalendars($request);
+
+            $authStatus = $this->googleCalendarService->checkAuthenticationStatus(
+                $filteredConfig['google_calendars']
+            );
+
+            return response()->json([
+                'auth_status' => $authStatus,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Serve calendar CSS
      */
     public function css(Request $request)
@@ -176,7 +198,7 @@ class CalendarController extends Controller
         $availableSetIds = $this->calendarService->getAvailableSetIds();
 
         $validated = $request->validate([
-            'calendar_set' => 'sometimes|in:' . implode(',', $availableSetIds),
+            'calendar_set' => 'sometimes|in:'.implode(',', $availableSetIds),
         ]);
 
         $calendarSetId = $validated['calendar_set'] ?? $this->calendarService->getDefaultSetId();

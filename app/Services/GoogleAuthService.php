@@ -68,11 +68,11 @@ class GoogleAuthService
         $credentials = json_decode($contents, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON format)');
+            throw new InvalidCredentialsException($credentialsPath.' (invalid JSON format)');
         }
 
         if (! isset($credentials['installed']) && ! isset($credentials['web'])) {
-            throw new InvalidCredentialsException($credentialsPath . ' (missing OAuth client configuration)');
+            throw new InvalidCredentialsException($credentialsPath.' (missing OAuth client configuration)');
         }
     }
 
@@ -94,7 +94,10 @@ class GoogleAuthService
         // Load credentials from storage
         $credentialsJson = Storage::disk('local')->get($credentialsPath);
         $client->setAuthConfig(json_decode($credentialsJson, true));
+
+        // Essential settings for refresh tokens
         $client->setAccessType('offline');
+        $client->setApprovalPrompt('force'); // Force consent to ensure refresh token
         $client->setRedirectUri($this->redirectUri);
 
         // Load existing token if account is provided
@@ -148,13 +151,23 @@ class GoogleAuthService
                     event(new AuthenticationFailed($account, $error));
                 }
 
-                throw new \Exception('OAuth error: ' . $error);
+                throw new \Exception('OAuth error: '.$error);
             }
 
             // Save token if account provided
             if ($account) {
+                // Warn if no refresh token (shouldn't happen with offline access + force approval)
+                if (! isset($accessToken['refresh_token'])) {
+                    Log::warning('No refresh token received - token may expire permanently', [
+                        'account' => $account,
+                    ]);
+                }
+
                 $this->saveToken($account, $accessToken);
-                Log::info('OAuth token saved', ['account' => $account]);
+                Log::info('OAuth token saved', [
+                    'account' => $account,
+                    'has_refresh_token' => isset($accessToken['refresh_token']),
+                ]);
             }
 
             return $accessToken;
@@ -263,6 +276,11 @@ class GoogleAuthService
             $client->fetchAccessTokenWithRefreshToken($refreshToken);
             $newToken = $client->getAccessToken();
 
+            // Preserve the refresh token - Google doesn't always return it in the new token
+            if (! isset($newToken['refresh_token']) && $refreshToken) {
+                $newToken['refresh_token'] = $refreshToken;
+            }
+
             $this->saveToken($account, $newToken);
 
             event(new TokenRefreshed($account, $newToken));
@@ -290,15 +308,26 @@ class GoogleAuthService
         }
 
         $token = $client->getAccessToken();
-        if (! isset($token['expires_in'])) {
-            return false;
+        if (! isset($token['expires_in']) || ! isset($token['created'])) {
+            // If we can't determine expiry, assume we should refresh
+            Log::warning('Unable to determine token expiry, forcing refresh', ['token_keys' => array_keys($token)]);
+
+            return true;
         }
 
         // Refresh if expires within buffer period (5 minutes)
         $expiresAt = $token['created'] + $token['expires_in'];
         $now = time();
+        $timeUntilExpiry = $expiresAt - $now;
 
-        return ($expiresAt - $now) < $this->expiryBuffer;
+        Log::debug('Token expiry check', [
+            'expires_at' => date('Y-m-d H:i:s', $expiresAt),
+            'time_until_expiry' => $timeUntilExpiry,
+            'buffer' => $this->expiryBuffer,
+            'should_refresh' => $timeUntilExpiry < $this->expiryBuffer,
+        ]);
+
+        return $timeUntilExpiry < $this->expiryBuffer;
     }
 
     /**

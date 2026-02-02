@@ -32,6 +32,8 @@ class GoogleCalendarService
 
         $all_events = [];
         $clients = [];
+        $authFailures = [];
+        $fetchFailures = [];
 
         foreach ($googleCalendars as $cal_id => $calendar) {
             $account = $calendar['account'] ?? config('services.google.default_account', 'default');
@@ -41,8 +43,9 @@ class GoogleCalendarService
                 try {
                     $clients[$account] = $this->googleAuth->getCalendarService($account);
                 } catch (\Exception $e) {
+                    $authFailures[$account] = $e->getMessage();
                     if ($debug) {
-                        error_log("Failed to get calendar service for account {$account}: " . $e->getMessage());
+                        error_log("Failed to get calendar service for account {$account}: ".$e->getMessage());
                     }
 
                     continue;
@@ -54,11 +57,25 @@ class GoogleCalendarService
             try {
                 $this->mergeCalendar($service, $optParams, $cal_id, $calendar, $all_events, $debug);
             } catch (\Exception $e) {
+                $fetchFailures[$cal_id] = $e->getMessage();
                 if ($debug) {
-                    error_log("Failed to fetch calendar {$cal_id}: " . $e->getMessage());
+                    error_log("Failed to fetch calendar {$cal_id}: ".$e->getMessage());
                 }
 
                 continue;
+            }
+        }
+
+        // If we have authentication failures and no events, throw an error
+        if (empty($all_events) && ! empty($authFailures)) {
+            $accounts = implode(', ', array_keys($authFailures));
+            throw new \Exception("Authentication failed for Google accounts: {$accounts}. Please re-authenticate.");
+        }
+
+        // If we have fetch failures but some events, log warnings
+        if (! empty($fetchFailures)) {
+            foreach ($fetchFailures as $calId => $error) {
+                error_log("Calendar fetch warning for {$calId}: {$error}");
             }
         }
 
@@ -162,13 +179,13 @@ class GoogleCalendarService
 
             $summary = $event->summary ?? '';
             if ($declined) {
-                $summary = '<strike>' . $summary . '</strike>';
+                $summary = '<strike>'.$summary.'</strike>';
             }
 
             $clean_summary = StringHelper::removeEmoji($summary);
             $clean_summary = trim($clean_summary);
 
-            $event_id = sha1($start_obj->format('c') . $end_obj->format('c') . $clean_summary);
+            $event_id = sha1($start_obj->format('c').$end_obj->format('c').$clean_summary);
 
             if (isset($all_events[$event_id])) {
                 $all_events[$event_id]['calendars'][] = $cal_id;
@@ -195,5 +212,37 @@ class GoogleCalendarService
                 ];
             }
         }
+    }
+
+    /**
+     * Check authentication status for all configured accounts
+     */
+    public function checkAuthenticationStatus(array $googleCalendars): array
+    {
+        $status = [];
+        $checkedAccounts = [];
+
+        foreach ($googleCalendars as $cal_id => $calendar) {
+            $account = $calendar['account'] ?? config('services.google.default_account', 'default');
+
+            // Don't check the same account multiple times
+            if (isset($checkedAccounts[$account])) {
+                $status[$cal_id] = $checkedAccounts[$account];
+
+                continue;
+            }
+
+            try {
+                $this->googleAuth->getCalendarService($account);
+                $authStatus = ['authenticated' => true, 'error' => null];
+            } catch (\Exception $e) {
+                $authStatus = ['authenticated' => false, 'error' => $e->getMessage()];
+            }
+
+            $checkedAccounts[$account] = $authStatus;
+            $status[$cal_id] = $authStatus;
+        }
+
+        return $status;
     }
 }

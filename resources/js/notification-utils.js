@@ -19,10 +19,20 @@ var NotificationUtils = {
       Toastify({
         text: message,
         duration: duration,
+        gravity: "top",
+        position: "center",
         style: {
           background: "#f39c12",
+          color: "#ffffff",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          maxWidth: "400px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
         },
       }).showToast();
+    } else {
+      console.warn("Toastify not loaded, falling back to console warning");
     }
     console.warn(message);
   },
@@ -38,12 +48,51 @@ var NotificationUtils = {
       Toastify({
         text: message,
         duration: duration,
+        gravity: "top",
+        position: "center",
         style: {
           background: "#e74c3c",
+          color: "#ffffff",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          maxWidth: "400px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
         },
       }).showToast();
+    } else {
+      console.warn("Toastify not loaded, falling back to console error");
     }
     console.error(message);
+  },
+
+  /**
+   * Display a success notification
+   * @param {string} message - Success message to display
+   * @param {number} [duration=3000] - How long to show the notification (ms)
+   */
+  success: function (message, duration) {
+    duration = duration || 3000;
+    if (typeof Toastify !== "undefined") {
+      Toastify({
+        text: message,
+        duration: duration,
+        gravity: "top",
+        position: "center",
+        style: {
+          background: "#27ae60",
+          color: "#ffffff",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          maxWidth: "400px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        },
+      }).showToast();
+    } else {
+      console.warn("Toastify not loaded, falling back to console log");
+    }
+    console.log(message);
   },
 
   /**
