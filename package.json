@@ -23,7 +23,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@biomejs/biome": "2.3.11",
+    "@biomejs/biome": "2.3.13",
     "@vitejs/plugin-legacy": "^7.2.1",
     "jshint": "^2.13.6",
     "laravel-vite-plugin": "^2.1.0",
