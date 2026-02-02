@@ -24,7 +24,7 @@ export default defineConfig({
       name: "scss-compiler",
       apply: "serve",
       configureServer(server) {
-        const scssFiles = ["templates/scss/**/*.scss"];
+        const scssFiles = ["resources/css/festivals/**/*.scss"];
         server.watcher.add(scssFiles);
       },
       handleHotUpdate({ file, server }) {
