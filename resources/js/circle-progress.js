@@ -26,12 +26,12 @@ var CircleProgress = {
 
     canvas = document.getElementById(id);
     if (!canvas) {
-      NotificationUtils.warning(`Canvas element not found: ${id}`);
+      NotificationUtils.warning("Canvas element not found: " + id);
       return;
     }
     context = canvas.getContext("2d");
     if (!context) {
-      NotificationUtils.warning(`Could not get 2d context for canvas: ${id}`);
+      NotificationUtils.warning("Could not get 2d context for canvas: " + id);
       return;
     }
     this.x = canvas.width / 2;

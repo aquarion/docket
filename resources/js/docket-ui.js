@@ -11,7 +11,7 @@ var DocketUI = {
   /**
    * Update date and time display
    */
-  updateDateTime: () => {
+  updateDateTime: function () {
     var now, time, strToday, dateEl, timeEl, datetimeEl;
 
     now = new Date();
@@ -25,8 +25,16 @@ var DocketUI = {
     if (dateEl) dateEl.innerHTML = strToday;
     if (timeEl) timeEl.innerHTML = time;
     if (datetimeEl) {
-      datetimeEl.innerHTML = `<div class="dt_time">${time}</div><div class="dt_date">${strToday}</div>`;
-      const callback = FestivalUtils?.getCallback?.("afterRenderDateTime");
+      datetimeEl.innerHTML =
+        '<div class="dt_time">' +
+        time +
+        '</div><div class="dt_date">' +
+        strToday +
+        "</div>";
+      var callback =
+        FestivalUtils &&
+        FestivalUtils.getCallback &&
+        FestivalUtils.getCallback("afterRenderDateTime");
       if (callback && typeof callback === "function") {
         callback(datetimeEl);
       }
@@ -36,7 +44,7 @@ var DocketUI = {
   /**
    * Update relative time displays for today's events
    */
-  updateUntil: () => {
+  updateUntil: function () {
     var mnow,
       todayEvents,
       duration,
@@ -62,14 +70,14 @@ var DocketUI = {
         thisEvent.style.display = "none";
       } else if (thisstarts > mnow) {
         duration = DateUtils.humanizeDuration(Math.abs(thisends - thisstarts));
-        text = `${DateUtils.fromNow(thisstarts)} for ${duration}`;
+        text = DateUtils.fromNow(thisstarts) + " for " + duration;
       } else if (thisends > mnow) {
-        text = `ends ${DateUtils.fromNow(thisends)}`;
+        text = "ends " + DateUtils.fromNow(thisends);
       }
 
       untilElement = thisEvent.querySelector(".until");
       if (untilElement) {
-        untilElement.innerHTML = `(${text})`;
+        untilElement.innerHTML = "(" + text + ")";
       }
     }
 
@@ -79,7 +87,7 @@ var DocketUI = {
   /**
    * Update day/night theme based on sun position
    */
-  updateTheme: (forceTo) => {
+  updateTheme: function (forceTo) {
     var timeOfDay, body;
 
     timeOfDay = DocketUI.getTimeOfDay();
@@ -102,7 +110,7 @@ var DocketUI = {
    * Determine if it's day or night based on sun position
    * @returns {string} "day" or "night"
    */
-  getTimeOfDay: () => {
+  getTimeOfDay: function () {
     var now, sunstate;
 
     try {
@@ -136,7 +144,7 @@ var DocketUI = {
   /**
    * Initialize calendar selector modal
    */
-  initCalendarSelector: () => {
+  initCalendarSelector: function () {
     var modal, btn, closeBtn;
 
     modal = document.getElementById("calendar-selector-modal");
@@ -180,7 +188,7 @@ var DocketUI = {
   /**
    * Close calendar selector modal
    */
-  closeCalendarSelector: () => {
+  closeCalendarSelector: function () {
     var modal = document.getElementById("calendar-selector-modal");
     if (modal) {
       modal.classList.remove("show");

@@ -24,20 +24,21 @@ var DocketCalendar = {
         "&calendar_set=" +
         DocketConfig.constants.CALENDAR_SET,
     )
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      .then(function (response) {
+        if (!response.ok) throw new Error("HTTP " + response.status);
         return response.json();
       })
       .then(this.updateCallback.bind(this))
-      .catch((error) => {
+      .catch(function (error) {
         console.error("Failed to fetch calendar data:", error);
       });
 
     // Fetch iCal calendar data
     if (DocketConfig.constants.ICAL_CALENDARS) {
-      for (const [name, cal] of Object.entries(
-        DocketConfig.constants.ICAL_CALENDARS,
-      )) {
+      var keys = Object.keys(DocketConfig.constants.ICAL_CALENDARS);
+      for (var i = 0; i < keys.length; i++) {
+        var name = keys[i];
+        var cal = DocketConfig.constants.ICAL_CALENDARS[name];
         DocketCalendar.updateIcal(
           cal.proxy_url,
           new Date(),
@@ -54,7 +55,7 @@ var DocketCalendar = {
    * Callback for JSON calendar updates
    * @param {Object} data - Calendar data
    */
-  updateCallback: (data, _info, _third) => {
+  updateCallback: function (data, _info, _third) {
     DocketConfig.allEvents.json_cals = data;
     DocketEvents.updateNextUp();
   },
@@ -68,18 +69,29 @@ var DocketCalendar = {
    * @param {string} name - Calendar name
    * @param {Function} callback - Success callback
    */
-  updateIcal: (calendarUrl, start, end, timezone, name, callback) => {
+  updateIcal: function (calendarUrl, start, end, timezone, name, callback) {
     NotificationUtils.debug(
-      `Updating ${calendarUrl} from ${start} to ${end} in ${timezone} as ${name}`,
+      "Updating " +
+        calendarUrl +
+        " from " +
+        start +
+        " to " +
+        end +
+        " in " +
+        timezone +
+        " as " +
+        name,
     );
 
     fetch(calendarUrl)
-      .then((response) => {
+      .then(function (response) {
         if (!response.ok)
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          throw new Error(
+            "HTTP " + response.status + ": " + response.statusText,
+          );
         return response.text();
       })
-      .then((data) => {
+      .then(function (data) {
         var jcalData,
           comp,
           eventComps,

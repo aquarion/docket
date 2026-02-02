@@ -1,3 +1,6 @@
+// Import polyfills first for iOS 12 compatibility
+import "./ios12-polyfills.js";
+
 // Import external libraries from node_modules
 import ICAL from "ical.js";
 import SunCalc from "suncalc";

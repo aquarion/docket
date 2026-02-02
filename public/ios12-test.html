@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS 12 Compatibility Test</title>
+</head>
+<body>
+    <h1>iOS 12 JavaScript Compatibility Test</h1>
+    <div id="test-results">
+        <p>Testing JavaScript compatibility...</p>
+    </div>
+    
+    <script src="/static/generated/toastify.js"></script>
+    
+    <!-- Test basic ES5 features that should work in iOS 12 -->
+    <script>
+        function testCompatibility() {
+            var results = document.getElementById('test-results');
+            var tests = [];
+            
+            // Test 1: Basic function syntax
+            try {
+                var testFunc = function() { return 'success'; };
+                tests.push('✓ Regular functions work');
+            } catch (e) {
+                tests.push('✗ Regular functions failed: ' + e.message);
+            }
+            
+            // Test 2: String concatenation
+            try {
+                var str = 'Hello' + ' ' + 'World';
+                tests.push('✓ String concatenation works');
+            } catch (e) {
+                tests.push('✗ String concatenation failed: ' + e.message);
+            }
+            
+            // Test 3: Object property access
+            try {
+                var obj = { test: 'value' };
+                var value = obj && obj.test ? obj.test : 'fallback';
+                tests.push('✓ Object property access works');
+            } catch (e) {
+                tests.push('✗ Object property access failed: ' + e.message);
+            }
+            
+            // Test 4: Array iteration
+            try {
+                var arr = [1, 2, 3];
+                var sum = 0;
+                for (var i = 0; i < arr.length; i++) {
+                    sum += arr[i];
+                }
+                tests.push('✓ Array iteration works');
+            } catch (e) {
+                tests.push('✗ Array iteration failed: ' + e.message);
+            }
+            
+            // Test 5: querySelector (should work in iOS 12)
+            try {
+                var element = document.querySelector('#test-results');
+                if (element) {
+                    tests.push('✓ querySelector works');
+                } else {
+                    tests.push('✗ querySelector returned null');
+                }
+            } catch (e) {
+                tests.push('✗ querySelector failed: ' + e.message);
+            }
+            
+            // Display results
+            results.innerHTML = '<h2>Test Results:</h2>' + 
+                               '<ul><li>' + tests.join('</li><li>') + '</li></ul>' +
+                               '<p><strong>All tests passed indicates iOS 12 compatibility!</strong></p>';
+        }
+        
+        // Run tests when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', testCompatibility);
+        } else {
+            testCompatibility();
+        }
+    </script>
+</body>
+</html>

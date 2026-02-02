@@ -13,7 +13,7 @@ var NotificationUtils = {
    * @param {string} message - Warning message to display
    * @param {number} [duration=3000] - How long to show the notification (ms)
    */
-  warning: (message, duration) => {
+  warning: function (message, duration) {
     duration = duration || 3000;
     if (typeof Toastify !== "undefined") {
       Toastify({
@@ -32,7 +32,7 @@ var NotificationUtils = {
    * @param {string} message - Error message to display
    * @param {number} [duration=5000] - How long to show the notification (ms)
    */
-  error: (message, duration) => {
+  error: function (message, duration) {
     duration = duration || 5000;
     if (typeof Toastify !== "undefined") {
       Toastify({
@@ -50,7 +50,7 @@ var NotificationUtils = {
    * Log debug messages when in debug mode
    * @param {any} item - Item to log to console
    */
-  debug: (item) => {
+  debug: function (item) {
     if (typeof DocketConfig !== "undefined" && DocketConfig.constants.DEBUG) {
       console.log(item);
     }

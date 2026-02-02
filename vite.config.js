@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
+import legacy from "@vitejs/plugin-legacy";
 import { execSync } from "child_process";
 
 export default defineConfig({
@@ -11,6 +12,10 @@ export default defineConfig({
     },
   },
   plugins: [
+    legacy({
+      targets: ["iOS >= 12"],
+      additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
+    }),
     laravel({
       input: ["resources/js/app.js", "resources/css/app.css"],
       refresh: true,
