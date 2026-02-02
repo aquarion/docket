@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Force HTTPS in production
-        if (config('app.force_https', false) || !config('app.debug')) {
+        if (config('app.force_https', false) || ! config('app.debug')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
@@ -28,17 +28,17 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Load configuration overrides from etc/config/ if they exist.
+     * Load configuration overrides from storage/app/config/ if they exist.
      */
     protected function loadConfigOverrides(): void
     {
-        $overrideDir = base_path('etc/config');
+        $overrideDir = storage_path('app/config');
 
         if (! is_dir($overrideDir)) {
             return;
         }
 
-        $configFiles = glob($overrideDir . '/*.php');
+        $configFiles = glob($overrideDir.'/*.php');
 
         foreach ($configFiles as $file) {
             $configName = basename($file, '.php');
