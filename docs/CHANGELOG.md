@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-02-02
+
+### Changed
+- Moved SCSS files from `templates/scss/` to `resources/css/festivals/` for better Laravel structure
+- Updated build configuration to use new SCSS location
+- Established `storage/app/config/` as the standard location for config overrides
+- Added automatic config migration script for `composer update`
+
+### Removed
+- Legacy Twig template files (replaced by Blade templates)
+- Old `data/` and `etc/` directories
+- Empty `bin/` and `cache/` directories
+
+### Fixed
+- File organization now follows Laravel conventions
+- SCSS compilation works from proper Laravel resource location
+
 ## [2.1.1] - 2026-02-02
 
 ### Fixed
