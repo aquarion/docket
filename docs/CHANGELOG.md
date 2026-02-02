@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.1.3] - 2026-02-02
+
+### Fixed
+- Config override loading now correctly looks in `storage/app/config/` instead of old `etc/config/` location
+- AppServiceProvider updated to use proper Laravel storage path for config overrides
+
 ## [2.1.2] - 2026-02-02
 
 ### Changed
