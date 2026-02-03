@@ -68,11 +68,11 @@ class GoogleAuthService
         $credentials = json_decode($contents, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidCredentialsException($credentialsPath.' (invalid JSON format)');
+            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON format)');
         }
 
         if (! isset($credentials['installed']) && ! isset($credentials['web'])) {
-            throw new InvalidCredentialsException($credentialsPath.' (missing OAuth client configuration)');
+            throw new InvalidCredentialsException($credentialsPath . ' (missing OAuth client configuration)');
         }
     }
 
@@ -151,7 +151,7 @@ class GoogleAuthService
                     event(new AuthenticationFailed($account, $error));
                 }
 
-                throw new \Exception('OAuth error: '.$error);
+                throw new \Exception('OAuth error: ' . $error);
             }
 
             // Save token if account provided
@@ -280,6 +280,10 @@ class GoogleAuthService
             if (! isset($newToken['refresh_token']) && $refreshToken) {
                 $newToken['refresh_token'] = $refreshToken;
             }
+
+            // Force update the created timestamp to current time for proper expiry calculation
+            // The Google Client preserves the original created timestamp which causes issues
+            $newToken['created'] = time();
 
             $this->saveToken($account, $newToken);
 

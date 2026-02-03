@@ -45,7 +45,7 @@ class GoogleCalendarService
                 } catch (\Exception $e) {
                     $authFailures[$account] = $e->getMessage();
                     if ($debug) {
-                        error_log("Failed to get calendar service for account {$account}: ".$e->getMessage());
+                        error_log("Failed to get calendar service for account {$account}: " . $e->getMessage());
                     }
 
                     continue;
@@ -59,7 +59,7 @@ class GoogleCalendarService
             } catch (\Exception $e) {
                 $fetchFailures[$cal_id] = $e->getMessage();
                 if ($debug) {
-                    error_log("Failed to fetch calendar {$cal_id}: ".$e->getMessage());
+                    error_log("Failed to fetch calendar {$cal_id}: " . $e->getMessage());
                 }
 
                 continue;
@@ -179,13 +179,13 @@ class GoogleCalendarService
 
             $summary = $event->summary ?? '';
             if ($declined) {
-                $summary = '<strike>'.$summary.'</strike>';
+                $summary = '<strike>' . $summary . '</strike>';
             }
 
             $clean_summary = StringHelper::removeEmoji($summary);
             $clean_summary = trim($clean_summary);
 
-            $event_id = sha1($start_obj->format('c').$end_obj->format('c').$clean_summary);
+            $event_id = sha1($start_obj->format('c') . $end_obj->format('c') . $clean_summary);
 
             if (isset($all_events[$event_id])) {
                 $all_events[$event_id]['calendars'][] = $cal_id;
@@ -233,7 +233,9 @@ class GoogleCalendarService
             }
 
             try {
-                $this->googleAuth->getCalendarService($account);
+                $service = $this->googleAuth->getCalendarService($account);
+                // Test actual API access by making a lightweight call
+                $service->calendarList->listCalendarList(['maxResults' => 1]);
                 $authStatus = ['authenticated' => true, 'error' => null];
             } catch (\Exception $e) {
                 $authStatus = ['authenticated' => false, 'error' => $e->getMessage()];
