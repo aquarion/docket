@@ -60,8 +60,27 @@ var DocketEvents = {
     // Process each event
     for (i = 0; i < events.length; i++) {
       thisEvent = events[i];
+
+      // Validate event dates
+      if (!thisEvent.end || !thisEvent.start) {
+        NotificationUtils.warning(
+          "Event missing start or end date:",
+          thisEvent.title || "Unknown event",
+        );
+        continue;
+      }
+
       end = new Date(thisEvent.end);
       start = new Date(thisEvent.start);
+
+      // Skip events with invalid dates
+      if (isNaN(end.getTime()) || isNaN(start.getTime())) {
+        NotificationUtils.error(
+          "Invalid date in event:",
+          thisEvent.title || "Unknown event",
+        );
+        continue;
+      }
 
       // Skip past events
       if (end < now) {

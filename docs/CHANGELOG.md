@@ -11,6 +11,8 @@
 - Enhanced OAuth flow to check for existing valid tokens before attempting code exchange to prevent "code already used" errors
 - Laravel Storage now throws exceptions on file operation failures by enabling `'throw' => true` in filesystem configuration to prevent silent failures
 - Added comprehensive return value checking for storage operations, JSON encoding/decoding, and cache operations to prevent silent failures
+- Fixed JavaScript date parsing errors with comprehensive validation and error handling for malformed calendar events
+- Added defensive programming to prevent "RangeError: invalid date" crashes when processing calendar data with missing or invalid date fields
 
 ### Added
 - Calendar authentication status endpoint at `/auth/google/check`

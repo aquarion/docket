@@ -180,82 +180,93 @@ var DocketCalendar = {
 
         // Process events
         for (index = 0; index < eventComps.length; index++) {
-          item = eventComps[index];
-          event = new ICAL.Event(item);
-          summary = item.getFirstPropertyValue("summary");
+          try {
+            item = eventComps[index];
+            event = new ICAL.Event(item);
+            summary = item.getFirstPropertyValue("summary");
 
-          NotificationUtils.debug(`Event: ${summary}`); // Skip private events
-          if (item.getFirstPropertyValue("class") === "PRIVATE") {
-            NotificationUtils.debug("Skipped: Private");
-            continue;
-          }
-
-          // Strike through cancelled events (like Google calendar declined events)
-          if (item.getFirstPropertyValue("status") === "CANCELLED") {
-            NotificationUtils.debug("Marked as cancelled");
-            summary = "<strike>" + summary + "</strike>";
-          }
-
-          // Skip recurrence exceptions
-          if (event.isRecurrenceException()) {
-            NotificationUtils.debug("Skipped: Exception");
-            continue;
-          }
-
-          // Skip filtered events
-          if (
-            DocketConfig.constants.FILTER_OUT_LIST &&
-            DocketConfig.constants.FILTER_OUT_LIST.indexOf(summary) !== -1
-          ) {
-            NotificationUtils.debug("Skipped: Filtered");
-            continue;
-          }
-
-          if (DocketConfig.constants.FILTER_OUT_REGEXES) {
-            skipEvent = false;
-            for (const regexString of DocketConfig.constants
-              .FILTER_OUT_REGEXES) {
-              regex = new RegExp(regexString);
-              if (regex.test(summary)) {
-                NotificationUtils.debug(
-                  `Skipped: Filtered by regex ${regexString}`,
-                );
-                skipEvent = true;
-                break;
-              }
+            NotificationUtils.debug(`Event: ${summary}`); // Skip private events
+            if (item.getFirstPropertyValue("class") === "PRIVATE") {
+              NotificationUtils.debug("Skipped: Private");
+              continue;
             }
-            if (skipEvent) continue;
-          }
 
-          // Skip events with / prefix
-          if (summary && summary[0] === "/") {
-            NotificationUtils.debug("Skipped: Filtered for / prefix");
-            continue;
-          }
+            // Strike through cancelled events (like Google calendar declined events)
+            if (item.getFirstPropertyValue("status") === "CANCELLED") {
+              NotificationUtils.debug("Marked as cancelled");
+              summary = "<strike>" + summary + "</strike>";
+            }
 
-          duration = event.duration;
+            // Skip recurrence exceptions
+            if (event.isRecurrenceException()) {
+              NotificationUtils.debug("Skipped: Exception");
+              continue;
+            }
 
-          if (event.isRecurring()) {
-            DocketCalendar.processRecurringEvent(
-              item,
-              event,
-              duration,
-              rangeStart,
-              rangeEnd,
-              localTimeZone,
-              allDayMinutes,
-              name,
-              events,
+            // Skip filtered events
+            if (
+              DocketConfig.constants.FILTER_OUT_LIST &&
+              DocketConfig.constants.FILTER_OUT_LIST.indexOf(summary) !== -1
+            ) {
+              NotificationUtils.debug("Skipped: Filtered");
+              continue;
+            }
+
+            if (DocketConfig.constants.FILTER_OUT_REGEXES) {
+              skipEvent = false;
+              for (const regexString of DocketConfig.constants
+                .FILTER_OUT_REGEXES) {
+                regex = new RegExp(regexString);
+                if (regex.test(summary)) {
+                  NotificationUtils.debug(
+                    `Skipped: Filtered by regex ${regexString}`,
+                  );
+                  skipEvent = true;
+                  break;
+                }
+              }
+              if (skipEvent) continue;
+            }
+
+            // Skip events with / prefix
+            if (summary && summary[0] === "/") {
+              NotificationUtils.debug("Skipped: Filtered for / prefix");
+              continue;
+            }
+
+            duration = event.duration;
+
+            if (event.isRecurring()) {
+              DocketCalendar.processRecurringEvent(
+                item,
+                event,
+                duration,
+                rangeStart,
+                rangeEnd,
+                localTimeZone,
+                allDayMinutes,
+                name,
+                events,
+              );
+            } else {
+              DocketCalendar.processSingleEvent(
+                item,
+                allDayMinutes,
+                name,
+                events,
+              );
+            }
+            NotificationUtils.debug(`/Event: ${summary}`);
+          } catch (eventError) {
+            NotificationUtils.error(
+              `Error processing event in calendar ${name}: ${eventError.message}`,
             );
-          } else {
-            DocketCalendar.processSingleEvent(
+            console.warn(
+              `Event processing error in ${name}:`,
+              eventError,
               item,
-              allDayMinutes,
-              name,
-              events,
             );
           }
-          NotificationUtils.debug(`/Event: ${summary}`);
         }
 
         DocketConfig.allEvents[calendarUrl] = events;
@@ -337,10 +348,40 @@ var DocketCalendar = {
    * Process a single (non-recurring) event
    */
   processSingleEvent: (item, allDayMinutes, name, events) => {
-    var dtstart, dtend, minutesLength, eventTitle, allDay;
+    var dtstart,
+      dtend,
+      minutesLength,
+      eventTitle,
+      allDay,
+      dtstartProp,
+      dtendProp;
 
-    dtstart = item.getFirstPropertyValue("dtstart").toJSDate();
-    dtend = item.getFirstPropertyValue("dtend").toJSDate();
+    // Safely get date properties
+    dtstartProp = item.getFirstPropertyValue("dtstart");
+    dtendProp = item.getFirstPropertyValue("dtend");
+
+    if (!dtstartProp) {
+      NotificationUtils.warning(
+        `Event missing start date in calendar: ${name}`,
+      );
+      return;
+    }
+
+    if (!dtendProp) {
+      NotificationUtils.warning(`Event missing end date in calendar: ${name}`);
+      return;
+    }
+
+    try {
+      dtstart = dtstartProp.toJSDate();
+      dtend = dtendProp.toJSDate();
+    } catch (error) {
+      NotificationUtils.error(
+        `Invalid date in calendar: ${name} - ${error.message}`,
+      );
+      return;
+    }
+
     minutesLength = (dtend - dtstart) / (1000 * 60);
     eventTitle = item.getFirstPropertyValue("summary");
     allDay = minutesLength >= allDayMinutes;
