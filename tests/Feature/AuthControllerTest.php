@@ -93,11 +93,11 @@ class AuthControllerTest extends TestCase
     public function test_oauth_security_features(): void
     {
         // Test that OAuth endpoints have proper security measures
-        
+
         // Authorization should require account parameter
         $response = $this->get('/auth/google/authorize');
         $response->assertStatus(302); // Validation failure or redirect
-        
+
         // Status should require account parameter  
         $response = $this->get('/auth/google/status');
         $response->assertStatus(302); // Validation failure or redirect

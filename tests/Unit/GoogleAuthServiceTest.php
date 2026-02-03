@@ -134,10 +134,10 @@ class GoogleAuthServiceTest extends TestCase
         try {
             $service = $this->createService();
             $client = $service->createClient('test_account');
-            
+
             // Verify that the client is configured correctly
             $this->assertInstanceOf(Google_Client::class, $client);
-            
+
             // The prompt should be set to 'consent' for refresh token generation
             // This is our fix for the deprecated setApprovalPrompt('force')
             $authUrl = $client->createAuthUrl();
@@ -150,7 +150,7 @@ class GoogleAuthServiceTest extends TestCase
     public function test_save_token_validates_return_values(): void
     {
         Log::spy();
-        
+
         $service = $this->createService();
         $token = ['access_token' => 'test_token', 'expires_in' => 3600];
 
@@ -159,7 +159,7 @@ class GoogleAuthServiceTest extends TestCase
 
         // Should return true on successful save (or be void if no return value)
         $this->assertTrue($result === null || $result === true, 'saveToken should succeed without errors');
-        
+
         // Should log success
         Log::shouldHaveReceived('info')
             ->with('Token saved successfully', ['account' => 'test_account']);
@@ -174,14 +174,14 @@ class GoogleAuthServiceTest extends TestCase
     public function test_load_token_handles_decryption_failures(): void
     {
         Log::spy();
-        
+
         // Put corrupted encrypted data that will fail decryption
         Storage::disk('local')->put('google/tokens/token_corrupt_test.json', 'not-valid-encrypted-data');
-        
+
         $service = $this->createService();
-        
+
         $result = $service->loadToken('corrupt_test');
-        
+
         // Should return null for corrupted tokens (graceful failure)
         $this->assertNull($result);
     }
@@ -191,16 +191,16 @@ class GoogleAuthServiceTest extends TestCase
         try {
             $service = $this->createService();
             $client = $service->createClient('test_account');
-            
+
             // Verify the OAuth configuration prevents refresh token loss
             $authUrl = $client->createAuthUrl();
-            
+
             // Should include access_type=offline for refresh tokens
             $this->assertStringContainsString('access_type=offline', $authUrl);
-            
+
             // Should include prompt=consent (our fix for deprecated setApprovalPrompt)
             $this->assertStringContainsString('prompt=consent', $authUrl);
-            
+
             // Should NOT contain the deprecated approval_prompt parameter
             $this->assertStringNotContainsString('approval_prompt=force', $authUrl);
         } catch (\App\Exceptions\InvalidCredentialsException $e) {
