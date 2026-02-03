@@ -21,6 +21,13 @@
 - Vite development server integration with Laravel Sail
 - Dedicated Vite service in docker-compose.yaml for hot module replacement
 - Sail development helper script at `bin/sail-dev.sh`
+- **Comprehensive test suite for OAuth authentication fixes:**
+  - Enhanced GoogleAuthServiceTest with modern OAuth prompt verification
+  - GoogleCalendarServiceTest for service error handling validation
+  - StorageConfigurationTest to verify storage exception throwing
+  - JavaScriptDateValidationTest for frontend robustness (future-ready)
+  - Enhanced AuthControllerTest for authentication endpoint validation
+  - Browser tests for calendar JavaScript functionality
 
 ### Changed
 - Updated Google OAuth flow to use `setPrompt('consent')` for consistent refresh token generation
