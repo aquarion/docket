@@ -183,7 +183,7 @@ var DateUtils = {
       day: "numeric",
     };
     var formatter = new Intl.DateTimeFormat("en", options);
-    var parts = formatter.formatToParts(date).reduce((acc, part) => {
+    var parts = formatter.formatToParts(date).reduce(function (acc, part) {
       acc[part.type] = part.value;
       return acc;
     }, {});

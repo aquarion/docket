@@ -158,7 +158,7 @@ var Docket = {
   /**
    * Error handling
    */
-  handleError: (error) => {
+  handleError: function (error) {
     console.log("--- Error Follows:");
     console.log(error);
   },
@@ -226,6 +226,6 @@ if (document.readyState === "loading") {
 window.Docket = Docket;
 
 // Cleanup on page unload
-window.addEventListener("beforeunload", () => {
+window.addEventListener("beforeunload", function () {
   Docket.cleanup();
 });
