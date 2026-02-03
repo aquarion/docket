@@ -39,6 +39,9 @@ jobs:
         with:
           php-version: 8.3
       # Laravel Setup
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
       - name: Generate key
         run: php artisan key:generate
       - name: Directory Permissions
@@ -93,6 +96,9 @@ jobs:
         with:
           php-version: 8.3
       # Laravel Setup
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
       - name: Generate key
         run: php artisan key:generate
       - name: Directory Permissions
