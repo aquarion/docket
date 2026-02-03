@@ -20,7 +20,10 @@ jobs:
           php-version: 8.3
           
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest --ignore-platform-reqs
+        uses: php-actions/composer@v6
+        with:
+          php_version: 8.3
+          args: --prefer-dist --no-progress --no-suggest --ignore-platform-reqs
           
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
@@ -81,7 +84,10 @@ jobs:
           php-version: 8.3
           
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest --ignore-platform-reqs
+        uses: php-actions/composer@v6
+        with:
+          php_version: 8.3
+          args: --prefer-dist --no-progress --no-suggest --ignore-platform-reqs
           
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
