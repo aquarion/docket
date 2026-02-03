@@ -13,6 +13,10 @@
 - Added comprehensive return value checking for storage operations, JSON encoding/decoding, and cache operations to prevent silent failures
 - Fixed JavaScript date parsing errors with comprehensive validation and error handling for malformed calendar events
 - Added defensive programming to prevent "RangeError: invalid date" crashes when processing calendar data with missing or invalid date fields
+- Fixed `calendar_set` parameter not flowing through to JavaScript configuration (was using URLSearchParams instead of server-side Blade variable)
+- Resolved JavaScript function definition order issues in `docket-js.blade.php` (functions now defined before being called)
+- Fixed missing closing braces and structural errors in generated JavaScript that caused runtime errors
+- Corrected `this` context issues in timer functions by using `var self = this;` pattern
 
 ### Added
 - Calendar authentication status endpoint at `/auth/google/check`
@@ -23,6 +27,11 @@
 - Vite development server integration with Laravel Sail
 - Dedicated Vite service in docker-compose.yaml for hot module replacement
 - Sail development helper script at `bin/sail-dev.sh`
+- **Web-based OAuth authentication flow:**
+  - Modal authentication interface for browser-based Google authentication
+  - Account status checking without requiring CLI access
+  - One-click authentication and revoke functionality
+  - Proper error handling with user-friendly notifications
 - **Comprehensive test suite for OAuth authentication fixes:**
   - Enhanced GoogleAuthServiceTest with modern OAuth prompt verification
   - GoogleCalendarServiceTest for service error handling validation
@@ -34,6 +43,15 @@
 ### Changed
 - Updated Google OAuth flow to use `setPrompt('consent')` for consistent refresh token generation
 - Enhanced authentication logging to show refresh token availability status
+- **Converted all JavaScript to ES5 compatibility for iOS 12 Safari support:**
+  - Arrow functions converted to regular `function()` declarations
+  - Removed use of `const`/`let` in favor of `var`
+  - Replaced `.forEach()` with traditional `for` loops
+  - Converted `fetch()` API calls to `XMLHttpRequest`
+  - Eliminated template literals in favor of string concatenation
+  - Fixed optional chaining to use explicit null checks
+- Updated Biome configuration to validate for iOS 12 JavaScript compatibility
+- Improved copilot instructions with debugging methodology lessons learned
 
 ## [2.1.4] - 2026-02-02
 

@@ -51,12 +51,12 @@ var Docket = {
   /**
    * Setup event handlers
    */
-  setupEventHandlers: () => {
+  setupEventHandlers: function () {
     var datetimeEl;
 
     datetimeEl = document.getElementById("datetime");
     if (datetimeEl) {
-      datetimeEl.addEventListener("click", () => {
+      datetimeEl.addEventListener("click", function () {
         window.location.reload(true);
       });
     }
@@ -68,39 +68,40 @@ var Docket = {
   startTimers: function () {
     // Store interval IDs for cleanup
     this.intervals = [];
+    var self = this;
 
     // Hourly timer for potential maintenance tasks
     this.intervals.push(
-      window.setInterval(() => {
+      window.setInterval(function () {
         NotificationUtils.debug("Hourly maintenance check");
         // Could be used for cache cleanup, timezone updates, etc.
-      }, this.config.hourlyIntervalMs),
+      }, self.config.hourlyIntervalMs),
     );
 
     // Regular updates (5 seconds)
     this.intervals.push(
-      window.setInterval(() => {
+      window.setInterval(function () {
         DocketUI.updateDateTime();
         DocketUI.updateUntil();
         DocketUI.updateTheme();
-      }, this.config.updateIntervalMs),
+      }, self.config.updateIntervalMs),
     );
 
     // Refresh timer with circular progress
     this.intervals.push(
-      window.setInterval(() => {
+      window.setInterval(function () {
         if (
           CircleProgress.trackPercent <= Docket.constants.PROGRESS_THRESHOLD
         ) {
           CircleProgress.animate(CircleProgress.trackPercent, "countdown");
-          CircleProgress.trackPercent += 1 / this.config.secondsPerRefresh;
+          CircleProgress.trackPercent += 1 / self.config.secondsPerRefresh;
         } else {
           NotificationUtils.debug("Refreshing");
           CircleProgress.trackPercent = 0;
-          this.checkFestivalChange();
+          self.checkFestivalChange();
           DocketCalendar.setup();
         }
-      }, this.config.refreshIntervalMs),
+      }, self.config.refreshIntervalMs),
     );
   },
 
@@ -108,39 +109,48 @@ var Docket = {
    * Check if festival has changed and reload if needed
    */
   checkFestivalChange: function () {
-    fetch("/docket.js?calendar_set=" + DocketConfig.constants.CALENDAR_SET, {
-      cache: "no-store",
-      headers: {
-        Accept: "application/javascript",
-      },
-    })
-      .then((response) => response.text())
-      .then((text) => {
+    var xhr = new XMLHttpRequest();
+    xhr.open(
+      "GET",
+      "/docket.js?calendar_set=" + DocketConfig.constants.CALENDAR_SET,
+      true,
+    );
+    xhr.setRequestHeader("Cache-Control", "no-store");
+    xhr.setRequestHeader("Accept", "application/javascript");
+    xhr.onload = function () {
+      if (xhr.status === 200) {
         // Extract current festival from response
-        const festivalMatch = text.match(/FESTIVAL:\s*"([^"]*)"/);
-        const currentFestival = festivalMatch ? festivalMatch[1] : "";
-        const previousFestival = DocketConfig.constants.FESTIVAL;
+        var festivalMatch = xhr.responseText.match(/FESTIVAL:\s*"([^"]*)"/);
+        var currentFestival = festivalMatch ? festivalMatch[1] : "";
+        var previousFestival = DocketConfig.constants.FESTIVAL;
 
         if (currentFestival !== previousFestival) {
           NotificationUtils.debug(
-            `Festival changed from '${previousFestival}' to '${currentFestival}', reloading...`,
+            "Festival changed from '" +
+              previousFestival +
+              "' to '" +
+              currentFestival +
+              "', reloading...",
           );
           window.location.reload(true);
         }
-      })
-      .catch((error) => {
-        console.error("Failed to check festival change:", error);
-      });
+      }
+    };
+    xhr.onerror = function () {
+      console.error("Failed to check festival change:", xhr.statusText);
+    };
+    xhr.send();
   },
 
   /**
    * Cleanup timers
    */
   cleanup: function () {
+    var i;
     if (this.intervals) {
-      this.intervals.forEach((intervalId) => {
-        clearInterval(intervalId);
-      });
+      for (i = 0; i < this.intervals.length; i++) {
+        clearInterval(this.intervals[i]);
+      }
       this.intervals = [];
     }
   },
