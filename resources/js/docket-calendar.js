@@ -190,6 +190,12 @@ var DocketCalendar = {
             continue;
           }
 
+          // Strike through cancelled events (like Google calendar declined events)
+          if (item.getFirstPropertyValue("status") === "CANCELLED") {
+            NotificationUtils.debug("Marked as cancelled");
+            summary = "<strike>" + summary + "</strike>";
+          }
+
           // Skip recurrence exceptions
           if (event.isRecurrenceException()) {
             NotificationUtils.debug("Skipped: Exception");
