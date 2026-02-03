@@ -12,6 +12,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
+      - name: Directory Permissions
+        run: sudo chmod -R 777 storage bootstrap/cache
       
       # PHP Setup first
       - name: PHP - Configure Version
@@ -28,12 +34,6 @@ jobs:
       # File management
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-
-      - name: Create required directories
-        run: |
-          mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
-      - name: Directory Permissions
-        run: sudo chmod -R 777 storage bootstrap/cache
         
       # Node Setup
       - name: Use Node.js
