@@ -116,8 +116,13 @@ class CalendarController extends Controller
                 $filteredConfig['google_calendars']
             );
 
+            $accountStatus = $this->googleCalendarService->getAccountAuthStatus(
+                $filteredConfig['google_calendars']
+            );
+
             return response()->json([
                 'auth_status' => $authStatus,
+                'account_status' => $accountStatus,
             ]);
         } catch (\Exception $e) {
             return response()->json([

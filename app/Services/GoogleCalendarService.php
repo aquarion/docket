@@ -26,7 +26,7 @@ class GoogleCalendarService
         $end = $end ?? date('Y-m-d', strtotime('+1 month'));
 
         // Create cache key based on calendars, date range, and merged config
-        $cacheKey = 'google_calendar_events:' . md5(serialize([
+        $cacheKey = 'google_calendar_events:'.md5(serialize([
             'calendars' => array_keys($googleCalendars),
             'merged' => $mergedCalendars,
             'start' => $start,
@@ -34,7 +34,7 @@ class GoogleCalendarService
         ]));
 
         // Try cache first (configurable TTL via services.calendar.cache_ttl)
-        if (!$debug) {
+        if (! $debug) {
             $cached = Cache::get($cacheKey);
             if ($cached !== null) {
                 return $cached;
@@ -63,7 +63,7 @@ class GoogleCalendarService
                 } catch (\Exception $e) {
                     $authFailures[$account] = $e->getMessage();
                     if ($debug) {
-                        error_log("Failed to get calendar service for account {$account}: " . $e->getMessage());
+                        error_log("Failed to get calendar service for account {$account}: ".$e->getMessage());
                     }
 
                     continue;
@@ -77,7 +77,7 @@ class GoogleCalendarService
             } catch (\Exception $e) {
                 $fetchFailures[$cal_id] = $e->getMessage();
                 if ($debug) {
-                    error_log("Failed to fetch calendar {$cal_id}: " . $e->getMessage());
+                    error_log("Failed to fetch calendar {$cal_id}: ".$e->getMessage());
                 }
 
                 continue;
@@ -126,9 +126,9 @@ class GoogleCalendarService
         }
 
         // Cache the results (configurable TTL, skip if debug mode)
-        if (!$debug) {
+        if (! $debug) {
             $cacheResult = Cache::put($cacheKey, $events_out, config('services.calendar.cache_ttl', 15 * 60));
-            if (!$cacheResult) {
+            if (! $cacheResult) {
                 Log::warning('Failed to cache Google Calendar events');
             }
         }
@@ -205,13 +205,13 @@ class GoogleCalendarService
 
             $summary = $event->summary ?? '';
             if ($declined) {
-                $summary = '<strike>' . $summary . '</strike>';
+                $summary = '<strike>'.$summary.'</strike>';
             }
 
             $clean_summary = StringHelper::removeEmoji($summary);
             $clean_summary = trim($clean_summary);
 
-            $event_id = sha1($start_obj->format('c') . $end_obj->format('c') . $clean_summary);
+            $event_id = sha1($start_obj->format('c').$end_obj->format('c').$clean_summary);
 
             if (isset($all_events[$event_id])) {
                 $all_events[$event_id]['calendars'][] = $cal_id;
@@ -262,13 +262,53 @@ class GoogleCalendarService
                 $service = $this->googleAuth->getCalendarService($account);
                 // Test actual API access by making a lightweight call
                 $service->calendarList->listCalendarList(['maxResults' => 1]);
-                $authStatus = ['authenticated' => true, 'error' => null];
+                $authStatus = ['authenticated' => true, 'error' => null, 'account' => $account];
             } catch (\Exception $e) {
-                $authStatus = ['authenticated' => false, 'error' => $e->getMessage()];
+                $authStatus = ['authenticated' => false, 'error' => $e->getMessage(), 'account' => $account];
             }
 
             $checkedAccounts[$account] = $authStatus;
             $status[$cal_id] = $authStatus;
+        }
+
+        return $status;
+    }
+
+    /**
+     * Get authentication status grouped by account
+     */
+    public function getAccountAuthStatus(array $googleCalendars): array
+    {
+        $accounts = [];
+
+        // Extract unique accounts from calendars
+        foreach ($googleCalendars as $calendar) {
+            $account = $calendar['account'] ?? config('services.google.default_account', 'default');
+            if (! isset($accounts[$account])) {
+                $accounts[$account] = $account;
+            }
+        }
+
+        $status = [];
+        foreach ($accounts as $account) {
+            try {
+                $service = $this->googleAuth->getCalendarService($account);
+                // Test actual API access by making a lightweight call
+                $service->calendarList->listCalendarList(['maxResults' => 1]);
+                $status[$account] = [
+                    'authenticated' => true,
+                    'error' => null,
+                    'account' => $account,
+                    'auth_url' => null,
+                ];
+            } catch (\Exception $e) {
+                $status[$account] = [
+                    'authenticated' => false,
+                    'error' => $e->getMessage(),
+                    'account' => $account,
+                    'auth_url' => route('auth.google.authorize', ['account' => $account]),
+                ];
+            }
         }
 
         return $status;

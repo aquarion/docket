@@ -9,7 +9,7 @@ allEvents: {},
 
 // Application constants
 constants: {
-CALENDAR_SET: (new URLSearchParams(window.location.search)).get("calendar_set") || "{{ $calendar_set ?? 'all' }}",
+CALENDAR_SET: "{{ $calendar_set ?? 'all' }}",
 FESTIVAL: "{{ $festival ?? '' }}",
 DEBUG: @if(isset($git_branch)) true @else false @endif,
 LATITUDE: "{{ config('services.location.latitude', 51.5074) }}",
@@ -38,7 +38,7 @@ ICAL_CALENDARS: {
 "name": "{{ $cal['name'] ?? $name }}",
 "src": "{{ $cal['src'] ?? '' }}",
 "emoji": "{{ $cal['emoji'] ?? '' }}",
-"proxy_url": "{{ route('icalproxy', ['cal' => $name]) }}&calendar_set=" + ((new URLSearchParams(window.location.search)).get("calendar_set") || "")
+"proxy_url": "{{ route('icalproxy', ['cal' => $name]) }}&calendar_set={{ $calendar_set ?? 'all' }}"
 }@if(!$loop->last),@endif
 
 @endforeach
@@ -62,6 +62,18 @@ MERGED_CALENDARS: {!! json_encode($merged_calendars ?? []) !!}
 }
 };
 
+/**
+* Initialize calendar elements
+*/
+function initCalendars() {
+const calendars = document.querySelectorAll('.calendar');
+calendars.forEach(calendar => {
+const calendarId = calendar.dataset.calendar;
+console.log('Initializing calendar:', calendarId);
+// Calendar initialization logic here
+});
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 console.log('Docket calendar application loaded');
 
@@ -84,6 +96,7 @@ function initFestivalSelector() {
 const festivalSelect = document.getElementById('festival-select');
 if (!festivalSelect) {
 return; // Festival selector only exists in debug mode
+}
 
 festivalSelect.addEventListener('change', function(e) {
 console.log('Festival changed to:', e.target.value);
@@ -100,14 +113,5 @@ params.set('festival', selectedFestival);
 url.search = params.toString();
 console.log('Navigating to:', url.toString());
 window.location.href = url.toString();
-});
-}
-
-function initCalendars() {
-const calendars = document.querySelectorAll('.calendar');
-calendars.forEach(calendar => {
-const calendarId = calendar.dataset.calendar;
-console.log('Initializing calendar:', calendarId);
-// Calendar initialization logic here
 });
 }

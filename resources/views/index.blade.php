@@ -142,6 +142,40 @@
           </li>
           @endforeach
         </ul>
+        <div class="modal-footer">
+          <button id="check-auth-btn" type="button" class="auth-settings-btn">
+            <span class="btn-icon">🔐</span>
+            <span class="btn-text">Authentication Settings</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Authentication Settings Modal -->
+  <div id="auth-settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="auth-modal-title">Google Calendar Authentication</h2>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="auth-loading" class="auth-loading">
+          <span class="loading-spinner">⏳</span>
+          <span>Checking authentication status...</span>
+        </div>
+        <div id="auth-content" style="display: none;">
+          <p class="auth-description">
+            Manage Google Calendar authentication for your calendar accounts.
+          </p>
+          <div id="auth-accounts-list" class="auth-accounts-list">
+            <!-- Account authentication status will be populated by JavaScript -->
+          </div>
+        </div>
+        <div id="auth-error" class="auth-error" style="display: none;">
+          <span class="error-icon">❌</span>
+          <span id="auth-error-message">Failed to check authentication status</span>
+        </div>
       </div>
     </div>
   </div>
