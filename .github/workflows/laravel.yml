@@ -18,23 +18,23 @@ jobs:
           mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
       - name: Directory Permissions
         run: sudo chmod -R 777 storage bootstrap/cache
-      
+
       # PHP Setup first
       - name: PHP - Configure Version
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.4
-          
+
       - name: Install Composer dependencies
         uses: php-actions/composer@v6
         with:
           php_version: 8.4
           args: --prefer-dist --no-progress --ignore-platform-reqs
-      
+
       # File management
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-        
+
       # Node Setup
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -52,6 +52,8 @@ jobs:
       # Laravel Setup
       - name: Generate key
         run: php artisan key:generate
+      - name: Generate testing key
+        run: php artisan key:generate --env=testing
       - name: Create Database
         run: |
           mkdir -p database
@@ -85,23 +87,23 @@ jobs:
           mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
       - name: Directory Permissions
         run: sudo chmod -R 777 storage bootstrap/cache
-      
+
       # PHP Setup first
       - name: PHP - Configure Version
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.4
-          
+
       - name: Install Composer dependencies
         uses: php-actions/composer@v6
         with:
           php_version: 8.4
           args: --prefer-dist --no-progress --no-suggest --ignore-platform-reqs
-          
+
       # File management
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-        
+
       # Node Setup
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -122,6 +124,7 @@ jobs:
       - name: Start Laravel server
         run: php artisan serve &
         env:
+          APP_ENV: testing
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
       - name: Wait for server
@@ -141,7 +144,7 @@ jobs:
             echo "Waiting for server... ($LOOPS attempts remaining)"
           done
           echo "Server is ready!"
-        
+
       - name: Execute browser tests via Dusk
         env:
           DB_CONNECTION: sqlite
