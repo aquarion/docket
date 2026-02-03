@@ -242,8 +242,8 @@ class GoogleAuthService
                 return null;
             }
 
-            // Cache for 5 minutes
-            $cacheResult = Cache::put($cacheKey, $token, 300);
+            // Cache for longer than refresh buffer to avoid cache misses during refresh
+            $cacheResult = Cache::put($cacheKey, $token, $this->expiryBuffer * 2);
             if (! $cacheResult) {
                 Log::warning('Failed to cache token', ['account' => $account]);
                 // Don't fail - we can still return the token
@@ -280,9 +280,9 @@ class GoogleAuthService
                 throw new \Exception('Storage::put() returned false - write operation failed');
             }
 
-            // Update cache
+            // Update cache with longer TTL than refresh buffer
             $cacheKey = "google_token_{$account}";
-            $cacheResult = Cache::put($cacheKey, $token, 300);
+            $cacheResult = Cache::put($cacheKey, $token, $this->expiryBuffer * 2);
             if (! $cacheResult) {
                 Log::warning('Failed to cache token (file saved successfully)', ['account' => $account]);
                 // Don't fail the entire operation for cache issues
