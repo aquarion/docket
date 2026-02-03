@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed
+- Google OAuth authentication now correctly receives refresh tokens by using modern `setPrompt('consent')` instead of deprecated `setApprovalPrompt('force')`
+- Resolved issue where tokens would expire permanently without refresh capability
+- Fixed Google Auth command exit codes and improved authentication reliability
+- Calendar data now properly flows through all endpoints after successful authentication
+- Fixed OAuth token persistence issue caused by double-processing of authorization codes in AuthController
+- Enhanced OAuth flow to check for existing valid tokens before attempting code exchange to prevent "code already used" errors
+- Laravel Storage now throws exceptions on file operation failures by enabling `'throw' => true` in filesystem configuration to prevent silent failures
+- Added comprehensive return value checking for storage operations, JSON encoding/decoding, and cache operations to prevent silent failures
+
 ### Added
 - Calendar authentication status endpoint at `/auth/google/check`
 - Enhanced calendar error handling with user-friendly error notifications
@@ -12,12 +22,9 @@
 - Dedicated Vite service in docker-compose.yaml for hot module replacement
 - Sail development helper script at `bin/sail-dev.sh`
 
-### Fixed
-- Calendar refresh no longer silently fails with empty events - now shows proper error messages
-- Authentication failures now display helpful error notifications instead of empty calendars
-- Improved error handling in JavaScript calendar fetching with authentication re-linking guidance
-- Toastify notifications now properly styled with better positioning and visual design
-- Error messages include emoji icons and longer display duration for authentication issues
+### Changed
+- Updated Google OAuth flow to use `setPrompt('consent')` for consistent refresh token generation
+- Enhanced authentication logging to show refresh token availability status
 
 ## [2.1.4] - 2026-02-02
 

@@ -67,14 +67,12 @@
 
   <script type="application/ld+json">
     {
-      !!json_encode([
-        '@context' => 'https://schema.org',
-        '@type' => 'WebApplication',
-        'name' => 'Docket',
-        'description' => 'Personal Calendar Dashboard',
-        'applicationCategory' => 'ProductivityApplication',
-        'operatingSystem' => 'Any'
-      ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!
+      "@@context": "https://schema.org",
+      "@@type": "WebApplication",
+      "name": "Docket",
+      "description": "Personal Calendar Dashboard",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Any"
     }
   </script>
 </head>

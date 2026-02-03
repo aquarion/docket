@@ -4,6 +4,7 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ICalProxyService
 {
@@ -41,12 +42,15 @@ class ICalProxyService
 
         $content = $response->getBody()->getContents();
         $contentType = $response->hasHeader('content-type')
-          ? $response->getHeader('content-type')[0]
-          : 'text/calendar; charset=utf-8';
+            ? $response->getHeader('content-type')[0]
+            : 'text/calendar; charset=utf-8';
 
         // Cache for 30 minutes
         if ($useCache) {
-            Cache::put($cacheKey, $content, now()->addMinutes(30));
+            $cacheResult = Cache::put($cacheKey, $content, now()->addMinutes(30));
+            if (! $cacheResult) {
+                Log::warning('Failed to cache iCal content', ['url' => $url]);
+            }
         }
 
         return [

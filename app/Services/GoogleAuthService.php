@@ -65,10 +65,17 @@ class GoogleAuthService
 
         // Validate credentials file is valid JSON with required fields
         $contents = $disk->get($credentialsPath);
-        $credentials = json_decode($contents, true);
+        if ($contents === null) {
+            throw new InvalidCredentialsException($credentialsPath . ' (failed to read file)');
+        }
 
+        $credentials = json_decode($contents, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON format)');
+            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON format: ' . json_last_error_msg() . ')');
+        }
+
+        if ($credentials === null) {
+            throw new InvalidCredentialsException($credentialsPath . ' (JSON decode returned null)');
         }
 
         if (! isset($credentials['installed']) && ! isset($credentials['web'])) {
@@ -93,11 +100,20 @@ class GoogleAuthService
 
         // Load credentials from storage
         $credentialsJson = Storage::disk('local')->get($credentialsPath);
-        $client->setAuthConfig(json_decode($credentialsJson, true));
+        if ($credentialsJson === null) {
+            throw new InvalidCredentialsException($credentialsPath . ' (failed to read credentials file)');
+        }
+
+        $credentialsArray = json_decode($credentialsJson, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON: ' . json_last_error_msg() . ')');
+        }
+
+        $client->setAuthConfig($credentialsArray);
 
         // Essential settings for refresh tokens
         $client->setAccessType('offline');
-        $client->setApprovalPrompt('force'); // Force consent to ensure refresh token
+        $client->setPrompt('consent'); // Force consent screen to ensure refresh token
         $client->setRedirectUri($this->redirectUri);
 
         // Load existing token if account is provided
@@ -125,7 +141,11 @@ class GoogleAuthService
 
         // Add account to state parameter for callback
         if ($account) {
-            $client->setState(json_encode(['account' => $account]));
+            $stateJson = json_encode(['account' => $account]);
+            if ($stateJson === false) {
+                throw new \Exception('Failed to JSON encode state parameter: ' . json_last_error_msg());
+            }
+            $client->setState($stateJson);
         }
 
         return $client->createAuthUrl();
@@ -207,17 +227,33 @@ class GoogleAuthService
 
         try {
             $encrypted = Storage::disk('local')->get($relativePath);
+            if ($encrypted === null) {
+                Log::debug('Token file could not be read', ['account' => $account]);
+                return null;
+            }
+
             $decrypted = Crypt::decryptString($encrypted);
             $token = json_decode($decrypted, true);
 
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('Invalid token JSON format', [
+                    'account' => $account,
+                    'json_error' => json_last_error_msg()
+                ]);
+                return null;
+            }
+
             if (! is_array($token)) {
                 Log::error('Invalid token format', ['account' => $account]);
-
                 return null;
             }
 
             // Cache for 5 minutes
-            Cache::put($cacheKey, $token, 300);
+            $cacheResult = Cache::put($cacheKey, $token, 300);
+            if (! $cacheResult) {
+                Log::warning('Failed to cache token', ['account' => $account]);
+                // Don't fail - we can still return the token
+            }
 
             return $token;
         } catch (\Exception $e) {
@@ -237,13 +273,26 @@ class GoogleAuthService
     {
         try {
             $relativePath = "google/tokens/token_{$account}.json";
-            $encrypted = Crypt::encryptString(json_encode($token));
 
-            Storage::disk('local')->put($relativePath, $encrypted);
+            $jsonString = json_encode($token);
+            if ($jsonString === false) {
+                throw new \Exception('Failed to JSON encode token: ' . json_last_error_msg());
+            }
+
+            $encrypted = Crypt::encryptString($jsonString);
+
+            $writeResult = Storage::disk('local')->put($relativePath, $encrypted);
+            if (! $writeResult) {
+                throw new \Exception('Storage::put() returned false - write operation failed');
+            }
 
             // Update cache
             $cacheKey = "google_token_{$account}";
-            Cache::put($cacheKey, $token, 300);
+            $cacheResult = Cache::put($cacheKey, $token, 300);
+            if (! $cacheResult) {
+                Log::warning('Failed to cache token (file saved successfully)', ['account' => $account]);
+                // Don't fail the entire operation for cache issues
+            }
 
             Log::info('Token saved successfully', ['account' => $account]);
         } catch (\Exception $e) {
