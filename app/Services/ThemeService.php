@@ -81,10 +81,10 @@ class ThemeService
     {
         $year = (int) date('Y');
         $easterSunday = easter_date($year);
-        
+
         $daysBefore = $festival['days_before'] ?? 0;
         $daysAfter = $festival['days_after'] ?? 0;
-        
+
         $startDate = strtotime("-{$daysBefore} days", $easterSunday);
         $endDate = strtotime("+{$daysAfter} days", $easterSunday);
         $today = strtotime('today');
