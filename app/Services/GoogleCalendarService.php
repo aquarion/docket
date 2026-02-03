@@ -7,6 +7,8 @@ use App\Support\StringHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Google_Service_Calendar;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class GoogleCalendarService
 {
@@ -22,6 +24,22 @@ class GoogleCalendarService
     {
         $start = $start ?? date('Y-m-01');
         $end = $end ?? date('Y-m-d', strtotime('+1 month'));
+
+        // Create cache key based on calendars, date range, and merged config
+        $cacheKey = 'google_calendar_events:' . md5(serialize([
+            'calendars' => array_keys($googleCalendars),
+            'merged' => $mergedCalendars,
+            'start' => $start,
+            'end' => $end,
+        ]));
+
+        // Try cache first (configurable TTL via services.calendar.cache_ttl)
+        if (!$debug) {
+            $cached = Cache::get($cacheKey);
+            if ($cached !== null) {
+                return $cached;
+            }
+        }
 
         $optParams = [
             'orderBy' => 'startTime',
@@ -105,6 +123,14 @@ class GoogleCalendarService
             }
 
             $events_out[] = $event;
+        }
+
+        // Cache the results (configurable TTL, skip if debug mode)
+        if (!$debug) {
+            $cacheResult = Cache::put($cacheKey, $events_out, config('services.calendar.cache_ttl', 15 * 60));
+            if (!$cacheResult) {
+                Log::warning('Failed to cache Google Calendar events');
+            }
         }
 
         return $events_out;

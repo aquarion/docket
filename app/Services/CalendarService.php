@@ -25,7 +25,7 @@ class CalendarService
     public function filterBySet(array $calendarConfig, string $setId): array
     {
         $cacheKey = "calendars:filtered:{$setId}";
-        $cacheTTL = 15 * 60; // 15 minutes in seconds
+        $cacheTTL = config('services.calendar.cache_ttl', 15 * 60);
 
         // Try to get from cache first
         $cached = Cache::get($cacheKey);

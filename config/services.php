@@ -33,4 +33,9 @@ return [
         ],
     ],
 
+    'calendar' => [
+        // Cache TTL for calendar data in seconds (default: 15 minutes)
+        'cache_ttl' => env('CALENDAR_CACHE_TTL', 15 * 60),
+    ],
+
 ];

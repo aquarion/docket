@@ -45,11 +45,12 @@ class ICalProxyService
             ? $response->getHeader('content-type')[0]
             : 'text/calendar; charset=utf-8';
 
-        // Cache for 30 minutes
+        // Cache with configurable TTL (via services.calendar.cache_ttl)
         if ($useCache) {
-            $cacheResult = Cache::put($cacheKey, $content, now()->addMinutes(30));
+            $cacheTtlMinutes = config('services.calendar.cache_ttl', 15 * 60) / 60;
+            $cacheResult = Cache::put($cacheKey, $content, now()->addMinutes($cacheTtlMinutes));
             if (! $cacheResult) {
-                Log::warning('Failed to cache iCal content', ['url' => $url]);
+                Log::warning('Failed to cache iCal content', ['calendar_id' => $calendarId, 'url' => $calendar['src']]);
             }
         }
 
