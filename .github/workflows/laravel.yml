@@ -125,7 +125,23 @@ jobs:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
       - name: Wait for server
-        run: sleep 2 && curl -f http://127.0.0.1:8000 || exit 1
+        # Wait for Laravel development server to become available
+        shell: bash
+        run: |
+          sleep 5
+          LOOPS=10
+          until curl -f http://127.0.0.1:8000; do
+            if [ $LOOPS -eq 0 ]; then
+              echo "=== Server failed to start, showing logs ==="
+              cat storage/logs/laravel.log 2>/dev/null || echo "Log file not found"
+              exit 1
+            fi
+            sleep 5
+            LOOPS=$((LOOPS-1))
+            echo "Waiting for server... ($LOOPS attempts remaining)"
+          done
+          echo "Server is ready!"
+        
       - name: Execute browser tests via Dusk
         env:
           DB_CONNECTION: sqlite
