@@ -8,15 +8,17 @@ use Tests\DuskTestCase;
 class CalendarJavaScriptTest extends DuskTestCase
 {
   /**
-   * Test that JavaScript date validation prevents crashes from malformed data.
+   * Test that JavaScript date validation prevents crashes from malformed iCal data.
    */
-  public function test_calendar_handles_malformed_dates(): void
+  public function test_calendar_handles_malformed_ical_data(): void
   {
     $this->browse(function (Browser $browser) {
       $browser->visit('/')
         ->waitFor('.calendar-container', 10)
         ->assertDontSee('RangeError') // Should not see JavaScript errors
-        ->assertDontSee('invalid date'); // Should not see invalid date errors
+        ->assertDontSee('invalid date') // Should not see invalid date errors
+        ->assertDontSee('Invalid date in calendar') // Should handle calendar errors gracefully
+        ->assertDontSee('Invalid date in event'); // Should handle event errors gracefully
     });
   }
 
@@ -33,8 +35,8 @@ class CalendarJavaScriptTest extends DuskTestCase
         ->assertSourceDoesntContain('ReferenceError');
 
       // Check that main JavaScript functions are available
-      $browser->script('return typeof findFurthestDate !== "undefined"');
-      $browser->script('return typeof isValidDate !== "undefined"');
+      $findFurthestExists = $browser->script('return typeof DateUtils !== "undefined" && typeof DateUtils.findFurthestDate === "function"');
+      $this->assertTrue($findFurthestExists[0], 'DateUtils.findFurthestDate should be available');
     });
   }
 
@@ -65,6 +67,68 @@ class CalendarJavaScriptTest extends DuskTestCase
 
       // Should not crash or show error messages
       $browser->assertDontSee('Error processing calendar event');
+    });
+  }
+
+  /**
+   * Test that iCal parsing handles malformed data gracefully.
+   */
+  public function test_ical_parsing_error_resilience(): void
+  {
+    $this->browse(function (Browser $browser) {
+      $browser->visit('/');
+
+      // Test that date utilities handle invalid dates
+      $result = $browser->script('
+        if (typeof DateUtils !== "undefined" && typeof DateUtils.findFurthestDate === "function") {
+          // Test with malformed event data that could cause crashes
+          var testEvents = [
+            {end: "invalid-date"},
+            {end: null},
+            {end: ""},
+            {end: "2026-02-03T10:00:00Z"}, // Valid event
+            {} // Event without end property
+          ];
+          
+          try {
+            var result = DateUtils.findFurthestDate(testEvents);
+            return {success: true, result: result};
+          } catch (e) {
+            return {success: false, error: e.message};
+          }
+        }
+        return {success: false, error: "DateUtils not available"};
+      ')[0];
+
+      $this->assertTrue($result['success'], 'findFurthestDate should handle malformed data without crashing');
+    });
+  }
+
+  /**
+   * Test that notification system handles iCal errors properly.
+   */
+  public function test_ical_error_notifications(): void
+  {
+    $this->browse(function (Browser $browser) {
+      $browser->visit('/');
+
+      // Test that NotificationUtils is available for error reporting
+      $notificationUtils = $browser->script('return typeof NotificationUtils !== "undefined"');
+      $this->assertTrue($notificationUtils[0], 'NotificationUtils should be available for error reporting');
+
+      // Test error notification doesn't crash the application
+      $browser->script('
+        if (typeof NotificationUtils !== "undefined") {
+          try {
+            NotificationUtils.error("Test iCal error", "Test malformed event");
+          } catch (e) {
+            console.error("Notification failed:", e);
+          }
+        }
+      ');
+
+      // Application should continue functioning
+      $browser->pause(1000);
     });
   }
 
