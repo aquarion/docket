@@ -116,6 +116,8 @@ jobs:
       # Laravel Setup
       - name: Generate key
         run: php artisan key:generate
+      - name: Generate testing key
+        run: php artisan key:generate --env=testing
       - name: Create Database
         run: |
           mkdir -p database
