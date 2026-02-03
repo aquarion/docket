@@ -6,7 +6,6 @@
 // Polyfill for String.prototype.includes
 if (!String.prototype.includes) {
   String.prototype.includes = function (search, start) {
-    "use strict";
     if (typeof start !== "number") {
       start = 0;
     }
@@ -22,7 +21,6 @@ if (!String.prototype.includes) {
 // Polyfill for Array.prototype.includes
 if (!Array.prototype.includes) {
   Array.prototype.includes = function (searchElement, fromIndex) {
-    "use strict";
     var o = Object(this);
     var len = parseInt(o.length) || 0;
     if (len === 0) {
@@ -41,6 +39,9 @@ if (!Array.prototype.includes) {
     var currentElement;
     while (k < len) {
       currentElement = o[k];
+      // NaN is the only value that is not equal to itself.
+      // Using a === check against NaN is pointless, so we use a !== check.
+      // biome-ignore lint/suspicious/noSelfCompare: Intentional - standard Array.find polyfill pattern
       if (
         searchElement === currentElement ||
         (searchElement !== searchElement && currentElement !== currentElement)
@@ -56,7 +57,6 @@ if (!Array.prototype.includes) {
 // Polyfill for Array.prototype.find
 if (!Array.prototype.find) {
   Array.prototype.find = function (predicate) {
-    "use strict";
     if (this == null) {
       throw new TypeError("Array.prototype.find called on null or undefined");
     }
@@ -67,8 +67,9 @@ if (!Array.prototype.find) {
     var length = parseInt(list.length) || 0;
     var thisArg = arguments[1];
     var value;
+    var i;
 
-    for (var i = 0; i < length; i++) {
+    for (i = 0; i < length; i++) {
       value = list[i];
       if (predicate.call(thisArg, value, i, list)) {
         return value;
@@ -101,19 +102,19 @@ if (!Element.prototype.matches) {
 // Polyfill for Object.assign
 if (typeof Object.assign !== "function") {
   Object.assign = function (target) {
-    "use strict";
     if (target == null) {
       throw new TypeError("Cannot convert undefined or null to object");
     }
 
     var to = Object(target);
+    var index, nextSource, nextKey;
 
-    for (var index = 1; index < arguments.length; index++) {
-      var nextSource = arguments[index];
+    for (index = 1; index < arguments.length; index++) {
+      nextSource = arguments[index];
 
       if (nextSource != null) {
-        for (var nextKey in nextSource) {
-          if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+        for (nextKey in nextSource) {
+          if (Object.hasOwn(nextSource, nextKey)) {
             to[nextKey] = nextSource[nextKey];
           }
         }
@@ -125,38 +126,33 @@ if (typeof Object.assign !== "function") {
 
 // Simple fetch polyfill for basic GET requests
 if (!window.fetch) {
-  window.fetch = function (url, options) {
-    return new Promise(function (resolve, reject) {
+  window.fetch = (url, options) =>
+    new Promise((resolve, reject) => {
       var xhr = new XMLHttpRequest();
       xhr.open((options && options.method) || "GET", url);
 
       if (options && options.headers) {
-        Object.keys(options.headers).forEach(function (key) {
+        Object.keys(options.headers).forEach((key) => {
           xhr.setRequestHeader(key, options.headers[key]);
         });
       }
 
-      xhr.onload = function () {
+      xhr.onload = () => {
         resolve({
           ok: xhr.status >= 200 && xhr.status < 300,
           status: xhr.status,
           statusText: xhr.statusText,
-          text: function () {
-            return Promise.resolve(xhr.responseText);
-          },
-          json: function () {
-            return Promise.resolve(JSON.parse(xhr.responseText));
-          },
+          text: () => Promise.resolve(xhr.responseText),
+          json: () => Promise.resolve(JSON.parse(xhr.responseText)),
         });
       };
 
-      xhr.onerror = function () {
+      xhr.onerror = () => {
         reject(new Error("Network request failed"));
       };
 
       xhr.send((options && options.body) || null);
     });
-  };
 }
 
 // Promise polyfill (basic version)
@@ -204,17 +200,18 @@ if (typeof Promise === "undefined") {
       }
     }
 
-    this.then = function (onFulfilled, onRejected) {
-      return new Promise(function (resolve, reject) {
+    // biome-ignore lint/suspicious/noThenProperty: Promise polyfill requires then method
+    this.then = (onFulfilled, onRejected) =>
+      new Promise((resolve, reject) => {
         handle({
-          onFulfilled: function (result) {
+          onFulfilled: (result) => {
             try {
               resolve(onFulfilled ? onFulfilled(result) : result);
             } catch (ex) {
               reject(ex);
             }
           },
-          onRejected: function (error) {
+          onRejected: (error) => {
             try {
               resolve(onRejected ? onRejected(error) : error);
             } catch (ex) {
@@ -223,7 +220,6 @@ if (typeof Promise === "undefined") {
           },
         });
       });
-    };
 
     executor(resolve, reject);
   };

@@ -14,24 +14,15 @@ return [
     'festivals' => [
         'easter' => [
             'name' => 'Easter',
-            'callback' => function () {
-                $year = (int) date('Y');
-                $easterSunday = easter_date($year);
-                $goodFriday = strtotime('-2 days', $easterSunday);
-                $easterMonday = strtotime('+1 day', $easterSunday);
-                $today = strtotime('today');
-
-                return $today >= $goodFriday && $today <= $easterMonday;
-            },
+            'type' => 'easter_calculation',
+            'days_before' => 2, // Good Friday (2 days before Easter)
+            'days_after' => 1,  // Easter Monday (1 day after Easter)
         ],
 
         'christmas' => [
             'name' => 'Christmas',
-            'callback' => function () {
-                $month = (int) date('m');
-
-                return $month === 12;
-            },
+            'type' => 'month',
+            'month' => 12,
         ],
     ],
 

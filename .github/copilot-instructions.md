@@ -9,8 +9,8 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
-- php - 8.3.6
-- laravel/framework (LARAVEL) - v11
+- php - 8.5.2
+- laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
 - laravel/mcp (MCP) - v0
 - laravel/pint (PINT) - v1
@@ -243,6 +243,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
 
+  </laravel-boost-guidelines>
 === docket-specific lessons ===
 
 # Docket Development Lessons
@@ -284,6 +285,36 @@ After HTML/component changes, verify related tests still match structure:
 - Context warnings about file modifications should trigger a read
 - Auto-formatters (Pint, Biome) may modify files between requests
 - Don't assume file content from previous reads
+
+## Debugging Methodology - Git Comparison First
+
+**CRITICAL**: When encountering complex syntax/structural errors, ALWAYS compare to last working version BEFORE deep debugging:
+
+- Use `git diff HEAD -- filename` to see what changed since last commit
+- Structural damage from edits is often the real issue, not the symptoms
+- Revert to working version with `git checkout HEAD -- filename` then apply minimal fixes
+- Don't get lost debugging symptoms when the structure is broken
+
+## JavaScript Template Structure (docket-js.blade.php)
+
+The Blade template generates production JavaScript - syntax errors cascade:
+
+- **Function Definition Order**: Functions must be defined before they're called in generated JS
+- **Brace Structure**: Missing/extra braces break entire production script
+- **Context Preservation**: Use `var self = this;` pattern when converting arrow functions in timers
+- **Always rebuild**: Template changes require `npm run build` to take effect
+- **Always test syntax**: `curl -s "https://docket.hubris.house/docket.js" | node --check`
+
+## ES5 Compatibility (iOS 12 Support)
+
+Systematic conversion patterns for legacy browser support:
+
+- Arrow functions: `=>` → `function() {}`
+- Variables: `const`/`let` → `var`
+- Array iteration: `.forEach()` → traditional `for` loops
+- Async requests: `fetch()` → `XMLHttpRequest`
+- Template literals: `` `${var}` `` → `"" + var + ""`
+- Optional chaining: `obj?.prop` → `obj && obj.prop`
 
 ## Multi-Account Support Pattern
 
@@ -401,4 +432,3 @@ When working with Vite for asset bundling:
 - Wait for elements with `->waitFor('.selector', seconds)` before assertions
 - Use `->pause(milliseconds)` when testing animations or transitions
 - Browser tests are fragile - keep selectors specific but stable
-  </laravel-boost-guidelines>

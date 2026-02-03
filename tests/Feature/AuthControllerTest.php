@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Storage;
+use Mockery;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
@@ -77,5 +78,34 @@ class AuthControllerTest extends TestCase
         }
 
         $response->assertStatus(429); // Too Many Requests
+    }
+
+    public function test_authentication_endpoints_exist(): void
+    {
+        // Test that our OAuth endpoints exist and handle basic validation
+        $response = $this->get('/auth/google/status?account=test');
+        $this->assertContains($response->getStatusCode(), [200, 302, 500]); // Should not be 404
+
+        $response = $this->delete('/auth/google/revoke?account=test');
+        $this->assertContains($response->getStatusCode(), [200, 302, 500]); // Should not be 404
+    }
+
+    public function test_oauth_security_features(): void
+    {
+        // Test that OAuth endpoints have proper security measures
+
+        // Authorization should require account parameter
+        $response = $this->get('/auth/google/authorize');
+        $response->assertStatus(302); // Validation failure or redirect
+
+        // Status should require account parameter  
+        $response = $this->get('/auth/google/status');
+        $response->assertStatus(302); // Validation failure or redirect
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 }

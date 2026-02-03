@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class CalendarService
 {
@@ -24,7 +25,7 @@ class CalendarService
     public function filterBySet(array $calendarConfig, string $setId): array
     {
         $cacheKey = "calendars:filtered:{$setId}";
-        $cacheTTL = 15 * 60; // 15 minutes in seconds
+        $cacheTTL = config('services.calendar.cache_ttl', 15 * 60);
 
         // Try to get from cache first
         $cached = Cache::get($cacheKey);
@@ -37,7 +38,10 @@ class CalendarService
         // If set doesn't exist or no filtering needed, return all calendars
         if (! isset($calendarSets[$setId])) {
             $result = $calendarConfig;
-            Cache::put($cacheKey, $result, $cacheTTL);
+            $cacheResult = Cache::put($cacheKey, $result, $cacheTTL);
+            if (! $cacheResult) {
+                Log::warning('Failed to cache calendar result', ['setId' => $setId]);
+            }
             return $result;
         }
 
@@ -46,7 +50,10 @@ class CalendarService
 
         // If '*' is specified, include all calendars
         if (in_array('*', $allowedCalendars)) {
-            Cache::put($cacheKey, $calendarConfig, $cacheTTL);
+            $cacheResult = Cache::put($cacheKey, $calendarConfig, $cacheTTL);
+            if (! $cacheResult) {
+                Log::warning('Failed to cache wildcard calendar result', ['setId' => $setId]);
+            }
             return $calendarConfig;
         }
 
@@ -89,7 +96,10 @@ class CalendarService
         ];
 
         // Cache the filtered result for 15 minutes
-        Cache::put($cacheKey, $result, $cacheTTL);
+        $cacheResult = Cache::put($cacheKey, $result, $cacheTTL);
+        if (! $cacheResult) {
+            Log::warning('Failed to cache filtered calendar result', ['setId' => $setId]);
+        }
 
         return $result;
     }

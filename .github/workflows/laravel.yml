@@ -12,8 +12,29 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
+      - name: Directory Permissions
+        run: sudo chmod -R 777 storage bootstrap/cache
+      
+      # PHP Setup first
+      - name: PHP - Configure Version
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          
+      - name: Install Composer dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: 8.4
+          args: --prefer-dist --no-progress --ignore-platform-reqs
+      
+      # File management
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+        
       # Node Setup
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -27,22 +48,10 @@ jobs:
         run: |
           test -d public/build || (echo "Vite build directory not found"; exit 1)
           test -f public/build/manifest.json || (echo "Vite manifest not found"; exit 1)
-      # PHP Setup
-      - name: PHP - Install Dependencies
-        uses: php-actions/composer@v6
-        with:
-          php_version: 8.3
-          args: --ignore-platform-reqs
-          version: 2
-      - name: PHP - Configure Version
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.3
+
       # Laravel Setup
       - name: Generate key
         run: php artisan key:generate
-      - name: Directory Permissions
-        run: sudo chmod -R 777 storage bootstrap/cache
       - name: Create Database
         run: |
           mkdir -p database
@@ -70,8 +79,29 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
+      - name: Directory Permissions
+        run: sudo chmod -R 777 storage bootstrap/cache
+      
+      # PHP Setup first
+      - name: PHP - Configure Version
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          
+      - name: Install Composer dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: 8.4
+          args: --prefer-dist --no-progress --no-suggest --ignore-platform-reqs
+          
+      # File management
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+        
       # Node Setup
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -81,22 +111,9 @@ jobs:
         run: npm ci
       - name: Build assets with Vite
         run: npm run build
-      # PHP Setup
-      - name: PHP - Install Dependencies
-        uses: php-actions/composer@v6
-        with:
-          php_version: 8.3
-          args: --ignore-platform-reqs
-          version: 2
-      - name: PHP - Configure Version
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.3
       # Laravel Setup
       - name: Generate key
         run: php artisan key:generate
-      - name: Directory Permissions
-        run: sudo chmod -R 777 storage bootstrap/cache
       - name: Create Database
         run: |
           mkdir -p database
@@ -108,11 +125,25 @@ jobs:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
       - name: Wait for server
-        run: sleep 2 && curl -f http://127.0.0.1:8000 || exit 1
+        # Wait for Laravel development server to become available
+        shell: bash
+        run: |
+          sleep 5
+          LOOPS=10
+          until curl -f http://127.0.0.1:8000; do
+            if [ $LOOPS -eq 0 ]; then
+              echo "=== Server failed to start, showing logs ==="
+              cat storage/logs/laravel.log 2>/dev/null || echo "Log file not found"
+              exit 1
+            fi
+            sleep 5
+            LOOPS=$((LOOPS-1))
+            echo "Waiting for server... ($LOOPS attempts remaining)"
+          done
+          echo "Server is ready!"
+        
       - name: Execute browser tests via Dusk
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
-          APP_URL: http://127.0.0.1:8000
-          DUSK_DRIVER_URL: http://127.0.0.1:4444
         run: php artisan dusk

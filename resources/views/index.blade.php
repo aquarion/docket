@@ -36,6 +36,9 @@
   <link rel="stylesheet" href="/static/generated/easter.css">
   @endif
 
+  <!-- Toastify CSS for notifications -->
+  <link rel="stylesheet" href="/static/generated/toastify.css">
+
   <script type="text/javascript">
     // Initialize DocketConfig stub with festival value - must be before Vite bundle loads
     if (typeof DocketConfig === 'undefined') {
@@ -45,7 +48,6 @@
         },
       };
     }
-    console.log('[index.blade] DocketConfig.constants.FESTIVAL:', window.DocketConfig.constants.FESTIVAL, 'type:', typeof window.DocketConfig.constants.FESTIVAL);
 
     // Initialize FestivalUtils stub - must be before Vite bundle loads
     if (typeof FestivalUtils === 'undefined') {
@@ -53,21 +55,23 @@
         getCallback: () => null,
       };
     }
-    console.log('[index.blade] FestivalUtils stub created');
   </script>
 
   <!-- Vite Assets -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+  <!-- Toastify JavaScript for notifications -->
+  <script type="text/javascript" src="/static/generated/toastify.js"></script>
+
   <script type="application/ld+json">
-    {!! json_encode([
-      '@context' => 'https://schema.org',
-      '@type' => 'WebApplication',
-      'name' => 'Docket',
-      'description' => 'Personal Calendar Dashboard',
-      'applicationCategory' => 'ProductivityApplication',
-      'operatingSystem' => 'Any'
-    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    {
+      "@@context": "https://schema.org",
+      "@@type": "WebApplication",
+      "name": "Docket",
+      "description": "Personal Calendar Dashboard",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Any"
+    }
   </script>
 </head>
 
@@ -138,6 +142,40 @@
           </li>
           @endforeach
         </ul>
+        <div class="modal-footer">
+          <button id="check-auth-btn" type="button" class="auth-settings-btn">
+            <span class="btn-icon">🔐</span>
+            <span class="btn-text">Authentication Settings</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Authentication Settings Modal -->
+  <div id="auth-settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="auth-modal-title">Google Calendar Authentication</h2>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="auth-loading" class="auth-loading">
+          <span class="loading-spinner">⏳</span>
+          <span>Checking authentication status...</span>
+        </div>
+        <div id="auth-content" style="display: none;">
+          <p class="auth-description">
+            Manage Google Calendar authentication for your calendar accounts.
+          </p>
+          <div id="auth-accounts-list" class="auth-accounts-list">
+            <!-- Account authentication status will be populated by JavaScript -->
+          </div>
+        </div>
+        <div id="auth-error" class="auth-error" style="display: none;">
+          <span class="error-icon">❌</span>
+          <span id="auth-error-message">Failed to check authentication status</span>
+        </div>
       </div>
     </div>
   </div>

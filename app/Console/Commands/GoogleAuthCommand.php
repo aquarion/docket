@@ -119,9 +119,51 @@ class GoogleAuthCommand extends Command
 
         if ($openBrowser) {
             $this->openUrlInBrowser($authUrl);
+
+            // Poll for token to be saved by web callback
+            $this->line('Waiting for authorization (or enter code manually)...');
+            $maxWaitTime = 120; // 2 minutes
+            $checkInterval = 2; // Check every 2 seconds
+            $waited = 0;
+
+            while ($waited < $maxWaitTime) {
+                if ($googleAuth->hasValidToken($account)) {
+                    $this->info("✓ Token received and saved automatically!");
+
+                    // Test the token
+                    $this->line('Testing with calendar API...');
+                    $service = $googleAuth->getCalendarService($account);
+                    $results = $service->events->listEvents('primary', [
+                        'maxResults' => 3,
+                        'orderBy' => 'startTime',
+                        'singleEvents' => true,
+                        'timeMin' => date('c'),
+                    ]);
+
+                    $this->info('✓ Successfully fetched calendar events!');
+                    $this->newLine();
+                    $this->line('Upcoming events:');
+                    foreach ($results->getItems() as $event) {
+                        $start = $event->start->dateTime;
+                        if (empty($start)) {
+                            $start = $event->start->date;
+                        }
+                        $this->line("  - {$event->getSummary()} ({$start})");
+                    }
+
+                    return Command::SUCCESS;
+                }
+
+                sleep($checkInterval);
+                $waited += $checkInterval;
+                $this->output->write('.');
+            }
+
+            $this->newLine();
+            $this->warn('Timeout waiting for web authorization. You can enter the code manually below.');
         }
 
-        $authCode = $this->ask('Enter authorization code');
+        $authCode = $this->ask('Enter authorization code (or press Ctrl+C to cancel)');
 
         if (empty($authCode)) {
             $this->error('No authorization code provided.');

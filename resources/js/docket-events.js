@@ -60,8 +60,27 @@ var DocketEvents = {
     // Process each event
     for (i = 0; i < events.length; i++) {
       thisEvent = events[i];
+
+      // Validate event dates
+      if (!thisEvent.end || !thisEvent.start) {
+        NotificationUtils.warning(
+          "Event missing start or end date:",
+          thisEvent.title || "Unknown event",
+        );
+        continue;
+      }
+
       end = new Date(thisEvent.end);
       start = new Date(thisEvent.start);
+
+      // Skip events with invalid dates
+      if (isNaN(end.getTime()) || isNaN(start.getTime())) {
+        NotificationUtils.error(
+          "Invalid date in event:",
+          thisEvent.title || "Unknown event",
+        );
+        continue;
+      }
 
       // Skip past events
       if (end < now) {
@@ -417,9 +436,9 @@ var DocketEvents = {
     // Store handler reference for removal
     if (!DocketEvents.eventClickHandler) {
       DocketEvents.eventClickHandler = function (event) {
-        console.log("Clicked on event:" + event.target.innerText);
         try {
-          console.log(JSON.parse(decodeURI(this.getAttribute("data"))));
+          // Event data parsing for modal or other functionality
+          JSON.parse(decodeURI(this.getAttribute("data")));
         } catch (error) {
           console.error("Error parsing event data:", error);
         }
