@@ -39,7 +39,9 @@ if (!Array.prototype.includes) {
     var currentElement;
     while (k < len) {
       currentElement = o[k];
-      // biome-ignore lint/suspicious/noSelfCompare: NaN check - part of Array.find polyfill
+      // NaN is the only value that is not equal to itself.
+      // Using a === check against NaN is pointless, so we use a !== check.
+      // biome-ignore lint/suspicious/noSelfCompare: Intentional - standard Array.find polyfill pattern
       if (
         searchElement === currentElement ||
         (searchElement !== searchElement && currentElement !== currentElement)

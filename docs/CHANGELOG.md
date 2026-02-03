@@ -17,6 +17,9 @@
 - Resolved JavaScript function definition order issues in `docket-js.blade.php` (functions now defined before being called)
 - Fixed missing closing braces and structural errors in generated JavaScript that caused runtime errors
 - Corrected `this` context issues in timer functions by using `var self = this;` pattern
+- Verified all JavaScript files are fully ES5 compatible for iOS 12 Safari support
+- Fixed variable hoisting issues in `ios12-polyfills.js` and `docket-calendar.js` to comply with Biome code style rules
+- Ensured all 17 Vite modules compile correctly with production build process
 
 ### Added
 - Calendar authentication status endpoint at `/auth/google/check`
