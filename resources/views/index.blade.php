@@ -48,7 +48,6 @@
         },
       };
     }
-    console.log('[index.blade] DocketConfig.constants.FESTIVAL:', window.DocketConfig.constants.FESTIVAL, 'type:', typeof window.DocketConfig.constants.FESTIVAL);
 
     // Initialize FestivalUtils stub - must be before Vite bundle loads
     if (typeof FestivalUtils === 'undefined') {
@@ -56,7 +55,6 @@
         getCallback: () => null,
       };
     }
-    console.log('[index.blade] FestivalUtils stub created');
   </script>
 
   <!-- Vite Assets -->

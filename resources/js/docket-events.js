@@ -436,9 +436,9 @@ var DocketEvents = {
     // Store handler reference for removal
     if (!DocketEvents.eventClickHandler) {
       DocketEvents.eventClickHandler = function (event) {
-        console.log("Clicked on event:" + event.target.innerText);
         try {
-          console.log(JSON.parse(decodeURI(this.getAttribute("data"))));
+          // Event data parsing for modal or other functionality
+          JSON.parse(decodeURI(this.getAttribute("data")));
         } catch (error) {
           console.error("Error parsing event data:", error);
         }

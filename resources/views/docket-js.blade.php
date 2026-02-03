@@ -83,11 +83,7 @@ initFestivalSelector();
 function initFestivalSelector() {
 const festivalSelect = document.getElementById('festival-select');
 if (!festivalSelect) {
-console.warn('Festival selector element not found');
-return;
-}
-
-console.log('Festival selector initialized, current value:', festivalSelect.value);
+return; // Festival selector only exists in debug mode
 
 festivalSelect.addEventListener('change', function(e) {
 console.log('Festival changed to:', e.target.value);

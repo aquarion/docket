@@ -217,18 +217,12 @@ class GoogleAuthService
         $relativePath = "google/tokens/token_{$account}.json";
 
         if (! Storage::disk('local')->exists($relativePath)) {
-            Log::debug('Token file not found', [
-                'account' => $account,
-                'path' => $relativePath,
-            ]);
-
             return null;
         }
 
         try {
             $encrypted = Storage::disk('local')->get($relativePath);
             if ($encrypted === null) {
-                Log::debug('Token file could not be read', ['account' => $account]);
                 return null;
             }
 
@@ -372,13 +366,6 @@ class GoogleAuthService
         $expiresAt = $token['created'] + $token['expires_in'];
         $now = time();
         $timeUntilExpiry = $expiresAt - $now;
-
-        Log::debug('Token expiry check', [
-            'expires_at' => date('Y-m-d H:i:s', $expiresAt),
-            'time_until_expiry' => $timeUntilExpiry,
-            'buffer' => $this->expiryBuffer,
-            'should_refresh' => $timeUntilExpiry < $this->expiryBuffer,
-        ]);
 
         return $timeUntilExpiry < $this->expiryBuffer;
     }
