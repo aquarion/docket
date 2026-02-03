@@ -227,7 +227,16 @@ var DateUtils = {
   findFurthestDate: function (events) {
     var max = new Date();
     for (var i = 0; i < events.length; i++) {
+      if (!events[i].end) {
+        continue; // Skip events without end dates
+      }
+
       var end = new Date(events[i].end);
+      if (isNaN(end.getTime())) {
+        console.warn("Invalid end date found in event:", events[i]);
+        continue; // Skip invalid dates
+      }
+
       if (end > max) {
         max = end;
       }
