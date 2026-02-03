@@ -1,9 +1,7 @@
 // https://aka.ms/devcontainer.json
 {
 	"name": "Existing Docker Compose (Extend)",
-	"dockerComposeFile": [
-		"../compose.yaml"
-	],
+	"dockerComposeFile": ["../compose.yaml"],
 	"service": "laravel.test",
 	"workspaceFolder": "/var/www/html",
 	"customizations": {
