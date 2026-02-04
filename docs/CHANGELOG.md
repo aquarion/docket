@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Fixed
+- Fixed `/all-calendars` endpoint requiring authentication when no Google calendars configured (returns empty array for Google calendars but allows iCal sources)
+- Removed Vite hot file before browser tests to ensure Dusk loads built assets
+- Updated browser tests to use calendar_set and current JS globals
 - Google OAuth authentication now correctly receives refresh tokens by using modern `setPrompt('consent')` instead of deprecated `setApprovalPrompt('force')`
 - Resolved issue where tokens would expire permanently without refresh capability
 - Fixed Google Auth command exit codes and improved authentication reliability

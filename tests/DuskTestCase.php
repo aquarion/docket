@@ -9,11 +9,9 @@ use Illuminate\Support\Collection;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use PHPUnit\Framework\Attributes\BeforeClass;
 
-
 abstract class DuskTestCase extends BaseTestCase
 {
-
-    static function runningInContinuousIntegration(): bool
+    public static function runningInContinuousIntegration(): bool
     {
         return env('CI', false);
     }

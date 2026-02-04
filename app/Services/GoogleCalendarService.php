@@ -22,6 +22,11 @@ class GoogleCalendarService
      */
     public function fetchAllCalendarEvents(array $googleCalendars, array $mergedCalendars, ?string $start = null, ?string $end = null, bool $debug = false): array
     {
+        // If no Google calendars are configured, return empty array early
+        if (empty($googleCalendars)) {
+            return [];
+        }
+
         $start = $start ?? date('Y-m-01');
         $end = $end ?? date('Y-m-d', strtotime('+1 month'));
 

@@ -29,12 +29,12 @@ return [
     */
 
     'google_calendars' => [
-        'holidays' => [
-            'name' => 'Holidays in the UK',
-            'src' => env('GCAL_HOLIDAYS_SRC', 'k6ihf65p5md3okg9fpu4r2q36qk80r7e@import.calendar.google.com'),
-            'color' => '#865A5A',
-            'emoji' => '🎉',
-        ],
+        // 'holidays' => [
+        //     'name' => 'Holidays in the UK',
+        //     'src' => env('GCAL_HOLIDAYS_SRC', 'k6ihf65p5md3okg9fpu4r2q36qk80r7e@import.calendar.google.com'),
+        //     'color' => '#865A5A',
+        //     'emoji' => '🎉',
+        // ],
         // Add more Google Calendars here:
         // 'work' => [
         //     'name' => 'Work Calendar',
@@ -72,6 +72,12 @@ return [
     */
 
     'ical_calendars' => [
+        'UK_Holidays' => [
+            'name' => 'UK Holidays',
+            'src' => 'https://www.gov.uk/bank-holidays/england-and-wales.ics',
+            'color' => '#865A5A',
+            'emoji' => '🎉',
+        ],
         // Example calendars:
         // 'work_ical' => [
         //     'name' => 'Work Calendar',
