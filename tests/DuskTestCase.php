@@ -9,15 +9,30 @@ use Illuminate\Support\Collection;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use PHPUnit\Framework\Attributes\BeforeClass;
 
+use Illuminate\Support\Facades\Log;
+
 abstract class DuskTestCase extends BaseTestCase
 {
+
+    static function runningInContinuousIntegration(): bool
+    {
+        return env('CI', false);
+    }
+
     /**
      * Prepare for Dusk test execution.
      */
     #[BeforeClass]
     public static function prepare(): void
     {
-        if (! static::runningInSail()) {
+        if (static::runningInSail()) {
+            Log::info('Running in Laravel Sail environment.');
+            // we should be in a Sail environment, so connect to the Selenium container
+        } elseif (static::runningInContinuousIntegration()) {
+            Log::info('Running in Continuous Integration environment.');
+            // we are in CI environment, so connect to the Selenium container
+        } else {
+            Log::info("Running in local environment, starting ChromeDriver.");
             static::startChromeDriver(['--port=9515']);
         }
     }
