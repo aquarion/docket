@@ -143,7 +143,7 @@ jobs:
       - name: Detect host IP
         id: host-ip
         run: |
-          HOST_IP=$(ip route | grep default | awk '{print $3}')
+          HOST_IP=$(hostname -I | awk '{print $1}')
           echo "ip=$HOST_IP" >> $GITHUB_OUTPUT
           echo "Detected host IP: $HOST_IP"
 
@@ -151,6 +151,8 @@ jobs:
         run: php artisan serve --env=testing --host=0.0.0.0 &
         env:
           APP_URL: http://${{ steps.host-ip.outputs.ip }}:8000
+      - name: Check the IP address
+        run: echo "Host IP is ${{ steps.host-ip.outputs.ip }}"
       - name: Wait for server
         # Wait for Laravel development server to become available
         shell: bash
