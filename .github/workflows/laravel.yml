@@ -148,7 +148,7 @@ jobs:
           echo "Detected host IP: $HOST_IP"
 
       - name: Start Laravel server
-        run: php artisan serve --env=testing --host=${{ steps.host-ip.outputs.ip }} &
+        run: php artisan serve --env=testing --host=0.0.0.0 &
         env:
           APP_URL: http://${{ steps.host-ip.outputs.ip }}:8000
       - name: Wait for server
