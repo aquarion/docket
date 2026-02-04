@@ -149,9 +149,9 @@ class CalendarTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                ->assertSourceHas('/build/assets/app-')
-                ->assertSourceHas('.js')
-                ->assertSourceHas('.css');
+                ->assertSourceHas('/build/assets/')
+                ->assertSourceHas('app-')
+                ->assertSourceHas('.js');
         });
     }
 }

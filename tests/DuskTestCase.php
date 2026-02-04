@@ -11,6 +11,8 @@ use PHPUnit\Framework\Attributes\BeforeClass;
 
 abstract class DuskTestCase extends BaseTestCase
 {
+    protected static bool $hotFileExisted = false;
+
     public static function runningInContinuousIntegration(): bool
     {
         return env('CI', false);
@@ -23,11 +25,34 @@ abstract class DuskTestCase extends BaseTestCase
     public static function prepare(): void
     {
         if (static::runningInSail()) {
+            // Move Vite hot file to force use of built assets
+            $hotFile = getcwd().'/public/hot';
+            $hotFileBackup = getcwd().'/public/hot.backup';
+            if (file_exists($hotFile)) {
+                static::$hotFileExisted = true;
+                rename($hotFile, $hotFileBackup);
+            }
             // we should be in a Sail environment, so connect to the Selenium container
         } elseif (static::runningInContinuousIntegration()) {
             // we are in CI environment, so connect to the Selenium container
         } else {
             static::startChromeDriver(['--port=9515']);
+        }
+    }
+
+    /**
+     * Clean up after Dusk test execution.
+     */
+    #[\PHPUnit\Framework\Attributes\AfterClass]
+    public static function cleanup(): void
+    {
+        if (static::runningInSail() && static::$hotFileExisted) {
+            // Restore Vite hot file if it existed before tests
+            $hotFile = getcwd().'/public/hot';
+            $hotFileBackup = getcwd().'/public/hot.backup';
+            if (file_exists($hotFileBackup)) {
+                rename($hotFileBackup, $hotFile);
+            }
         }
     }
 

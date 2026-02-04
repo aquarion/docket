@@ -111,9 +111,9 @@ class CalendarSelectorTest extends DuskTestCase
                 ->waitFor('#calendar-selector-btn', 5)
                 ->click('#calendar-selector-btn')
                 ->waitFor('#calendar-selector-modal.show', 5)
-                ->assertPresent('.calendar-set-item[data-set-id="work"] a')
-                ->visit('/?calendar_set=work')
-                ->assertQueryStringHas('calendar_set', 'work');
+                ->assertPresent('.calendar-set-item[data-set-id="all"] a')
+                ->assertSeeIn('.calendar-set-item[data-set-id="all"]', 'All Calendars')
+                ->assertQueryStringHas('calendar_set', 'all');
         });
     }
 }

@@ -14,7 +14,8 @@ class CalendarJavaScriptTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                ->waitFor('#calendar', 10)
+                ->pause(1000) // Wait for page to load
+                ->assertPresent('#calendar')
                 ->assertDontSee('RangeError') // Should not see JavaScript errors
                 ->assertDontSee('invalid date') // Should not see invalid date errors
                 ->assertDontSee('Invalid date in calendar') // Should handle calendar errors gracefully
@@ -29,10 +30,11 @@ class CalendarJavaScriptTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                ->waitFor('#calendar', 10)
-                ->assertSourceDoesntContain('Uncaught')
-                ->assertSourceDoesntContain('TypeError')
-                ->assertSourceDoesntContain('ReferenceError');
+                ->pause(1000) // Wait for page to load
+                ->assertPresent('#calendar')
+                ->assertSourceMissing('Uncaught')
+                ->assertSourceMissing('TypeError')
+                ->assertSourceMissing('ReferenceError');
 
             // Check that main JavaScript functions are available
             $findFurthestExists = $browser->script('return typeof DateUtils !== "undefined" && typeof DateUtils.findFurthestDate === "function"');
@@ -47,7 +49,8 @@ class CalendarJavaScriptTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                ->waitFor('#calendar', 10);
+                ->pause(1000) // Wait for page to load
+                ->assertPresent('#calendar');
 
             // Inject test data that could cause issues
             $browser->script('
@@ -77,7 +80,8 @@ class CalendarJavaScriptTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                ->waitFor('#calendar', 10);
+                ->pause(1000) // Wait for page to load
+                ->assertPresent('#calendar');
 
             // Test that date utilities handle invalid dates
             $result = $browser->script('
@@ -112,7 +116,8 @@ class CalendarJavaScriptTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                ->waitFor('#calendar', 10)
+                ->pause(1000)
+                ->assertPresent('#calendar')
                 ->pause(250);
 
             // Test that NotificationUtils is available for error reporting
@@ -142,7 +147,8 @@ class CalendarJavaScriptTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                ->waitFor('#calendar', 10)
+                ->pause(1000)
+                ->assertPresent('#calendar')
                 ->pause(250);
 
             // Test findFurthestDate with invalid dates
