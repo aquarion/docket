@@ -148,7 +148,7 @@ jobs:
           echo "Detected host IP: $HOST_IP"
 
       - name: Start Laravel server
-        run: php artisan serve --env=testing &v=testing &
+        run: php artisan serve --env=testing --host=${{ steps.host-ip.outputs.ip }} &
         env:
           APP_URL: http://${{ steps.host-ip.outputs.ip }}:8000
       - name: Wait for server
@@ -157,7 +157,7 @@ jobs:
         run: |
           sleep 5
           LOOPS=10
-          until curl -f http://127.0.0.1:8000; do
+          until curl -f http://${{ steps.host-ip.outputs.ip }}:8000; do
             if [ $LOOPS -eq 0 ]; then
               echo "=== Server failed to start, showing logs ==="
               cat storage/logs/laravel.log 2>/dev/null || echo "Log file not found"
