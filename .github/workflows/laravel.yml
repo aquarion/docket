@@ -138,11 +138,7 @@ jobs:
         run: ./vendor/laravel/dusk/bin/chromedriver-linux &
       # Browser Tests
       - name: Start Laravel server
-        run: php artisan serve &
-        env:
-          APP_ENV: testing
-          DB_CONNECTION: sqlite
-          DB_DATABASE: database/database.sqlite
+        run: php artisan serve --env=testing &
       - name: Wait for server
         # Wait for Laravel development server to become available
         shell: bash
@@ -162,7 +158,4 @@ jobs:
           echo "Server is ready!"
 
       - name: Execute browser tests via Dusk
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: database/database.sqlite
-        run: php artisan dusk
+        run: php artisan dusk --env=testing
