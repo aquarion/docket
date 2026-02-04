@@ -125,17 +125,7 @@ jobs:
         run: |
           mkdir -p database
           touch database/database.sqlite
-      # Dusk setup
-      - name: Fix permissions for chromedriver
-        run: |
-          chmod -R u+wx vendor/laravel/dusk/bin || true
-          sudo chown -R $USER:$USER vendor/laravel/dusk/bin || true
-      - name: Install Chrome binaries
-        run: php artisan dusk:chrome-driver --detect
 
-      # Start the Chrome driver so we're able to run browser tests with Chrome
-      - name: Start Chrome Driver
-        run: ./vendor/laravel/dusk/bin/chromedriver-linux &
       # Browser Tests
       - name: Start Laravel server
         run: php artisan serve --env=testing &
