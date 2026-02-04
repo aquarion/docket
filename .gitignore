@@ -24,7 +24,4 @@ yarn-error.log
 public/static/generated/
 
 # Legacy paths
-composer.lock
-cache
-
-htdocs
+bootstrap/cache
