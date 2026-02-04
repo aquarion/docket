@@ -3,6 +3,14 @@
 ## [Unreleased]
 
 ### Fixed
+- Fixed `/all-calendars` endpoint requiring authentication when no Google calendars configured (returns empty array for Google calendars but allows iCal sources)
+- Fixed all Dusk browser tests by ensuring Vite hot file is removed before test execution (forces use of built assets instead of dev server)
+- Fixed `.env` file having `APP_ENV=testing` which broke the application (changed to `APP_ENV=local`)
+- Updated browser tests to use `assertPresent` and `pause` instead of `waitFor` for better element detection reliability
+- Fixed `test_vite_assets_loaded` to check for correct built asset paths
+- Fixed `test_switching_calendar_sets` to use existing "all" calendar set instead of non-existent "work" set
+- Fixed `assertSourceDoesntContain` method name to correct `assertSourceMissing` in JavaScript tests
+- Updated browser tests to use calendar_set and current JS globals
 - Google OAuth authentication now correctly receives refresh tokens by using modern `setPrompt('consent')` instead of deprecated `setApprovalPrompt('force')`
 - Resolved issue where tokens would expire permanently without refresh capability
 - Fixed Google Auth command exit codes and improved authentication reliability

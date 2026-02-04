@@ -138,6 +138,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using the `list-artisan-commands` tool.
 - If you're creating a generic PHP class, use `php artisan make:class`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
+- **Always check Artisan command options first** - Use `php artisan command:name --help` to see available flags before implementing complex workarounds. For example, `php artisan key:generate --env=testing` is simpler than storing test keys in config files.
 
 ## Database
 
