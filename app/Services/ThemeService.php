@@ -42,13 +42,53 @@ class ThemeService
 
         // Check each festival to see if it's currently active
         foreach ($festivals as $key => $festival) {
-            if (isset($festival['callback']) && is_callable($festival['callback'])) {
-                if ($festival['callback']()) {
-                    return $key;
-                }
+            if ($this->isFestivalActive($festival)) {
+                return $key;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Check if a festival is currently active based on its configuration
+     */
+    private function isFestivalActive(array $festival): bool
+    {
+        $type = $festival['type'] ?? null;
+
+        switch ($type) {
+            case 'easter_calculation':
+                return $this->isEasterPeriodActive($festival);
+
+            case 'month':
+                $month = (int) date('m');
+                return $month === ($festival['month'] ?? 0);
+
+            default:
+                // Legacy support for callback functions (if they exist)
+                if (isset($festival['callback']) && is_callable($festival['callback'])) {
+                    return $festival['callback']();
+                }
+                return false;
+        }
+    }
+
+    /**
+     * Check if Easter period is currently active
+     */
+    private function isEasterPeriodActive(array $festival): bool
+    {
+        $year = (int) date('Y');
+        $easterSunday = easter_date($year);
+
+        $daysBefore = $festival['days_before'] ?? 0;
+        $daysAfter = $festival['days_after'] ?? 0;
+
+        $startDate = strtotime("-{$daysBefore} days", $easterSunday);
+        $endDate = strtotime("+{$daysAfter} days", $easterSunday);
+        $today = strtotime('today');
+
+        return $today >= $startDate && $today <= $endDate;
     }
 }

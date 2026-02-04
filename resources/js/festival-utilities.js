@@ -18,6 +18,8 @@ var FestivalUtils = {
      * @param {HTMLElement} container - Container element to process
      */
     replaceZerosWithEggs: function (container) {
+      var timeElements, i, el;
+
       if (
         window.DocketConfig &&
         window.DocketConfig.constants &&
@@ -26,13 +28,14 @@ var FestivalUtils = {
         return;
 
       // Replace zeros in time elements with egg emojis
-      var timeElements = container.querySelectorAll(".event_dt, .dt_time");
-      timeElements.forEach(function (el) {
+      timeElements = container.querySelectorAll(".event_dt, .dt_time");
+      for (i = 0; i < timeElements.length; i++) {
+        el = timeElements[i];
         el.innerHTML = el.innerHTML.replace(
           /0/g,
           '<span class="easter-egg">🥚</span>',
         );
-      });
+      }
     },
   },
 

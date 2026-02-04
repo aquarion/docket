@@ -63,6 +63,13 @@ php artisan serve
 
 # Or with Docker (Laravel Sail)
 sail up
+
+# To run Vite dev server with Sail (for hot reload)
+sail up
+# In another terminal:
+sail npm run dev
+# Or run Vite service:
+sail up vite
 ```
 
 Visit: **http://localhost:8000**
@@ -134,6 +141,11 @@ templates/
 ```bash
 # Development with hot reload
 npm run dev
+
+# With Laravel Sail
+sail npm run dev
+# Or use the dedicated Vite service:
+sail up vite
 
 # Build for production
 npm run build

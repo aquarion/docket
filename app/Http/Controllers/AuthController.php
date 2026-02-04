@@ -26,11 +26,17 @@ class AuthController extends Controller
             $account = $state['account'] ?? null;
         }
 
-        // If account provided, save the token automatically
+        // If account provided, check if token already exists (from OAuth polling)
         if ($account) {
             try {
-                $this->googleAuth->fetchAccessToken($validated['code'], $account);
-                $message = "Token saved for account: {$account}";
+                // Check if token was already saved by OAuth polling  
+                if ($this->googleAuth->hasValidToken($account)) {
+                    $message = "Token already saved for account: {$account}";
+                } else {
+                    // Token not found, try to exchange the OAuth code
+                    $this->googleAuth->fetchAccessToken($validated['code'], $account);
+                    $message = "Token saved for account: {$account}";
+                }
             } catch (\Exception $e) {
                 $message = "Error: {$e->getMessage()}";
             }

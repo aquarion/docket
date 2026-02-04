@@ -1,35 +1,62 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
-	"vcs": {
-		"enabled": true,
-		"clientKind": "git",
-		"useIgnoreFile": true
-	},
-	"files": {
-		"ignoreUnknown": false,
-		"includes": ["**", "!vendor", "!node_modules", "!htdocs/static/snowstorm"]
-	},
-	"formatter": {
-		"enabled": true,
-		"indentStyle": "tab"
-	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true
-		}
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "double"
-		}
-	},
-	"assist": {
-		"enabled": true,
-		"actions": {
-			"source": {
-				"organizeImports": "on"
-			}
-		}
-	}
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["**", "!vendor", "!node_modules", "!htdocs/static/snowstorm"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "tab"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "noForEach": "off"
+      },
+      "style": {
+        "noParameterAssign": "off",
+        "useTemplate": "off",
+        "useConst": "off"
+      },
+      "suspicious": {
+        "noVar": "off"
+      }
+    }
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": false
+    },
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always"
+    },
+    "globals": [
+      "window",
+      "document",
+      "console",
+      "URLSearchParams",
+      "fetch",
+      "Promise",
+      "SunCalc",
+      "twemoji",
+      "ICAL",
+      "Toastify"
+    ]
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
 }

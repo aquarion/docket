@@ -86,7 +86,7 @@
 </head>
 
 <body class="token">
-  <h1>Hey Look, An Auth Token!</h1>
+  <h1>Google Calendar Authorization Complete!</h1>
 
   @if($message)
   <div style="background: {{ str_contains($message, 'Error') ? '#f8d7da' : '#d4edda' }}; 
@@ -96,10 +96,13 @@
   </div>
   @endif
 
-  @if($account)
-  <p style="margin-bottom: 1rem;">Account: <strong>{{ $account }}</strong></p>
-  @endif
-
+  @if($account && !str_contains($message ?? '', 'Error'))
+  <p style="color: #28a745; font-size: 1.2rem; margin-bottom: 1rem;">
+    ✓ Token automatically saved for account: <strong>{{ $account }}</strong>
+  </p>
+  <p>Your terminal command should complete automatically. You can close this tab.</p>
+  @elseif(!$account)
+  <p style="margin-bottom: 1rem;">Manual authorization required</p>
   <pre><code id="code">{{ $code }}</code></pre>
 
   <a href="#" id="copyCode" role="button" aria-label="Copy auth token to clipboard">
@@ -108,6 +111,7 @@
 
   <p>Enter that into the terminal that's waiting for it</p>
   <p class="success-message" id="successMessage">✓ Code copied to clipboard!</p>
+  @endif
 
   <script>
     document.querySelector('#copyCode').addEventListener('click', function(event) {

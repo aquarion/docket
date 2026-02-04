@@ -1,10 +1,10 @@
 // Import polyfills first for iOS 12 compatibility
 import "./ios12-polyfills.js";
 
+import twemoji from "@twemoji/api";
 // Import external libraries from node_modules
 import ICAL from "ical.js";
 import SunCalc from "suncalc";
-import twemoji from "@twemoji/api";
 
 // Make libraries available globally BEFORE importing application files
 window.ICAL = ICAL;
