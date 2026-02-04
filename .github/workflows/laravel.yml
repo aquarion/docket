@@ -82,6 +82,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Allow safe directory for git
+        run: git config --global --add safe.directory /app
+
       - name: Create required directories
         run: |
           mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
@@ -123,6 +126,10 @@ jobs:
           mkdir -p database
           touch database/database.sqlite
       # Dusk setup
+      - name: Fix permissions for chromedriver
+        run: |
+          chmod -R u+wx vendor/laravel/dusk/bin || true
+          sudo chown -R $USER:$USER vendor/laravel/dusk/bin || true
       - name: Install Chrome binaries
         run: php artisan dusk:chrome-driver --detect
 
