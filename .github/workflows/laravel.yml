@@ -127,8 +127,18 @@ jobs:
           touch database/database.sqlite
 
       # Browser Tests
+
+      - name: Detect host IP
+        id: host-ip
+        run: |
+          HOST_IP=$(ip route | grep default | awk '{print $3}')
+          echo "ip=$HOST_IP" >> $GITHUB_OUTPUT
+          echo "Detected host IP: $HOST_IP"
+
       - name: Start Laravel server
-        run: php artisan serve --env=testing &
+        run: php artisan serve --env=testing &v=testing &
+        env:
+          APP_URL: http://${{ steps.host-ip.outputs.ip }}:8000
       - name: Wait for server
         # Wait for Laravel development server to become available
         shell: bash
@@ -149,3 +159,5 @@ jobs:
 
       - name: Execute browser tests via Dusk
         run: php artisan dusk --env=testing
+        env:
+          APP_URL: http://${{ steps.host-ip.outputs.ip }}:8000
