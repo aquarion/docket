@@ -6,6 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://dailyphoto.aquarionics.com https://live.dailyphoto.aquarionics.com {{ config('app.url') }}; font-src 'self' https://fonts.gstatic.com https://fonts.gstatic.com; ">
   @endif
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <link href="https://fonts.googleapis.com/css?family=Playfair Display" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Sometype+Mono&amp;display=swap" rel="stylesheet">
@@ -57,11 +58,11 @@
     }
   </script>
 
+  <!-- Toastify JavaScript for notifications (must load before Vite bundle) -->
+  <script type="text/javascript" src="/static/generated/toastify.js"></script>
+
   <!-- Vite Assets -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-  <!-- Toastify JavaScript for notifications -->
-  <script type="text/javascript" src="/static/generated/toastify.js"></script>
 
   <script type="application/ld+json">
     {

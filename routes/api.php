@@ -7,8 +7,8 @@ Route::get('/', function () {
     return ['status' => 'ok'];
 });
 
-// API routes that require authentication
-Route::middleware('auth:sanctum')->group(function () {
+// API routes that require authentication (session-based for SPA)
+Route::middleware(['auth', 'web'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });

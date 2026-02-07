@@ -229,9 +229,12 @@ function loadCalendarSources() {
 
   fetch("/api/calendar-sources", {
     headers: {
-      Authorization: "Bearer " + (window.userToken || ""),
+      "X-CSRF-TOKEN": document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content"),
       Accept: "application/json",
     },
+    credentials: "same-origin",
   })
     .then(function (response) {
       if (response.ok) {
@@ -258,9 +261,12 @@ function loadCalendarSets() {
 
   fetch("/api/calendar-sets", {
     headers: {
-      Authorization: "Bearer " + (window.userToken || ""),
+      "X-CSRF-TOKEN": document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content"),
       Accept: "application/json",
     },
+    credentials: "same-origin",
   })
     .then(function (response) {
       if (response.ok) {
@@ -379,9 +385,12 @@ window.deleteCalendarSource = function (id) {
   fetch("/api/calendar-sources/" + id, {
     method: "DELETE",
     headers: {
-      Authorization: "Bearer " + (window.userToken || ""),
+      "X-CSRF-TOKEN": document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content"),
       Accept: "application/json",
     },
+    credentials: "same-origin",
   })
     .then(function (response) {
       if (response.ok) {
@@ -410,9 +419,12 @@ window.deleteCalendarSet = function (id) {
   fetch("/api/calendar-sets/" + id, {
     method: "DELETE",
     headers: {
-      Authorization: "Bearer " + (window.userToken || ""),
+      "X-CSRF-TOKEN": document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content"),
       Accept: "application/json",
     },
+    credentials: "same-origin",
   })
     .then(function (response) {
       if (response.ok) {
