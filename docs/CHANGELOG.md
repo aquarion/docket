@@ -3,33 +3,30 @@
 ## [Unreleased]
 
 ### Added
-- Google OAuth authentication system using Laravel Socialite
-- User authentication with Google accounts (replaces password-based login)
-- User menu displaying Google profile information (name, avatar) in top right corner
-- Logout functionality for authenticated users
-- Login button for unauthenticated users
-- API token authentication using Laravel Sanctum
-- Google calendar access through authenticated user tokens
-- User-specific Google token storage in database
-- Automatic Google calendar fetching for authenticated users
-- Unified settings modal with calendar sets, Google authentication, and debug options
-- Comprehensive night mode styling for settings modal including enhanced colors, gradients, and visual hierarchy
-- Database-driven calendar configuration system replacing static file configuration
-- Calendar management interface within settings modal for managing calendar sources and sets
-- API endpoints for managing calendar sets and sources (`/api/calendar-sets`, `/api/calendar-sources`)
-- Database models: CalendarSet, CalendarSource with many-to-many relationships
-- Calendar configuration migration seeder to transfer static config to database
-- Mandatory user authentication for all calendar access (no guest/anonymous access)
+- Calendar source selection interface for managing which sources belong to each calendar set
+- Visual Google Calendar integration - select multiple calendars directly from your Google account
+- Dedicated calendar management page at `/manage` with full CRUD operations
+
+### Fixed
+- Night mode styling and theme switching functionality
+- Settings modal not opening for authenticated users (incorrect button selectors)
+- JavaScript initialization issues after authentication system changes
+- CSS class name validation for dynamically generated calendar styles
+- Missing core layout styles lost during SCSS modularization
+- `/all-calendars` endpoint errors when Google Calendar authentication fails
+- Calendar set selection modal now shows proper database-driven calendar sets instead of static config data
+- Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
+- Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
+- Sign out button now properly logs out users and invalidates sessions
+- Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
 
 ### Changed
-- Google OAuth now uses a single shared credentials.json file for all accounts while keeping per-account tokens
-- Google OAuth now automatically uses Application Default Credentials when running on Google Cloud
-- User model updated to use Google OAuth fields (google_id, avatar) instead of password authentication
-- Authentication routes updated for Google OAuth flow
-- Database schema updated for OAuth user management
-- GoogleCalendarService now uses authenticated user's tokens when available
-- Calendar fetch commands integrated with user authentication system
-- Calendar selector modal converted to comprehensive settings modal
+- **Authentication System**: Migrated to Google OAuth using Laravel Socialite (replaces password-based login)
+- **Database-Driven Configuration**: Calendar sources and sets now managed in database instead of static files
+- **Code Organization**: Modularized 1,275-line style.scss into focused SCSS partials; reorganized JavaScript modules
+- **CSS Utilities**: Added sanitization functions for valid CSS class names (PHP: StringHelper, JS: CssUtils)
+- Unified settings modal with calendar management, authentication, and debug options
+- All calendar access now requires user authentication (no anonymous access)
 - Festival debug options moved to settings modal (visible only in debug mode)
 - Google authentication interface integrated into settings modal
 - CalendarService updated to read from database with fallback to static configuration

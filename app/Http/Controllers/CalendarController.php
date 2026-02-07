@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CalendarSet;
 use App\Services\CalendarService;
 use App\Services\GoogleCalendarService;
 use App\Services\ICalProxyService;
@@ -28,6 +29,26 @@ class CalendarController extends Controller
     {
         $filteredConfig = $this->getFilteredCalendars($request);
 
+        // Get calendar sets from database (for authenticated users) or fallback to config
+        $calendarSetsData = [];
+        if (auth()->check()) {
+            $calendarSets = CalendarSet::where('user_id', auth()->id())
+                ->where('is_active', true)
+                ->get();
+
+            foreach ($calendarSets as $set) {
+                $calendarSetsData[$set->key] = [
+                    'name' => $set->name,
+                    'emoji' => $set->emoji,
+                ];
+            }
+        }
+
+        // Fallback to static config if no database sets or user not authenticated
+        if (empty($calendarSetsData)) {
+            $calendarSetsData = config('calendars.calendar_sets', []);
+        }
+
         $view = [
             'ical_calendars' => $filteredConfig['ical_calendars'],
             'google_calendars' => $filteredConfig['google_calendars'],
@@ -35,7 +56,7 @@ class CalendarController extends Controller
             'theme' => $this->themeService->getTheme(),
             'festival' => $this->themeService->getFestival(),
             'calendar_set' => $filteredConfig['calendar_set_id'],
-            'calendar_sets' => config('calendars.calendar_sets', []),
+            'calendar_sets' => $calendarSetsData,
         ];
 
         if (config('app.debug')) {
@@ -166,6 +187,35 @@ class CalendarController extends Controller
                 'error' => $e->getMessage(),
             ], 404);
         }
+    }
+
+    /**
+     * Display the calendar management page
+     */
+    public function manage(Request $request)
+    {
+        $view = [
+            'theme' => $this->themeService->getTheme(),
+            'festival' => $this->themeService->getFestival(),
+        ];
+
+        if (config('app.debug')) {
+            $view['git_branch'] = Git::currentBranch();
+        }
+
+        return view('manage', $view);
+    }
+
+    /**
+     * Get user's Google calendars for selection
+     */
+    public function getGoogleCalendars(Request $request)
+    {
+        $calendars = $this->googleCalendarService->getUserCalendars();
+
+        return response()->json([
+            'data' => $calendars,
+        ]);
     }
 
     /**

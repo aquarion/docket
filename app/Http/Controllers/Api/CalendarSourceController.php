@@ -147,4 +147,58 @@ class CalendarSourceController extends Controller
             'message' => 'Calendar source deleted successfully',
         ]);
     }
+
+    /**
+     * Store multiple calendar sources at once.
+     */
+    public function storeBatch(Request $request)
+    {
+        $validated = $request->validate([
+            'sources' => 'required|array|min:1',
+            'sources.*.key' => 'required|string|max:255',
+            'sources.*.name' => 'required|string|max:255',
+            'sources.*.type' => 'required|in:ical,google',
+            'sources.*.src' => 'required|string',
+            'sources.*.color' => 'nullable|string|max:7',
+            'sources.*.emoji' => 'nullable|string|max:2',
+        ]);
+
+        $user = $request->user();
+        $userId = $user ? $user->id : null;
+        $createdSources = [];
+
+        foreach ($validated['sources'] as $sourceData) {
+            // Check for unique key constraint
+            $existingSource = CalendarSource::where('key', $sourceData['key'])
+                ->when($userId, fn ($q) => $q->where('user_id', $userId))
+                ->when(! $userId, fn ($q) => $q->whereNull('user_id'))
+                ->first();
+
+            if ($existingSource) {
+                // Skip if source already exists
+                continue;
+            }
+
+            $calendarSource = CalendarSource::create([
+                'key' => $sourceData['key'],
+                'name' => $sourceData['name'],
+                'type' => $sourceData['type'],
+                'src' => $sourceData['src'],
+                'color' => $sourceData['color'] ?? '#3788d8',
+                'emoji' => $sourceData['emoji'] ?? '',
+                'user_id' => $userId,
+                'is_active' => true,
+            ]);
+
+            $createdSources[] = $calendarSource;
+        }
+
+        // Clear cache when creating sources
+        $this->calendarService->clearCache();
+
+        return response()->json([
+            'message' => count($createdSources).' calendar source(s) created successfully',
+            'data' => $createdSources,
+        ], 201);
+    }
 }

@@ -17,6 +17,10 @@ class LoginController extends Controller
     {
         return Socialite::driver('google')
             ->scopes(config('services.google.oauth_scopes', []))
+            ->with([
+                'access_type' => 'offline',
+                'prompt' => 'consent',
+            ])
             ->redirect();
     }
 
@@ -85,6 +89,9 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('home');
     }
@@ -96,6 +103,10 @@ class LoginController extends Controller
     {
         $authUrl = Socialite::driver('google')
             ->scopes(config('services.google.oauth_scopes', []))
+            ->with([
+                'access_type' => 'offline',
+                'prompt' => 'consent',
+            ])
             ->stateless()
             ->redirect()
             ->getTargetUrl();

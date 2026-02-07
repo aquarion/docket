@@ -11,6 +11,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 });
 
+// Public asset routes - CSS and JS must be accessible for page rendering
+Route::get('/calendars.css', [CalendarController::class, 'css'])->name('calendars.css');
+Route::get('/docket.js', [CalendarController::class, 'js'])->name('docket.js');
+
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -18,7 +22,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [CalendarController::class, 'index'])->name('home');
     Route::get('/calendar', [CalendarController::class, 'show'])->name('calendar');
     Route::get('/all-calendars', [CalendarController::class, 'all'])->name('all-calendars');
-    Route::get('/calendars.css', [CalendarController::class, 'css'])->name('calendars.css');
-    Route::get('/docket.js', [CalendarController::class, 'js'])->name('docket.js');
     Route::get('/icalproxy', [CalendarController::class, 'icalProxy'])->name('icalproxy');
+
+    // Calendar management page
+    Route::get('/manage', [CalendarController::class, 'manage'])->name('manage');
 });

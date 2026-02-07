@@ -252,6 +252,22 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - **Always check Artisan command options first** - Use `php artisan command:name --help` to see available flags before implementing complex workarounds. For example, `php artisan key:generate --env=testing` is simpler than storing test keys in config files.
 - **Use Sail consistently** - This project uses Laravel Sail for Docker containerization. Always use `./vendor/bin/sail` commands instead of `php artisan serve`. The application runs on `http://localhost` via Sail, not on a custom port with artisan serve.
 
+## Code Modularization - CRITICAL Safety Protocol
+
+**NEVER delete code during file splits without complete verification**:
+
+- **Audit first**: Do complete inventory of ALL functions/classes/styles before splitting monolithic files
+- **Diff verification**: Use `wc -l` and `diff` tools to compare before/after line counts and content
+- **Incremental testing**: Test functionality after each module is split, not after the entire refactor
+- **Keep originals**: Preserve original files as `.old` until split is verified complete
+- **Common failures**: Missing JavaScript functions (updateTheme, getTodayEvents), missing CSS layouts (#switch, #datetime, #nextUp)
+
+Pattern of data loss during modularization has occurred multiple times:
+
+- JavaScript function splits lost critical UI functions
+- SCSS modularization lost core layout styles and positioning
+- Always verify nothing is lost when moving from monolithic to modular structure
+
 ## Debugging Methodology - Git Comparison First
 
 **CRITICAL**: When encountering complex syntax/structural errors, ALWAYS compare to last working version BEFORE deep debugging:

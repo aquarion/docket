@@ -15,10 +15,12 @@ Route::middleware(['auth', 'web'])->group(function () {
 
     // Protected calendar endpoints
     Route::get('/calendars', [\App\Http\Controllers\CalendarController::class, 'apiIndex']);
+    Route::get('/google-calendars', [\App\Http\Controllers\CalendarController::class, 'getGoogleCalendars']);
 
     // Calendar management endpoints
     Route::apiResource('calendar-sets', \App\Http\Controllers\Api\CalendarSetController::class);
     Route::apiResource('calendar-sources', \App\Http\Controllers\Api\CalendarSourceController::class);
+    Route::post('calendar-sources/batch', [\App\Http\Controllers\Api\CalendarSourceController::class, 'storeBatch']);
 });
 
 // Public API routes for Google OAuth

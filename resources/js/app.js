@@ -1,10 +1,6 @@
 // Import polyfills first for iOS 12 compatibility
 import "./ios12-polyfills.js";
 
-// Import CSS files
-import "../css/app.scss";
-import "../css/manage.scss";
-
 import twemoji from "@twemoji/api";
 // Import external libraries from node_modules
 import ICAL from "ical.js";
@@ -20,6 +16,7 @@ window.twemoji = twemoji;
 // These files depend on the global variables set above
 import "./festival-utilities.js";
 import "./date-utils.js";
+import "./css-utils.js";
 import "./notification-utils.js";
 import "./circle-progress.js";
 import "./calendar-management/calendar-manager.js";

@@ -1,51 +1,6 @@
-/* Skip link for accessibility */
+/* Accessibility Fallback Styles */
+/* This file provides minimal styling for users who cannot load the main stylesheet */
 
-// Variables
-$color-black: #000;
-$color-white: #fff;
-$color-focus: #007cba;
-$z-index-high: 999;
-$focus-outline-width: 2px;
-$focus-outline-offset: 2px;
-
-.skip-link {
-  position: absolute;
-  left: -10000px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-
-  &:focus {
-    position: static;
-    width: auto;
-    height: auto;
-    background: $color-black;
-    color: $color-white;
-    padding: 8px;
-    text-decoration: none;
-    z-index: $z-index-high;
-  }
-}
-
-/* Improve focus indicators */
-a:focus,
-button:focus,
-canvas:focus {
-  outline: $focus-outline-width solid $color-focus;
-  outline-offset: $focus-outline-offset;
-}
-
-/* Better mobile touch targets */
-#switch a {
-	min-height: 44px;
-	min-width: 44px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-/* Improve contrast for better accessibility */
 .devmode-ribbon {
 	background: transparent;
 	color: white;

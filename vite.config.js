@@ -15,7 +15,11 @@ export default defineConfig({
     outDir: "public/build",
     manifest: "manifest.json",
     rollupOptions: {
-      input: ["resources/js/app.js", "resources/css/app.scss"],
+      input: [
+        "resources/js/app.js",
+        "resources/css/app.scss",
+        "resources/css/manage.scss",
+      ],
     },
   },
   plugins: [
@@ -24,7 +28,11 @@ export default defineConfig({
       additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
     }),
     laravel({
-      input: ["resources/js/app.js", "resources/css/app.scss"],
+      input: [
+        "resources/js/app.js",
+        "resources/css/app.scss",
+        "resources/css/manage.scss",
+      ],
       refresh: true,
     }),
     {

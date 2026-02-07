@@ -29,6 +29,9 @@
 
   <title>Docket - Personal Calendar</title>
 
+  <!-- Vite Assets - Load base styles first -->
+  @vite(['resources/css/app.scss', 'resources/js/app.js'])
+
   <!-- Dynamic Calendar Styles -->
   <link rel="stylesheet" href="{{ route('calendars.css') }}?calendar_set={{ $calendar_set }}">
   @if($festival == 'christmas')
@@ -60,9 +63,6 @@
 
   <!-- Toastify JavaScript for notifications (must load before Vite bundle) -->
   <script type="text/javascript" src="/static/generated/toastify.js"></script>
-
-  <!-- Vite Assets -->
-  @vite(['resources/css/app.scss', 'resources/js/app.js'])
 
   <script type="application/ld+json">
     {

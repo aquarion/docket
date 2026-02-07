@@ -89,10 +89,15 @@ class GoogleCalendarService
             }
         }
 
-        // If we have authentication failures and no events, throw an error
-        if (empty($all_events) && ! empty($authFailures)) {
+        // Log authentication failures but don't throw exception - allow calendar to work without Google calendars
+        if (! empty($authFailures)) {
             $accounts = implode(', ', array_keys($authFailures));
-            throw new \Exception("Authentication failed for Google accounts: {$accounts}. Please re-authenticate.");
+            Log::warning("Google Calendar authentication failed for accounts: {$accounts}. Calendar will continue without Google events.");
+
+            // If no events were fetched and we have auth failures, return empty array
+            if (empty($all_events)) {
+                return [];
+            }
         }
 
         // If we have fetch failures but some events, log warnings

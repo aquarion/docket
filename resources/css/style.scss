@@ -307,6 +307,284 @@ table {
   }
 }
 
+/* Core Layout Styles */
+html, body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body > * {
+  flex-shrink: 0;
+}
+
+#map, #photo {
+  flex-grow: 1;
+  background-attachment: local;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* DateTime Display */
+#datetime {
+  font-size: 32pt;
+  text-align: center;
+  
+  .dt_time {
+    font-family: "Sometype Mono", monospace;
+    font-size: 72pt;
+  }
+  
+  sup {
+    font-size: 22pt;
+  }
+}
+
+/* Next Up Events */
+#nextUp {
+  width: 100%;
+  height: 275px;
+  display: inline-block;
+  font-size: 22pt;
+  
+  span.event_dt {
+    font-family: "Sometype Mono", monospace;
+  }
+  
+  dl {
+    margin: 0;
+  }
+  
+  dt {
+    width: fit-content;
+    padding-left: 3em;
+    text-indent: -3em;
+  }
+  
+  dd {
+    padding: 0 4pt;
+  }
+  
+  ul {
+    margin: 0;
+    padding-left: 0;
+  }
+  
+  .day-events span {
+    display: inline-block;
+    text-indent: 0;
+  }
+  
+  .until {
+    font-size: small;
+    color: #444;
+  }
+  
+  sup {
+    font-size: 12pt;
+  }
+}
+
+/* Calendar Theme Switch */
+#switch {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-size: 24pt;
+  z-index: 100;
+}
+
+/* Map markers */
+.marker {
+	background-size: cover;
+	width: 27px;
+	height: 25px;
+	border-radius: 50%;
+	border: 1px solid black;
+	cursor: pointer;
+}
+
+.fyr_marker {
+  background-image: url("https://art.istic.net/iconography/maps/fyr_icon.png");
+}
+
+.aq_marker {
+  background-image: url("https://art.istic.net/iconography/maps/aq_icon.png");
+}
+
+/* Emoji styling */
+img.emoji {
+	height: 1em;
+	width: 1em;
+	margin: 0 0.05em 0 0.1em;
+	vertical-align: -0.1em;
+}
+
+/* Debug Festival Selector */
+.debug-festival-selector {
+	position: fixed;
+	top: 10px;
+	left: 10px;
+	background: rgba(255, 255, 255, 0.98);
+	padding: 0.75em 1.25em;
+	border-radius: 4px;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+	z-index: 99998;
+	font-size: 0.875em;
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	display: flex;
+	align-items: center;
+	gap: 0.75em;
+}
+
+.debug-festival-selector label {
+	display: inline-block;
+	font-weight: 600;
+	color: #333;
+	margin: 0;
+	white-space: nowrap;
+}
+
+.debug-festival-selector select {
+	padding: 0.4em 0.75em;
+	border: 2px solid #ccc;
+	border-radius: 3px;
+	background: white;
+	font-family: inherit;
+	font-size: inherit;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	min-width: 120px;
+}
+
+.debug-festival-selector select:hover {
+	border-color: #666;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.debug-festival-selector select:focus {
+	outline: none;
+	border-color: #0066cc;
+	box-shadow:
+		0 0 0 3px rgba(0, 102, 204, 0.1),
+		0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Striped backgrounds for merged calendars */
+#nextUp .event_title.txtcal-aquarion-fyr,
+#nextUp .event_title.txtcal-fyr-aquarion {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(80, 110, 173, 0.5),
+    rgba(80, 110, 173, 0.5) 3px,
+    rgba(163, 41, 41, 0.5) 3px,
+    rgba(163, 41, 41, 0.5) 6px
+  );
+}
+
+/* Grid layout (alternative layout system) */
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 600px 70px 100px 1fr;
+  gap: 0px 0px;
+  height: 100%;
+}
+
+.grid-object {
+  border: 1px solid green;
+}
+
+#calendar {
+  grid-area: 1 / 1 / 3 / 2;
+}
+
+#datetime {
+  grid-area: 2 / 1 / 4 / 2;
+}
+
+#weather {
+  grid-area: 3 / 1 / 4 / 2;
+}
+
+#map, #photo {
+  grid-area: 4 / 1 / 5 / 2;
+}
+
+/* Accessibility and User Experience */
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+
+  &:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    background: variables.$color-black;
+    color: variables.$color-white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 999;
+  }
+}
+
+/* Focus indicators for better accessibility */
+a:focus,
+button:focus,
+canvas:focus {
+  outline: 2px solid #007cba;
+  outline-offset: 2px;
+}
+
+/* Better mobile touch targets */
+#switch a {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Development Mode Ribbon */
+.devmode-ribbon {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  z-index: 99999;
+  background: transparent;
+  
+  a {
+    display: inline-block;
+    width: 200px;
+    overflow: hidden;
+    padding: 6px 0px;
+    text-align: center;
+    transform: rotate(45deg);
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    position: inherit;
+    top: 45px;
+    right: -40px;
+    border-width: 1px 0px;
+    border-style: dotted;
+    border-color: rgba(255, 255, 255, 0.7);
+    font: 700 13px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    
+    &:link {
+      color: #ffd700;
+    }
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .nav-links {
