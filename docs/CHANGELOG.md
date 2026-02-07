@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+- Google OAuth now uses a single shared credentials.json file for all accounts while keeping per-account tokens
+- Google OAuth now automatically uses Application Default Credentials when running on Google Cloud
+
 ## [2.1.5] - 2026-02-04
 
 ### Fixed

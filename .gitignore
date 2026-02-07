@@ -26,3 +26,4 @@ public/static/generated/
 # Legacy paths
 bootstrap/cache
 *.junit
+.mcp.json

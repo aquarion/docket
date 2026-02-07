@@ -32,24 +32,90 @@ class GoogleAuthService
     }
 
     /**
-     * Get credentials path for a specific account
-     * Supports account-specific credentials files (e.g., credentials_aqcom.json)
-     * Falls back to default credentials.json
+     * Get credentials path shared by all accounts
      */
     protected function getCredentialsPath(?string $account = null): string
     {
-        $disk = Storage::disk('local');
+        return $this->defaultCredentialsPath;
+    }
 
-        if ($account) {
-            // Try account-specific credentials first
-            $accountSpecificPath = "google/credentials_{$account}.json";
-            if ($disk->exists($accountSpecificPath)) {
-                return $accountSpecificPath;
+    /**
+     * Determine if Google Application Default Credentials should be used
+     */
+    protected function shouldUseApplicationDefaultCredentials(): bool
+    {
+        $configured = config('services.google.use_application_default_credentials');
+
+        if (is_bool($configured)) {
+            return $configured;
+        }
+
+        return $this->isGoogleCloudEnvironment();
+    }
+
+    /**
+     * Detect if running on Google Cloud
+     */
+    protected function isGoogleCloudEnvironment(): bool
+    {
+        $cacheKey = 'gcp:environment';
+        $cached = Cache::get($cacheKey);
+
+        if (is_bool($cached)) {
+            return $cached;
+        }
+
+        if ($this->hasGoogleCloudEnvironmentVariables()) {
+            Cache::put($cacheKey, true, 60 * 60);
+
+            return true;
+        }
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => "Metadata-Flavor: Google\r\n",
+                'timeout' => 0.2,
+            ],
+        ]);
+
+        $response = @file_get_contents(
+            'http://169.254.169.254/computeMetadata/v1/project/project-id',
+            false,
+            $context
+        );
+
+        $isGoogleCloud = $response !== false && $response !== '';
+        Cache::put($cacheKey, $isGoogleCloud, 60 * 60);
+
+        return $isGoogleCloud;
+    }
+
+    /**
+     * Check for environment variables commonly set on Google Cloud
+     */
+    protected function hasGoogleCloudEnvironmentVariables(): bool
+    {
+        $variables = [
+            'GOOGLE_CLOUD_PROJECT',
+            'GCLOUD_PROJECT',
+            'GCP_PROJECT',
+            'K_SERVICE',
+            'GAE_ENV',
+            'GOOGLE_APPLICATION_CREDENTIALS',
+        ];
+
+        foreach ($variables as $variable) {
+            if (! empty($_SERVER[$variable]) || ! empty($_ENV[$variable])) {
+                return true;
+            }
+
+            if (getenv($variable) !== false) {
+                return true;
             }
         }
 
-        // Fall back to default credentials
-        return $this->defaultCredentialsPath;
+        return false;
     }
 
     /**
@@ -89,7 +155,6 @@ class GoogleAuthService
     public function createClient(?string $account = null): Google_Client
     {
         $credentialsPath = $this->getCredentialsPath($account);
-        $this->validateCredentials($credentialsPath);
 
         $client = new Google_Client;
         $client->setApplicationName(config('app.name', 'Docket'));
@@ -98,18 +163,27 @@ class GoogleAuthService
             $client->addScope($scope);
         }
 
-        // Load credentials from storage
-        $credentialsJson = Storage::disk('local')->get($credentialsPath);
-        if ($credentialsJson === null) {
-            throw new InvalidCredentialsException($credentialsPath . ' (failed to read credentials file)');
-        }
+        if (
+            $this->shouldUseApplicationDefaultCredentials()
+            && ! Storage::disk('local')->exists($credentialsPath)
+        ) {
+            $client->useApplicationDefaultCredentials();
+        } else {
+            $this->validateCredentials($credentialsPath);
 
-        $credentialsArray = json_decode($credentialsJson, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON: ' . json_last_error_msg() . ')');
-        }
+            // Load credentials from storage
+            $credentialsJson = Storage::disk('local')->get($credentialsPath);
+            if ($credentialsJson === null) {
+                throw new InvalidCredentialsException($credentialsPath . ' (failed to read credentials file)');
+            }
 
-        $client->setAuthConfig($credentialsArray);
+            $credentialsArray = json_decode($credentialsJson, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON: ' . json_last_error_msg() . ')');
+            }
+
+            $client->setAuthConfig($credentialsArray);
+        }
 
         // Essential settings for refresh tokens
         $client->setAccessType('offline');
@@ -232,13 +306,15 @@ class GoogleAuthService
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('Invalid token JSON format', [
                     'account' => $account,
-                    'json_error' => json_last_error_msg()
+                    'json_error' => json_last_error_msg(),
                 ]);
+
                 return null;
             }
 
             if (! is_array($token)) {
                 Log::error('Invalid token format', ['account' => $account]);
+
                 return null;
             }
 
