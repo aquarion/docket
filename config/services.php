@@ -23,6 +23,9 @@ return [
         // Default credentials file path (relative to storage/app directory)
         // Single shared credentials file used by all accounts
         'credentials_path' => env('GOOGLE_CREDENTIALS_PATH', 'google/credentials.json'),
+        // Automatically detect Google Cloud and use Application Default Credentials
+        // Set to true/false to override auto-detection behavior
+        'use_application_default_credentials' => env('GOOGLE_USE_APPLICATION_DEFAULT_CREDENTIALS'),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/token'),
         'default_account' => env('GOOGLE_DEFAULT_ACCOUNT', 'default'),
         'scopes' => [
