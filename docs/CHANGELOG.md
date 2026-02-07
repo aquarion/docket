@@ -2,9 +2,20 @@
 
 ## [Unreleased]
 
+### Added
+- Google OAuth authentication system using Laravel Socialite
+- User authentication with Google accounts (replaces password-based login)
+- User menu displaying Google profile information (name, avatar) in top right corner
+- Logout functionality for authenticated users
+- Login button for unauthenticated users
+- API token authentication using Laravel Sanctum
+
 ### Changed
 - Google OAuth now uses a single shared credentials.json file for all accounts while keeping per-account tokens
 - Google OAuth now automatically uses Application Default Credentials when running on Google Cloud
+- User model updated to use Google OAuth fields (google_id, avatar) instead of password authentication
+- Authentication routes updated for Google OAuth flow
+- Database schema updated for OAuth user management
 
 ## [2.1.5] - 2026-02-04
 

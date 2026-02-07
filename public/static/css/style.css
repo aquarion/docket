@@ -684,6 +684,116 @@ body > * {
 		sans-serif;
 }
 
+/* User Menu */
+.user-menu, .auth-menu {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	z-index: 1000;
+	background: rgba(255, 255, 255, 0.95);
+	border-radius: 12px;
+	padding: 12px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	transition: all 0.3s ease;
+}
+
+.night .user-menu, .night .auth-menu {
+	background: rgba(40, 44, 52, 0.95);
+	color: white;
+}
+
+.user-info {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.user-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.night .user-avatar {
+	border-color: rgba(255, 255, 255, 0.2);
+}
+
+.user-name {
+	font-family: system, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	white-space: nowrap;
+	max-width: 150px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.logout-form {
+	margin: 0;
+}
+
+.logout-btn, .login-btn {
+	background: transparent;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	border-radius: 8px;
+	padding: 8px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	text-decoration: none;
+	color: inherit;
+	font-family: system, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	font-size: 14px;
+}
+
+.logout-btn:hover, .login-btn:hover {
+	background: rgba(0, 0, 0, 0.1);
+	border-color: rgba(0, 0, 0, 0.3);
+}
+
+.night .logout-btn, .night .login-btn {
+	border-color: rgba(255, 255, 255, 0.3);
+}
+
+.night .logout-btn:hover, .night .login-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: rgba(255, 255, 255, 0.4);
+}
+
+.logout-btn svg, .login-btn svg {
+	flex-shrink: 0;
+}
+
+/* Mobile responsiveness for user menu */
+@media (max-width: 480px) {
+	.user-menu, .auth-menu {
+		top: 10px;
+		right: 10px;
+		padding: 8px;
+	}
+	
+	.user-name {
+		max-width: 100px;
+		font-size: 13px;
+	}
+	
+	.user-avatar {
+		width: 24px;
+		height: 24px;
+	}
+	
+	.logout-btn, .login-btn {
+		padding: 6px;
+		font-size: 13px;
+	}
+}
+
 /* Debug Festival Selector */
 .debug-festival-selector {
 	position: fixed;

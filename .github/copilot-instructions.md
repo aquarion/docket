@@ -250,6 +250,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ## General Laravel Development Lessons
 
 - **Always check Artisan command options first** - Use `php artisan command:name --help` to see available flags before implementing complex workarounds. For example, `php artisan key:generate --env=testing` is simpler than storing test keys in config files.
+- **Use Sail consistently** - This project uses Laravel Sail for Docker containerization. Always use `./vendor/bin/sail` commands instead of `php artisan serve`. The application runs on `http://localhost` via Sail, not on a custom port with artisan serve.
 
 ## Debugging Methodology - Git Comparison First
 

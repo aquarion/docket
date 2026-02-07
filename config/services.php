@@ -26,12 +26,17 @@ return [
         // Automatically detect Google Cloud and use Application Default Credentials
         // Set to true/false to override auto-detection behavior
         'use_application_default_credentials' => env('GOOGLE_USE_APPLICATION_DEFAULT_CREDENTIALS'),
-        'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/token'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/token'),
         'default_account' => env('GOOGLE_DEFAULT_ACCOUNT', 'default'),
         'scopes' => [
             'https://www.googleapis.com/auth/photoslibrary.readonly',
             'https://www.googleapis.com/auth/calendar.readonly',
         ],
+
+        // OAuth configuration for Socialite user authentication
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('APP_URL').'/auth/google/callback',
     ],
 
     'calendar' => [
