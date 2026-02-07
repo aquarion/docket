@@ -194,34 +194,34 @@ $transition-fast: 0.2s;
 }
 
 /* Night mode styles */
-body.night .section {
+body.nighttime .section {
   background: #2d3748;
   color: #e2e8f0;
 }
 
-body.night .section h2 {
+body.nighttime .section h2 {
   color: #e2e8f0;
   border-bottom-color: #4a5568;
 }
 
-body.night .list-item {
+body.nighttime .list-item {
   background: #4a5568;
   border-color: #556379;
 }
 
-body.night .item-details h3 {
+body.nighttime .item-details h3 {
   color: #e2e8f0;
 }
 
-body.night .item-details .item-meta {
+body.nighttime .item-details .item-meta {
   color: #a0aec0;
 }
 
-body.night .nav-links a {
+body.nighttime .nav-links a {
   color: #cbd5e0;
 }
 
-body.night .nav-links a:hover {
+body.nighttime .nav-links a:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -253,7 +253,7 @@ body.night .nav-links a:hover {
   overflow-y: auto;
 }
 
-body.night .modal-content {
+body.nighttime .modal-content {
   background: #2d3748;
   color: #e2e8f0;
 }
@@ -277,8 +277,8 @@ body.night .modal-content {
   font-size: 14px;
 }
 
-body.night .form-group input,
-body.night .form-group select {
+body.nighttime .form-group input,
+body.nighttime .form-group select {
   background: #4a5568;
   border-color: #556379;
   color: #e2e8f0;
@@ -339,13 +339,13 @@ body.night .form-group select {
   border-color: #adb5bd;
 }
 
-body.night .emoji-picker-btn {
+body.nighttime .emoji-picker-btn {
   background: #4a5568;
   border-color: #556379;
   color: #e2e8f0;
 }
 
-body.night .emoji-picker-btn:hover {
+body.nighttime .emoji-picker-btn:hover {
   background: #556379;
   border-color: #6b7a99;
 }
@@ -365,7 +365,7 @@ body.night .emoji-picker-btn:hover {
   display: block;
 }
 
-body.night .emoji-picker-popup {
+body.nighttime .emoji-picker-popup {
   background: #2d3748;
   border-color: #4a5568;
 }
@@ -385,7 +385,7 @@ emoji-picker {
   --textarea-font-size: 14px;
 }
 
-body.night emoji-picker {
+body.nighttime emoji-picker {
   --background: #2d3748;
   --border-color: #4a5568;
   --button-active-background: #4a5568;
@@ -417,16 +417,16 @@ body.night emoji-picker {
   border-color: #2196f3;
 }
 
-body.night .google-calendar-item {
+body.nighttime .google-calendar-item {
   border-color: #556379;
   background-color: #4a5568;
 }
 
-body.night .google-calendar-item:hover {
+body.nighttime .google-calendar-item:hover {
   background-color: #5a6a7a;
 }
 
-body.night .google-calendar-item.selected {
+body.nighttime .google-calendar-item.selected {
   background-color: #2d4a6b;
   border-color: #3788d8;
 }
@@ -451,7 +451,7 @@ body.night .google-calendar-item.selected {
   gap: 10px;
 }
 
-body.night .google-calendar-details {
+body.nighttime .google-calendar-details {
   color: #a0aec0;
 }
 

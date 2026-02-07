@@ -65,7 +65,7 @@ $border-radius-lg: 8px;
 }
 
 @mixin night-theme {
-  .night & {
+  body.nighttime & {
     @content;
   }
 }

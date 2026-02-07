@@ -62,7 +62,7 @@
   <script type="text/javascript" src="/static/generated/toastify.js"></script>
 
   <!-- Vite Assets -->
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  @vite(['resources/css/app.scss', 'resources/js/app.js'])
 
   <script type="application/ld+json">
     {
@@ -139,10 +139,10 @@
               @endforeach
             </ul>
             <div class="calendar-set-actions">
-              <button type="button" class="btn btn-secondary" onclick="showCalendarManagement()">
+              <a href="{{ route('manage') }}" class="btn btn-secondary">
                 <span class="btn-icon">⚙️</span>
                 <span class="btn-text">Manage Calendars</span>
-              </button>
+              </a>
             </div>
           </div>
         </section>

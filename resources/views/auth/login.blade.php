@@ -20,7 +20,7 @@
   <meta name="msapplication-config" content="/static/icons/browserconfig.xml?v=zXvYGBOMEg">
   <meta name="theme-color" content="#000000">
 
-  <link rel="stylesheet" href="/static/css/style.css">
+  @vite(['resources/css/app.scss'])
 
   <style>
     .auth-container {

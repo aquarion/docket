@@ -1,10 +1,15 @@
 // Import polyfills first for iOS 12 compatibility
 import "./ios12-polyfills.js";
 
+// Import CSS files
+import "../css/app.scss";
+import "../css/manage.scss";
+
 import twemoji from "@twemoji/api";
 // Import external libraries from node_modules
 import ICAL from "ical.js";
 import SunCalc from "suncalc";
+import "emoji-picker-element";
 
 // Make libraries available globally BEFORE importing application files
 window.ICAL = ICAL;
@@ -17,6 +22,7 @@ import "./festival-utilities.js";
 import "./date-utils.js";
 import "./notification-utils.js";
 import "./circle-progress.js";
+import "./calendar-management/calendar-manager.js";
 import "./docket-ui.js";
 import "./docket-calendar.js";
 import "./docket-events.js";

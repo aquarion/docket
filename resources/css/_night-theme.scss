@@ -1,7 +1,7 @@
 @use 'variables' as *;
 
 /* Night Theme */
-.night {
+body.nighttime {
   background-color: $night-bg !important;
   color: $night-text !important;
   
