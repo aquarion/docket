@@ -1,9 +1,79 @@
-$globe-width: 12px;
-$globe-height: 28px;
-$globe-spacing: 40px;
-$globe-spread: 3px;
+@use 'sass:map';
+
+// Christmas Festival Theme Variables
+$christmas-colors: (
+  'green': #00f7a5,
+  'cyan': #00ffff,
+  'pink': #f70094,
+  'red': #ff0040,
+  'blue': #0080ff
+);
+
+$globe: (
+  'width': 12px,
+  'height': 28px,
+  'spacing': 40px,
+  'spread': 3px
+);
+
+$animation-durations: (
+  'flash-1': 2s,
+  'flash-2': 0.4s,
+  'flash-3': 1.1s,
+  'odd': 1.8s,
+  'triple': 1.4s
+);
+
 $light-off-opacity: 0.4;
 
+// Functions
+@function globe($property) {
+  @return map.get($globe, $property);
+}
+
+@function christmas-color($color) {
+  @return map.get($christmas-colors, $color);
+}
+
+@function duration($type) {
+  @return map.get($animation-durations, $type);
+}
+
+// Mixins
+@mixin globe-base() {
+  position: relative;
+  animation-fill-mode: both;
+  animation-iteration-count: infinite;
+  list-style: none;
+  padding: 0;
+  width: globe('width');
+  height: globe('height');
+  border-radius: 50%;
+  margin: calc(#{globe('spacing')}/2);
+  display: inline-block;
+}
+
+@mixin flash-animation($color, $duration, $animation-name) {
+  background: $color;
+  box-shadow: 0 calc(#{globe('height')}/6) calc(#{globe('width')}*2) globe('spread') $color;
+  animation-name: $animation-name;
+  animation-duration: $duration;
+}
+
+@mixin keyframe-flash($name, $color) {
+  @keyframes #{$name} {
+    0%, 100% {
+      background: $color;
+      box-shadow: 0 calc(#{globe('height')}/6) calc(#{globe('width')}*2) globe('spread') $color;
+    }
+    50% {
+      background: rgba($color, $light-off-opacity);
+      box-shadow: 0 calc(#{globe('height')}/6) calc(#{globe('width')}*2) globe('spread') rgba($color, 0.2);
+    }
+  }
+}
+
+// Main Styles
 body.daytime .lightrope {
   display: none;
 }
@@ -20,61 +90,43 @@ body.nighttime .lightrope {
   width: 100%;
 
   li {
-    position: relative;
-    animation-fill-mode: both;
-    animation-iteration-count: infinite;
-    list-style: none;
-    padding: 0;
-    width: $globe-width;
-    height: $globe-height;
-    border-radius: 50%;
-    margin: calc($globe-spacing/2);
-    display: inline-block;
-    background: rgb(0 247 165 / 100%);
-    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 247 165 / 100%);
-    animation-name: flash-1;
-    animation-duration: 2s;
+    @include globe-base();
+    @include flash-animation(christmas-color('green'), duration('flash-1'), flash-1);
 
     &:nth-child(2n+1) {
-      background: rgb(0 255 255 / 100%);
-      box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 255 255 / 50%);
-      animation-name: flash-2;
-      animation-duration: 0.4s;
+      @include flash-animation(christmas-color('cyan'), duration('flash-2'), flash-2);
     }
 
     &:nth-child(4n+2) {
-      background: rgb(247 0 148 / 100%);
-      box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(247 0 148 / 100%);
-      animation-name: flash-3;
-      animation-duration: 1.1s;
+      @include flash-animation(christmas-color('pink'), duration('flash-3'), flash-3);
     }
 
     &:nth-child(odd) {
-      animation-duration: 1.8s;
+      animation-duration: duration('odd');
     }
 
     &:nth-child(3n+1) {
-      animation-duration: 1.4s;
+      animation-duration: duration('triple');
     }
 
     &::before {
       content: "";
       position: absolute;
       background: #222;
-      width: ($globe-width - 2);
-      height: calc($globe-height/3);
+      width: calc(#{globe('width')} - 2px);
+      height: calc(#{globe('height')}/3);
       border-radius: 3px;
-      top: calc(0px - ($globe-height/6));
+      top: calc(0px - (#{globe('height')}/6));
       left: 1px;
     }
 
     &::after {
       content: "";
-      top: calc(0px - $globe-height/2);
-      left: $globe-width - 3;
+      top: calc(0px - #{globe('height')}/2);
+      left: calc(#{globe('width')} - 3px);
       position: absolute;
-      width: $globe-spacing + 12;
-      height: calc($globe-height/3 * 2);
+      width: calc(#{globe('spacing')} + 12px);
+      height: calc(#{globe('height')}/3 * 2);
       border-bottom: solid #222 2px;
       border-radius: 50%;
     }
@@ -84,46 +136,12 @@ body.nighttime .lightrope {
     }
 
     &:first-child {
-      margin-left: -$globe-spacing;
+      margin-left: calc(-1 * #{globe('spacing')});
     }
   }
 }
 
-@keyframes flash-1 {
-  0%,
-  100% {
-    background: rgb(0 247 165 / 100%);
-    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 247 165 / 100%);
-  }
-
-  50% {
-    background: rgba(0, 247, 165, $light-off-opacity);
-    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 247 165 / 20%);
-  }
-}
-
-@keyframes flash-2 {
-  0%,
-  100% {
-    background: rgb(0 255 255 / 100%);
-    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 255 255 / 100%);
-  }
-
-  50% {
-    background: rgba(0, 255, 255, $light-off-opacity);
-    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(0 255 255 / 20%);
-  }
-}
-
-@keyframes flash-3 {
-  0%,
-  100% {
-    background: rgb(247 0 148 / 100%);
-    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(247 0 148 / 100%);
-  }
-
-  50% {
-    background: rgba(247, 0, 148, $light-off-opacity);
-    box-shadow: 0 calc($globe-height/6) calc($globe-width*2) $globe-spread rgb(247 0 148 / 20%);
-  }
-}
+// Generate keyframes using mixin
+@include keyframe-flash('flash-1', christmas-color('green'));
+@include keyframe-flash('flash-2', christmas-color('cyan'));
+@include keyframe-flash('flash-3', christmas-color('pink'));

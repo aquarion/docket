@@ -1,0 +1,164 @@
+@use 'variables' as *;
+
+/* Night Theme */
+.night {
+  background-color: $night-bg !important;
+  color: $night-text !important;
+  
+  // Basic elements
+  body {
+    background-color: $night-bg;
+    color: $night-text;
+  }
+  
+  // Links and text
+  a {
+    color: #87ceeb;
+    
+    &:visited {
+      color: #dda0dd;
+    }
+  }
+  
+  // Calendar styles
+  #calendar {
+    border-color: $night-border;
+  }
+  
+  .calendar-day {
+    border-color: $night-border;
+    background-color: $night-bg;
+  }
+  
+  .calendar-event {
+    background-color: $night-input-bg;
+    border-color: $night-border;
+  }
+  
+  // Form elements
+  input, select, textarea {
+    background-color: $night-input-bg;
+    color: $night-text;
+    border-color: $night-border;
+    
+    &:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+  }
+  
+  // Tables
+  table {
+    background-color: $night-bg;
+    
+    th, td {
+      border-color: $night-border;
+    }
+    
+    th {
+      background-color: $night-input-bg;
+    }
+    
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+  }
+  
+  // Code blocks
+  pre, code {
+    background-color: $night-input-bg;
+    border-color: $night-border;
+  }
+  
+  // Notifications
+  .notification {
+    background-color: $night-input-bg;
+    border-color: $night-border;
+    color: $night-text;
+    
+    &.success {
+      background-color: rgba(74, 222, 128, 0.1);
+      border-color: $color-success;
+    }
+    
+    &.error {
+      background-color: rgba(220, 53, 69, 0.1);
+      border-color: #dc3545;
+    }
+    
+    &.warning {
+      background-color: rgba(255, 193, 7, 0.1);
+      border-color: #ffc107;
+    }
+  }
+  
+  // User menu
+  .user-menu-dropdown {
+    background: #2a2a2a;
+    border-color: #444;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  
+  .user-menu-item {
+    color: #e0e0e0;
+    
+    &:hover {
+      background-color: #404040;
+    }
+  }
+  
+  .user-info-section {
+    border-bottom-color: #444;
+  }
+  
+  .user-details h4 {
+    color: #e0e0e0;
+  }
+  
+  .user-details p {
+    color: #999;
+  }
+  
+  // Modal adjustments
+  .modal {
+    background-color: $night-modal-bg;
+  }
+  
+  .settings-section-title {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .user-avatar {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .calendar-set-link {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+  
+  .calendar-set-item.active .calendar-set-link {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .festival-selector select {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+    
+    &:focus {
+      border-color: #667eea;
+      background-color: #333;
+    }
+    
+    option {
+      background-color: #1a1a1a;
+    }
+  }
+}

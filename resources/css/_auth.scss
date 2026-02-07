@@ -1,0 +1,136 @@
+@use 'variables' as *;
+
+/* Authentication Styles */
+.auth-loading {
+  text-align: center;
+  padding: $spacing-xl;
+  color: $color-white;
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid $color-white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto $spacing-md;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.auth-description {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: $spacing-lg;
+  line-height: 1.5;
+}
+
+.auth-accounts-list {
+  margin-top: $spacing-lg;
+}
+
+.auth-account-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: $border-radius;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.auth-account-name {
+  font-weight: 500;
+  color: $color-white;
+  margin: 0;
+}
+
+.auth-status-badge {
+  font-size: 0.8em;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius;
+  font-weight: 500;
+  
+  &.authenticated {
+    background-color: $color-success-bg;
+    color: $color-success-text;
+  }
+  
+  &.not-authenticated {
+    background-color: #fef2f2;
+    color: #991b1b;
+  }
+}
+
+.auth-account-actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.auth-error {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #ff6b7d;
+  padding: $spacing-md;
+  border-radius: $border-radius;
+  margin-top: $spacing-md;
+  
+  .error-icon {
+    margin-right: $spacing-sm;
+  }
+}
+
+.auth-no-accounts {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+.auth-account-error {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #ff6b7d;
+  padding: $spacing-sm;
+  border-radius: $border-radius;
+  margin-top: $spacing-sm;
+  font-size: 0.9em;
+}
+
+/* Authentication Status */
+.auth-status {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .user-name {
+      color: $color-white;
+      font-weight: 500;
+    }
+  }
+  
+  .auth-actions {
+    display: flex;
+    gap: $spacing-sm;
+  }
+}

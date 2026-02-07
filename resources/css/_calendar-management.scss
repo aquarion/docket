@@ -1,0 +1,93 @@
+@use 'variables' as *;
+
+/* Calendar Management Styles */
+.calendar-management {
+  .calendar-list {
+    margin-top: $spacing-lg;
+  }
+  
+  .calendar-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: $border-radius;
+    padding: $spacing-md;
+    margin-bottom: $spacing-md;
+    
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-sm;
+      
+      .calendar-name {
+        font-weight: 500;
+        color: $color-white;
+        margin: 0;
+      }
+      
+      .calendar-actions {
+        display: flex;
+        gap: $spacing-sm;
+      }
+    }
+    
+    .calendar-details {
+      font-size: 0.9em;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.4;
+      
+      .calendar-url {
+        word-break: break-all;
+        font-family: monospace;
+        background: rgba(0, 0, 0, 0.2);
+        padding: $spacing-xs $spacing-sm;
+        border-radius: $border-radius;
+        margin: $spacing-xs 0;
+      }
+    }
+  }
+  
+  .add-calendar-form {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: $border-radius;
+    padding: $spacing-lg;
+    margin-top: $spacing-lg;
+    
+    .form-group {
+      margin-bottom: $spacing-md;
+      
+      label {
+        display: block;
+        margin-bottom: $spacing-sm;
+        color: $color-white;
+        font-weight: 500;
+      }
+      
+      input, select {
+        width: 100%;
+        padding: $spacing-sm;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: $border-radius;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: $color-white;
+        
+        &:focus {
+          outline: none;
+          border-color: rgba(255, 255, 255, 0.5);
+          background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+      }
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: $spacing-sm;
+      justify-content: flex-end;
+    }
+  }
+}
