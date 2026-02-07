@@ -34,6 +34,9 @@
 - CalendarService updated to read from database with fallback to static configuration
 - Calendar configuration now supports per-user customization through database storage
 
+### Fixed
+- Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
+
 ### Removed
 - Standalone Google sign-in button (functionality integrated into settings modal)
 

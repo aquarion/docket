@@ -15,7 +15,9 @@ class LoginController extends Controller
      */
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->scopes(config('services.google.oauth_scopes', []))
+            ->redirect();
     }
 
     /**
@@ -96,7 +98,11 @@ class LoginController extends Controller
      */
     public function getGoogleAuthUrl()
     {
-        $authUrl = Socialite::driver('google')->stateless()->redirect()->getTargetUrl();
+        $authUrl = Socialite::driver('google')
+            ->scopes(config('services.google.oauth_scopes', []))
+            ->stateless()
+            ->redirect()
+            ->getTargetUrl();
 
         return response()->json([
             'auth_url' => $authUrl,
