@@ -137,6 +137,51 @@
               </li>
               @endforeach
             </ul>
+            <div class="calendar-set-actions">
+              <button type="button" class="btn btn-secondary" onclick="showCalendarManagement()">
+                <span class="btn-icon">⚙️</span>
+                <span class="btn-text">Manage Calendars</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Calendar Management Section -->
+        <section class="settings-section" id="calendar-management-section" style="display: none;">
+          <h3 class="settings-section-title">⚙️ Calendar Management</h3>
+          <div class="settings-section-content">
+            <div class="calendar-management-tabs">
+              <button type="button" class="calendar-tab-button active" data-tab="sources">Calendar Sources</button>
+              <button type="button" class="calendar-tab-button" data-tab="sets">Calendar Sets</button>
+            </div>
+
+            <!-- Calendar Sources Tab -->
+            <div id="sources-tab" class="calendar-tab-content active">
+              <div class="calendar-sources-header">
+                <h4>Calendar Sources</h4>
+                <button type="button" class="btn btn-primary btn-sm" onclick="showAddCalendarModal()">
+                  <span class="btn-icon">➕</span>
+                  <span class="btn-text">Add Calendar</span>
+                </button>
+              </div>
+              <div id="calendar-sources-list" class="calendar-sources-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Calendar Sets Tab -->
+            <div id="sets-tab" class="calendar-tab-content">
+              <div class="calendar-sets-header">
+                <h4>Calendar Sets</h4>
+                <button type="button" class="btn btn-primary btn-sm" onclick="showAddCalendarSetModal()">
+                  <span class="btn-icon">➕</span>
+                  <span class="btn-text">Add Calendar Set</span>
+                </button>
+              </div>
+              <div id="calendar-sets-list" class="calendar-sets-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
           </div>
         </section>
 

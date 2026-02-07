@@ -49,4 +49,20 @@ class User extends Authenticatable
             'google_token_expires_at' => 'datetime',
         ];
     }
+
+    /**
+     * Get the calendar sets owned by this user
+     */
+    public function calendarSets()
+    {
+        return $this->hasMany(CalendarSet::class);
+    }
+
+    /**
+     * Get the calendar sources owned by this user
+     */
+    public function calendarSources()
+    {
+        return $this->hasMany(CalendarSource::class);
+    }
 }

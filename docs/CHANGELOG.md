@@ -14,6 +14,11 @@
 - Automatic Google calendar fetching for authenticated users
 - Unified settings modal with calendar sets, Google authentication, and debug options
 - Comprehensive night mode styling for settings modal including enhanced colors, gradients, and visual hierarchy
+- Database-driven calendar configuration system replacing static file configuration
+- Calendar management interface within settings modal for managing calendar sources and sets
+- API endpoints for managing calendar sets and sources (`/api/calendar-sets`, `/api/calendar-sources`)
+- Database models: CalendarSet, CalendarSource with many-to-many relationships
+- Calendar configuration migration seeder to transfer static config to database
 
 ### Changed
 - Google OAuth now uses a single shared credentials.json file for all accounts while keeping per-account tokens
@@ -26,6 +31,8 @@
 - Calendar selector modal converted to comprehensive settings modal
 - Festival debug options moved to settings modal (visible only in debug mode)
 - Google authentication interface integrated into settings modal
+- CalendarService updated to read from database with fallback to static configuration
+- Calendar configuration now supports per-user customization through database storage
 
 ### Removed
 - Standalone Google sign-in button (functionality integrated into settings modal)

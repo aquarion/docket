@@ -434,5 +434,263 @@ var DocketUI = {
   },
 };
 
+// Calendar Management Functions
+window.showCalendarManagement = function () {
+  var section = document.getElementById("calendar-management-section");
+  if (section) {
+    section.style.display = section.style.display === "none" ? "block" : "none";
+    if (section.style.display === "block") {
+      loadCalendarSources();
+      loadCalendarSets();
+    }
+  }
+};
+
+window.showAddCalendarModal = function () {
+  // TODO: Implement add calendar modal
+  NotificationUtils.info("Calendar source management coming soon!");
+};
+
+window.showAddCalendarSetModal = function () {
+  // TODO: Implement add calendar set modal
+  NotificationUtils.info("Calendar set management coming soon!");
+};
+
+function loadCalendarSources() {
+  var list = document.getElementById("calendar-sources-list");
+  if (!list) return;
+
+  list.innerHTML = '<div class="loading">Loading calendar sources...</div>';
+
+  fetch("/api/calendar-sources", {
+    headers: {
+      Authorization: "Bearer " + (window.userToken || ""),
+      Accept: "application/json",
+    },
+  })
+    .then(function (response) {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error("Failed to load calendar sources");
+    })
+    .then(function (data) {
+      renderCalendarSources(data.data || []);
+    })
+    .catch(function (error) {
+      list.innerHTML =
+        '<div class="error">Failed to load calendar sources: ' +
+        error.message +
+        "</div>";
+    });
+}
+
+function loadCalendarSets() {
+  var list = document.getElementById("calendar-sets-list");
+  if (!list) return;
+
+  list.innerHTML = '<div class="loading">Loading calendar sets...</div>';
+
+  fetch("/api/calendar-sets", {
+    headers: {
+      Authorization: "Bearer " + (window.userToken || ""),
+      Accept: "application/json",
+    },
+  })
+    .then(function (response) {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error("Failed to load calendar sets");
+    })
+    .then(function (data) {
+      renderCalendarSets(data.data || []);
+    })
+    .catch(function (error) {
+      list.innerHTML =
+        '<div class="error">Failed to load calendar sets: ' +
+        error.message +
+        "</div>";
+    });
+}
+
+function renderCalendarSources(sources) {
+  var list = document.getElementById("calendar-sources-list");
+  if (!list) return;
+
+  if (sources.length === 0) {
+    list.innerHTML =
+      '<div class="empty-state">No calendar sources configured. Add one to get started!</div>';
+    return;
+  }
+
+  var html = sources
+    .map(function (source) {
+      return (
+        '<div class="calendar-source-item">' +
+        '<div class="calendar-source-info">' +
+        '<span class="calendar-source-color" style="background-color: ' +
+        source.color +
+        '"></span>' +
+        (source.emoji
+          ? '<span class="calendar-source-emoji">' + source.emoji + "</span>"
+          : "") +
+        '<span class="calendar-source-name">' +
+        source.name +
+        "</span>" +
+        '<span class="calendar-source-type">' +
+        source.type +
+        "</span>" +
+        "</div>" +
+        '<div class="calendar-source-actions">' +
+        '<button type="button" class="btn btn-sm btn-secondary" onclick="editCalendarSource(' +
+        source.id +
+        ')">Edit</button>' +
+        '<button type="button" class="btn btn-sm btn-danger" onclick="deleteCalendarSource(' +
+        source.id +
+        ')">Delete</button>' +
+        "</div>" +
+        "</div>"
+      );
+    })
+    .join("");
+
+  list.innerHTML = html;
+}
+
+function renderCalendarSets(sets) {
+  var list = document.getElementById("calendar-sets-list");
+  if (!list) return;
+
+  if (sets.length === 0) {
+    list.innerHTML =
+      '<div class="empty-state">No calendar sets configured. Add one to get started!</div>';
+    return;
+  }
+
+  var html = sets
+    .map(function (set) {
+      return (
+        '<div class="calendar-set-item">' +
+        '<div class="calendar-set-info">' +
+        (set.emoji
+          ? '<span class="calendar-set-emoji">' + set.emoji + "</span>"
+          : "") +
+        '<span class="calendar-set-name">' +
+        set.name +
+        "</span>" +
+        '<span class="calendar-set-count">' +
+        set.calendar_count +
+        " calendars</span>" +
+        (set.is_default
+          ? '<span class="calendar-set-default">Default</span>'
+          : "") +
+        "</div>" +
+        '<div class="calendar-set-actions">' +
+        '<button type="button" class="btn btn-sm btn-secondary" onclick="editCalendarSet(' +
+        set.id +
+        ')">Edit</button>' +
+        '<button type="button" class="btn btn-sm btn-danger" onclick="deleteCalendarSet(' +
+        set.id +
+        ')">Delete</button>' +
+        "</div>" +
+        "</div>"
+      );
+    })
+    .join("");
+
+  list.innerHTML = html;
+}
+
+window.editCalendarSource = function (id) {
+  NotificationUtils.info("Edit calendar source #" + id + " - coming soon!");
+};
+
+window.deleteCalendarSource = function (id) {
+  if (!confirm("Are you sure you want to delete this calendar source?")) {
+    return;
+  }
+
+  fetch("/api/calendar-sources/" + id, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + (window.userToken || ""),
+      Accept: "application/json",
+    },
+  })
+    .then(function (response) {
+      if (response.ok) {
+        NotificationUtils.success("Calendar source deleted successfully");
+        loadCalendarSources();
+      } else {
+        throw new Error("Failed to delete calendar source");
+      }
+    })
+    .catch(function (error) {
+      NotificationUtils.error(
+        "Failed to delete calendar source: " + error.message,
+      );
+    });
+};
+
+window.editCalendarSet = function (id) {
+  NotificationUtils.info("Edit calendar set #" + id + " - coming soon!");
+};
+
+window.deleteCalendarSet = function (id) {
+  if (!confirm("Are you sure you want to delete this calendar set?")) {
+    return;
+  }
+
+  fetch("/api/calendar-sets/" + id, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + (window.userToken || ""),
+      Accept: "application/json",
+    },
+  })
+    .then(function (response) {
+      if (response.ok) {
+        NotificationUtils.success("Calendar set deleted successfully");
+        loadCalendarSets();
+      } else {
+        throw new Error("Failed to delete calendar set");
+      }
+    })
+    .catch(function (error) {
+      NotificationUtils.error(
+        "Failed to delete calendar set: " + error.message,
+      );
+    });
+};
+
+// Initialize calendar management tabs
+document.addEventListener("DOMContentLoaded", function () {
+  var tabButtons = document.querySelectorAll(".calendar-tab-button");
+  var tabContents = document.querySelectorAll(".calendar-tab-content");
+
+  tabButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      var tabName = button.getAttribute("data-tab");
+
+      // Update button states
+      tabButtons.forEach(function (btn) {
+        btn.classList.remove("active");
+      });
+      button.classList.add("active");
+
+      // Update tab content visibility
+      tabContents.forEach(function (content) {
+        content.classList.remove("active");
+      });
+
+      var targetTab = document.getElementById(tabName + "-tab");
+      if (targetTab) {
+        targetTab.classList.add("active");
+      }
+    });
+  });
+});
+
 // Make DocketUI available globally
 window.DocketUI = DocketUI;

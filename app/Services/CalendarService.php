@@ -2,21 +2,66 @@
 
 namespace App\Services;
 
+use App\Models\CalendarSet;
+use App\Models\CalendarSource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class CalendarService
 {
     /**
-     * Load calendar configuration from Laravel config
+     * Load calendar configuration from database or fallback to Laravel config
      */
     public function loadCalendarConfig(): array
     {
+        $user = Auth::user();
+        $userId = $user ? $user->id : null;
+
+        // Try database first
+        $sources = CalendarSource::active()
+            ->forUser($userId)
+            ->get();
+
+        if ($sources->isNotEmpty()) {
+            return $this->formatSourcesAsConfig($sources);
+        }
+
+        // Fallback to static configuration
         return [
             'ical_calendars' => config('calendars.ical_calendars', []),
             'google_calendars' => config('calendars.google_calendars', []),
             'merged_calendars' => config('calendars.merged_calendars', []),
         ];
+    }
+
+    /**
+     * Format calendar sources as legacy configuration structure
+     */
+    protected function formatSourcesAsConfig($sources): array
+    {
+        $config = [
+            'google_calendars' => [],
+            'ical_calendars' => [],
+            'merged_calendars' => [], // TODO: Implement merged calendar logic
+        ];
+
+        foreach ($sources as $source) {
+            $calendar = [
+                'name' => $source->name,
+                'src' => $source->src,
+                'color' => $source->color,
+                'emoji' => $source->emoji,
+            ];
+
+            if ($source->type === 'google') {
+                $config['google_calendars'][$source->key] = $calendar;
+            } elseif ($source->type === 'ical') {
+                $config['ical_calendars'][$source->key] = $calendar;
+            }
+        }
+
+        return $config;
     }
 
     /**
@@ -33,6 +78,26 @@ class CalendarService
             return $cached;
         }
 
+        $user = Auth::user();
+        $userId = $user ? $user->id : null;
+
+        // Try database first
+        $calendarSet = CalendarSet::active()
+            ->forUser($userId)
+            ->where('key', $setId)
+            ->first();
+
+        if ($calendarSet) {
+            $result = $calendarSet->getCalendarsByType();
+            $cacheResult = Cache::put($cacheKey, $result, $cacheTTL);
+            if (! $cacheResult) {
+                Log::warning('Failed to cache database calendar result', ['setId' => $setId]);
+            }
+
+            return $result;
+        }
+
+        // Fallback to static configuration
         $calendarSets = config('calendars.calendar_sets', []);
 
         // If set doesn't exist or no filtering needed, return all calendars
@@ -42,6 +107,7 @@ class CalendarService
             if (! $cacheResult) {
                 Log::warning('Failed to cache calendar result', ['setId' => $setId]);
             }
+
             return $result;
         }
 
@@ -54,6 +120,7 @@ class CalendarService
             if (! $cacheResult) {
                 Log::warning('Failed to cache wildcard calendar result', ['setId' => $setId]);
             }
+
             return $calendarConfig;
         }
 
@@ -109,6 +176,20 @@ class CalendarService
      */
     public function getAvailableSetIds(): array
     {
+        $user = Auth::user();
+        $userId = $user ? $user->id : null;
+
+        // Try database first
+        $sets = CalendarSet::active()
+            ->forUser($userId)
+            ->pluck('key')
+            ->toArray();
+
+        if (! empty($sets)) {
+            return $sets;
+        }
+
+        // Fallback to static configuration
         return array_keys(config('calendars.calendar_sets', []));
     }
 
@@ -117,6 +198,20 @@ class CalendarService
      */
     public function getDefaultSetId(): string
     {
+        $user = Auth::user();
+        $userId = $user ? $user->id : null;
+
+        // Try database first
+        $defaultSet = CalendarSet::active()
+            ->forUser($userId)
+            ->where('is_default', true)
+            ->first();
+
+        if ($defaultSet) {
+            return $defaultSet->key;
+        }
+
+        // Fallback to static configuration
         return config('calendars.default_calendar_set', 'all');
     }
 

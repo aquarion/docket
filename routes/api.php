@@ -15,6 +15,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Protected calendar endpoints
     Route::get('/calendars', [\App\Http\Controllers\CalendarController::class, 'apiIndex']);
+
+    // Calendar management endpoints
+    Route::apiResource('calendar-sets', \App\Http\Controllers\Api\CalendarSetController::class);
+    Route::apiResource('calendar-sources', \App\Http\Controllers\Api\CalendarSourceController::class);
 });
 
 // Public API routes for Google OAuth
