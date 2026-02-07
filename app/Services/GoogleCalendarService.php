@@ -318,4 +318,46 @@ class GoogleCalendarService
 
         return $status;
     }
+
+    /**
+     * Fetch available calendars for authenticated user
+     */
+    public function getUserCalendars(): array
+    {
+        if (! auth()->check()) {
+            return [];
+        }
+
+        $user = auth()->user();
+        if (! $user->google_access_token) {
+            return [];
+        }
+
+        try {
+            $service = $this->googleAuth->getCalendarService('default');
+            $calendarList = $service->calendarList->listCalendarList();
+
+            $calendars = [];
+            foreach ($calendarList->getItems() as $calendar) {
+                $calendars[] = [
+                    'id' => $calendar->getId(),
+                    'summary' => $calendar->getSummary(),
+                    'primary' => $calendar->getPrimary() ?? false,
+                    'selected' => $calendar->getSelected() ?? true,
+                    'color' => $calendar->getColorId() ?? null,
+                    'backgroundColor' => $calendar->getBackgroundColor() ?? null,
+                    'access_role' => $calendar->getAccessRole(),
+                ];
+            }
+
+            return $calendars;
+        } catch (\Exception $e) {
+            Log::warning('Failed to fetch user calendars', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+    }
 }

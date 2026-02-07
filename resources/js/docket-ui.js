@@ -142,13 +142,13 @@ var DocketUI = {
   },
 
   /**
-   * Initialize calendar selector modal
+   * Initialize settings modal
    */
-  initCalendarSelector: function () {
+  initSettings: function () {
     var modal, btn, closeBtn;
 
-    modal = document.getElementById("calendar-selector-modal");
-    btn = document.getElementById("calendar-selector-btn");
+    modal = document.getElementById("settings-modal");
+    btn = document.getElementById("settings-btn");
     closeBtn = modal ? modal.querySelector(".modal-close") : null;
 
     if (!modal || !btn) {
@@ -166,30 +166,30 @@ var DocketUI = {
     // Close modal
     if (closeBtn) {
       closeBtn.addEventListener("click", function () {
-        DocketUI.closeCalendarSelector();
+        DocketUI.closeSettings();
       });
     }
 
     // Close on background click
     modal.addEventListener("click", function (e) {
       if (e.target === modal) {
-        DocketUI.closeCalendarSelector();
+        DocketUI.closeSettings();
       }
     });
 
     // Close on escape key
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && modal.classList.contains("show")) {
-        DocketUI.closeCalendarSelector();
+        DocketUI.closeSettings();
       }
     });
   },
 
   /**
-   * Close calendar selector modal
+   * Close settings modal
    */
-  closeCalendarSelector: function () {
-    var modal = document.getElementById("calendar-selector-modal");
+  closeSettings: function () {
+    var modal = document.getElementById("settings-modal");
     if (modal) {
       modal.classList.remove("show");
       setTimeout(function () {
@@ -202,30 +202,29 @@ var DocketUI = {
    * Initialize authentication settings modal
    */
   initAuthSettings: function () {
-    var modal, btn, closeBtn, checkAuthBtn;
+    var modal, btn, closeBtn, checkLegacyAuthBtn;
 
     modal = document.getElementById("auth-settings-modal");
-    checkAuthBtn = document.getElementById("check-auth-btn");
+    checkLegacyAuthBtn = document.getElementById("check-legacy-auth-btn");
     closeBtn = modal ? modal.querySelector(".modal-close") : null;
 
-    if (!modal || !checkAuthBtn) {
+    if (!modal) {
       return;
     }
 
-    // Open auth settings modal
-    checkAuthBtn.addEventListener("click", function () {
-      // Close the calendar selector modal first
-      DocketUI.closeCalendarSelector();
+    // Legacy authentication check button
+    if (checkLegacyAuthBtn) {
+      checkLegacyAuthBtn.addEventListener("click", function () {
+        // Open auth modal
+        modal.style.display = "flex";
+        setTimeout(function () {
+          modal.classList.add("show");
+        }, 10);
 
-      // Open auth modal
-      modal.style.display = "flex";
-      setTimeout(function () {
-        modal.classList.add("show");
-      }, 10);
-
-      // Load authentication status
-      DocketUI.loadAuthStatus();
-    });
+        // Load authentication status
+        DocketUI.loadAuthStatus();
+      });
+    }
 
     // Close modal
     if (closeBtn) {

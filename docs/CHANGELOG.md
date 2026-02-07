@@ -9,6 +9,11 @@
 - Logout functionality for authenticated users
 - Login button for unauthenticated users
 - API token authentication using Laravel Sanctum
+- Google calendar access through authenticated user tokens
+- User-specific Google token storage in database
+- Automatic Google calendar fetching for authenticated users
+- Unified settings modal with calendar sets, Google authentication, and debug options
+- Comprehensive night mode styling for settings modal including enhanced colors, gradients, and visual hierarchy
 
 ### Changed
 - Google OAuth now uses a single shared credentials.json file for all accounts while keeping per-account tokens
@@ -16,6 +21,14 @@
 - User model updated to use Google OAuth fields (google_id, avatar) instead of password authentication
 - Authentication routes updated for Google OAuth flow
 - Database schema updated for OAuth user management
+- GoogleCalendarService now uses authenticated user's tokens when available
+- Calendar fetch commands integrated with user authentication system
+- Calendar selector modal converted to comprehensive settings modal
+- Festival debug options moved to settings modal (visible only in debug mode)
+- Google authentication interface integrated into settings modal
+
+### Removed
+- Standalone Google sign-in button (functionality integrated into settings modal)
 
 ## [2.1.5] - 2026-02-04
 

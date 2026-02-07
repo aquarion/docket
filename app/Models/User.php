@@ -21,6 +21,9 @@ class User extends Authenticatable
         'email',
         'google_id',
         'avatar',
+        'google_access_token',
+        'google_refresh_token',
+        'google_token_expires_at',
     ];
 
     /**
@@ -30,6 +33,8 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'remember_token',
+        'google_access_token',
+        'google_refresh_token',
     ];
 
     /**
@@ -41,6 +46,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'google_token_expires_at' => 'datetime',
         ];
     }
 }

@@ -350,6 +350,218 @@ body {
 	border-left: 3px solid #dc2626;
 }
 
+/* Settings Modal Styles */
+.settings-section {
+	border-bottom: 1px solid #e0e0e0;
+	margin-bottom: 0;
+}
+
+.settings-section:last-child {
+	border-bottom: none;
+}
+
+.settings-section-title {
+	margin: 0;
+	padding: 1.5em 1.5em 0.5em;
+	font-size: 1.1em;
+	font-weight: 600;
+	color: #333;
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+}
+
+.settings-section-content {
+	padding: 0.5em 1.5em 1.5em;
+}
+
+/* Authentication Section */
+.auth-status {
+	padding: 1em;
+	border-radius: 8px;
+	border: 1px solid #e0e0e0;
+}
+
+.auth-status-authenticated {
+	background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+	border-color: #22c55e;
+}
+
+.auth-status-guest {
+	background: #f8fafc;
+	border-color: #cbd5e1;
+}
+
+.auth-user-info {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+	margin-bottom: 1em;
+}
+
+.auth-user-avatar {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid rgba(255, 255, 255, 0.8);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.auth-user-name {
+	font-weight: 600;
+	font-size: 1.1em;
+	color: #1f2937;
+}
+
+.auth-user-email {
+	font-size: 0.9em;
+	color: #6b7280;
+}
+
+.auth-actions {
+	display: flex;
+	gap: 0.75em;
+}
+
+.auth-logout-form {
+	margin: 0;
+}
+
+.auth-calendar-access {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	margin-top: 1em;
+	padding: 0.75em;
+	background: rgba(255, 255, 255, 0.6);
+	border-radius: 6px;
+	font-size: 0.9em;
+}
+
+.status-indicator {
+	font-size: 1.2em;
+}
+
+.status-success {
+	color: #22c55e;
+}
+
+.status-warning {
+	color: #f59e0b;
+}
+
+/* Legacy Authentication */
+.legacy-auth-section {
+	margin-top: 1.5em;
+}
+
+.legacy-auth-details {
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.legacy-auth-summary {
+	padding: 0.75em 1em;
+	background: #f8fafc;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	font-weight: 500;
+	color: #374151;
+	list-style: none;
+	user-select: none;
+}
+
+.legacy-auth-summary::-webkit-details-marker {
+	display: none;
+}
+
+.legacy-auth-content {
+	padding: 1em;
+	border-top: 1px solid #e0e0e0;
+}
+
+.legacy-auth-description {
+	margin: 0 0 1em 0;
+	font-size: 0.9em;
+	color: #6b7280;
+	line-height: 1.4;
+}
+
+/* Debug Options */
+.debug-option {
+	margin-bottom: 1em;
+}
+
+.debug-label {
+	display: block;
+	margin-bottom: 0.5em;
+	font-weight: 500;
+	color: #374151;
+}
+
+.debug-select {
+	width: 100%;
+	padding: 0.5em 0.75em;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	background: white;
+	font-size: 0.9em;
+	color: #374151;
+}
+
+.debug-help {
+	display: block;
+	margin-top: 0.5em;
+	font-size: 0.8em;
+	color: #6b7280;
+	font-style: italic;
+}
+
+/* Button Styles */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	padding: 0.5em 1em;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 0.9em;
+	font-weight: 500;
+	text-decoration: none;
+	transition: all 0.2s ease;
+}
+
+.btn-primary {
+	background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+	color: white;
+}
+
+.btn-primary:hover {
+	background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+	transform: translateY(-1px);
+}
+
+.btn-secondary {
+	background: #f3f4f6;
+	color: #374151;
+	border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+	background: #e5e7eb;
+	border-color: #9ca3af;
+}
+
+.btn-sm {
+	padding: 0.375em 0.75em;
+	font-size: 0.8em;
+}
+
 /* Night theme adjustments for auth modal */
 body.nighttime .modal-footer {
 	border-top-color: #333;
@@ -399,6 +611,7 @@ body.nighttime .modal-content {
 
 body.nighttime .modal-header {
 	border-bottom-color: #333;
+	background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
 }
 
 body.nighttime .calendar-set-link {
@@ -412,6 +625,103 @@ body.nighttime .calendar-set-link:hover {
 
 body.nighttime .calendar-set-item.active .calendar-set-link {
 	color: white;
+}
+
+/* Settings Modal Night Mode */
+body.nighttime .settings-section {
+	border-bottom-color: #374151;
+}
+
+body.nighttime .settings-section-title {
+	color: #e5e7eb;
+}
+
+body.nighttime .settings-section-content {
+	color: #d1d5db;
+}
+
+/* Authentication Section Night Mode */
+body.nighttime .auth-status-authenticated {
+	background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+	border-color: #059669;
+	color: #d1fae5;
+}
+
+body.nighttime .auth-status-guest {
+	background: #374151;
+	border-color: #6b7280;
+	color: #e5e7eb;
+}
+
+body.nighttime .auth-user-name {
+	color: #f3f4f6;
+}
+
+body.nighttime .auth-user-email {
+	color: #d1d5db;
+}
+
+body.nighttime .auth-calendar-access {
+	background: rgba(55, 65, 81, 0.6);
+	color: #e5e7eb;
+}
+
+body.nighttime .legacy-auth-details {
+	border-color: #4b5563;
+}
+
+body.nighttime .legacy-auth-summary {
+	background: #374151;
+	color: #e5e7eb;
+}
+
+body.nighttime .legacy-auth-content {
+	border-top-color: #4b5563;
+	background: #1f2937;
+}
+
+body.nighttime .legacy-auth-description {
+	color: #9ca3af;
+}
+
+/* Debug Options Night Mode */
+body.nighttime .debug-label {
+	color: #e5e7eb;
+}
+
+body.nighttime .debug-select {
+	background: #374151;
+	border-color: #6b7280;
+	color: #e5e7eb;
+}
+
+body.nighttime .debug-select option {
+	background: #374151;
+	color: #e5e7eb;
+}
+
+body.nighttime .debug-help {
+	color: #9ca3af;
+}
+
+/* Button Night Mode */
+body.nighttime .btn-primary {
+	background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+}
+
+body.nighttime .btn-primary:hover {
+	background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+}
+
+body.nighttime .btn-secondary {
+	background: #4b5563;
+	color: #e5e7eb;
+	border-color: #6b7280;
+}
+
+body.nighttime .btn-secondary:hover {
+	background: #6b7280;
+	border-color: #9ca3af;
 }
 
 .forecastbox {
@@ -682,116 +992,6 @@ body > * {
 		Helvetica,
 		Arial,
 		sans-serif;
-}
-
-/* User Menu */
-.user-menu, .auth-menu {
-	position: fixed;
-	top: 20px;
-	right: 20px;
-	z-index: 1000;
-	background: rgba(255, 255, 255, 0.95);
-	border-radius: 12px;
-	padding: 12px;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	transition: all 0.3s ease;
-}
-
-.night .user-menu, .night .auth-menu {
-	background: rgba(40, 44, 52, 0.95);
-	color: white;
-}
-
-.user-info {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.user-avatar {
-	width: 32px;
-	height: 32px;
-	border-radius: 50%;
-	object-fit: cover;
-	border: 2px solid rgba(0, 0, 0, 0.1);
-}
-
-.night .user-avatar {
-	border-color: rgba(255, 255, 255, 0.2);
-}
-
-.user-name {
-	font-family: system, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-	font-size: 14px;
-	font-weight: 500;
-	white-space: nowrap;
-	max-width: 150px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.logout-form {
-	margin: 0;
-}
-
-.logout-btn, .login-btn {
-	background: transparent;
-	border: 1px solid rgba(0, 0, 0, 0.2);
-	border-radius: 8px;
-	padding: 8px;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	text-decoration: none;
-	color: inherit;
-	font-family: system, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-	font-size: 14px;
-}
-
-.logout-btn:hover, .login-btn:hover {
-	background: rgba(0, 0, 0, 0.1);
-	border-color: rgba(0, 0, 0, 0.3);
-}
-
-.night .logout-btn, .night .login-btn {
-	border-color: rgba(255, 255, 255, 0.3);
-}
-
-.night .logout-btn:hover, .night .login-btn:hover {
-	background: rgba(255, 255, 255, 0.1);
-	border-color: rgba(255, 255, 255, 0.4);
-}
-
-.logout-btn svg, .login-btn svg {
-	flex-shrink: 0;
-}
-
-/* Mobile responsiveness for user menu */
-@media (max-width: 480px) {
-	.user-menu, .auth-menu {
-		top: 10px;
-		right: 10px;
-		padding: 8px;
-	}
-	
-	.user-name {
-		max-width: 100px;
-		font-size: 13px;
-	}
-	
-	.user-avatar {
-		width: 24px;
-		height: 24px;
-	}
-	
-	.logout-btn, .login-btn {
-		padding: 6px;
-		font-size: 13px;
-	}
 }
 
 /* Debug Festival Selector */

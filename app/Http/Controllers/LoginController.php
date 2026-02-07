@@ -58,11 +58,13 @@ class LoginController extends Controller
                 }
             }
 
+            // Store Google tokens for calendar access
+            $this->updateUserTokens($user, $googleUser);
+
             // Log the user in
             Auth::login($user, true);
 
             return redirect()->intended(route('home'));
-
         } catch (\Exception $e) {
             return redirect()->route('login')->with('error', 'Unable to login with Google. Please try again.');
         }
@@ -140,12 +142,30 @@ class LoginController extends Controller
                 'token_type' => 'Bearer',
                 'user' => $user,
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Authentication failed',
             ], 401);
+        }
+    }
+
+    /**
+     * Update user's Google tokens
+     */
+    private function updateUserTokens(User $user, \Laravel\Socialite\Contracts\User $googleUser): void
+    {
+        // Get the token from Socialite
+        $token = $googleUser->token;
+        $refreshToken = $googleUser->refreshToken;
+        $expiresIn = $googleUser->expiresIn;
+
+        if ($token) {
+            $user->update([
+                'google_access_token' => $token,
+                'google_refresh_token' => $refreshToken,
+                'google_token_expires_at' => $expiresIn ? now()->addSeconds($expiresIn) : null,
+            ]);
         }
     }
 }

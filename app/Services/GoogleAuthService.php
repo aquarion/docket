@@ -132,20 +132,20 @@ class GoogleAuthService
         // Validate credentials file is valid JSON with required fields
         $contents = $disk->get($credentialsPath);
         if ($contents === null) {
-            throw new InvalidCredentialsException($credentialsPath . ' (failed to read file)');
+            throw new InvalidCredentialsException($credentialsPath.' (failed to read file)');
         }
 
         $credentials = json_decode($contents, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON format: ' . json_last_error_msg() . ')');
+            throw new InvalidCredentialsException($credentialsPath.' (invalid JSON format: '.json_last_error_msg().')');
         }
 
         if ($credentials === null) {
-            throw new InvalidCredentialsException($credentialsPath . ' (JSON decode returned null)');
+            throw new InvalidCredentialsException($credentialsPath.' (JSON decode returned null)');
         }
 
         if (! isset($credentials['installed']) && ! isset($credentials['web'])) {
-            throw new InvalidCredentialsException($credentialsPath . ' (missing OAuth client configuration)');
+            throw new InvalidCredentialsException($credentialsPath.' (missing OAuth client configuration)');
         }
     }
 
@@ -174,12 +174,12 @@ class GoogleAuthService
             // Load credentials from storage
             $credentialsJson = Storage::disk('local')->get($credentialsPath);
             if ($credentialsJson === null) {
-                throw new InvalidCredentialsException($credentialsPath . ' (failed to read credentials file)');
+                throw new InvalidCredentialsException($credentialsPath.' (failed to read credentials file)');
             }
 
             $credentialsArray = json_decode($credentialsJson, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON: ' . json_last_error_msg() . ')');
+                throw new InvalidCredentialsException($credentialsPath.' (invalid JSON: '.json_last_error_msg().')');
             }
 
             $client->setAuthConfig($credentialsArray);
@@ -217,7 +217,7 @@ class GoogleAuthService
         if ($account) {
             $stateJson = json_encode(['account' => $account]);
             if ($stateJson === false) {
-                throw new \Exception('Failed to JSON encode state parameter: ' . json_last_error_msg());
+                throw new \Exception('Failed to JSON encode state parameter: '.json_last_error_msg());
             }
             $client->setState($stateJson);
         }
@@ -245,7 +245,7 @@ class GoogleAuthService
                     event(new AuthenticationFailed($account, $error));
                 }
 
-                throw new \Exception('OAuth error: ' . $error);
+                throw new \Exception('OAuth error: '.$error);
             }
 
             // Save token if account provided
@@ -279,6 +279,54 @@ class GoogleAuthService
      * Load token for a specific account
      */
     public function loadToken(string $account): ?array
+    {
+        // First, try to get token from authenticated user if account matches
+        $userToken = $this->loadUserToken($account);
+        if ($userToken !== null) {
+            return $userToken;
+        }
+
+        // Fallback to file-based token system
+        return $this->loadFileToken($account);
+    }
+
+    /**
+     * Load token from authenticated user
+     */
+    protected function loadUserToken(string $account): ?array
+    {
+        if (! auth()->check()) {
+            return null;
+        }
+
+        $user = auth()->user();
+
+        // If no account specified or account matches user's google_id, use user's token
+        if (($account === 'default' && $user->google_access_token) ||
+            $account === $user->google_id ||
+            $account === $user->email
+        ) {
+
+            if (! $user->google_access_token) {
+                return null;
+            }
+
+            return [
+                'access_token' => $user->google_access_token,
+                'refresh_token' => $user->google_refresh_token,
+                'expires_in' => $user->google_token_expires_at ?
+                    $user->google_token_expires_at->timestamp - time() : null,
+                'created' => $user->updated_at->timestamp ?? time(),
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Load token from file system (legacy method)
+     */
+    protected function loadFileToken(string $account): ?array
     {
         // Check cache first
         $cacheKey = "google_token_{$account}";
@@ -341,12 +389,40 @@ class GoogleAuthService
      */
     public function saveToken(string $account, array $token): void
     {
+        // If user is authenticated and account matches, save to user record first
+        if (auth()->check()) {
+            $user = auth()->user();
+            if (($account === 'default' && $user->google_access_token !== null) ||
+                $account === $user->google_id ||
+                $account === $user->email
+            ) {
+
+                $expiresIn = $token['expires_in'] ?? null;
+                $user->update([
+                    'google_access_token' => $token['access_token'] ?? null,
+                    'google_refresh_token' => $token['refresh_token'] ?? $user->google_refresh_token,
+                    'google_token_expires_at' => $expiresIn ? now()->addSeconds($expiresIn) : null,
+                ]);
+
+                Log::info('Token saved to user record', ['account' => $account, 'user_id' => $user->id]);
+            }
+        }
+
+        // Also save to file system for backwards compatibility
+        $this->saveTokenToFile($account, $token);
+    }
+
+    /**
+     * Save token to file system (legacy method)
+     */
+    protected function saveTokenToFile(string $account, array $token): void
+    {
         try {
             $relativePath = "google/tokens/token_{$account}.json";
 
             $jsonString = json_encode($token);
             if ($jsonString === false) {
-                throw new \Exception('Failed to JSON encode token: ' . json_last_error_msg());
+                throw new \Exception('Failed to JSON encode token: '.json_last_error_msg());
             }
 
             $encrypted = Crypt::encryptString($jsonString);
@@ -364,9 +440,9 @@ class GoogleAuthService
                 // Don't fail the entire operation for cache issues
             }
 
-            Log::info('Token saved successfully', ['account' => $account]);
+            Log::info('Token saved to file successfully', ['account' => $account]);
         } catch (\Exception $e) {
-            Log::error('Failed to save token', [
+            Log::error('Failed to save token to file', [
                 'account' => $account,
                 'error' => $e->getMessage(),
             ]);

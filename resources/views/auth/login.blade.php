@@ -33,20 +33,20 @@
       text-align: center;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    
+
     .auth-title {
       margin-bottom: 2rem;
       font-size: 2rem;
       color: #333;
       font-weight: 300;
     }
-    
+
     .auth-description {
       margin-bottom: 2.5rem;
       color: #666;
       line-height: 1.5;
     }
-    
+
     .google-login-btn {
       display: inline-flex;
       align-items: center;
@@ -62,12 +62,12 @@
       transition: background-color 0.2s;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     .google-login-btn:hover {
       background: #3367d6;
       color: white;
     }
-    
+
     .google-icon {
       width: 20px;
       height: 20px;
@@ -79,23 +79,23 @@
       font-weight: bold;
       color: #4285f4;
     }
-    
+
     .auth-links {
       margin-top: 2rem;
       padding-top: 1.5rem;
       border-top: 1px solid #eee;
     }
-    
+
     .auth-links a {
       color: #666;
       text-decoration: none;
       font-size: 0.9rem;
     }
-    
+
     .auth-links a:hover {
       text-decoration: underline;
     }
-    
+
     .error-message {
       background: #fef2f2;
       border: 1px solid #fecaca;
@@ -111,15 +111,15 @@
 <body>
   <div class="auth-container">
     <h1 class="auth-title">Welcome to {{ config('app.name') }}</h1>
-    
+
     <p class="auth-description">
       Sign in with your Google account to access your personal calendar dashboard.
     </p>
 
     @if (session('error'))
-      <div class="error-message">
-        {{ session('error') }}
-      </div>
+    <div class="error-message">
+      {{ session('error') }}
+    </div>
     @endif
 
     <a href="{{ route('auth.google') }}" class="google-login-btn">
