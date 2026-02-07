@@ -240,23 +240,6 @@
               </div>
             </div>
             @endauth
-
-            <!-- Legacy Authentication Settings -->
-            <div class="legacy-auth-section">
-              <details class="legacy-auth-details">
-                <summary class="legacy-auth-summary">
-                  <span class="legacy-auth-icon">🛠️</span>
-                  <span>Legacy Calendar Authentication</span>
-                </summary>
-                <div class="legacy-auth-content">
-                  <p class="legacy-auth-description">For calendars configured in the system settings that require separate authentication.</p>
-                  <button id="check-legacy-auth-btn" type="button" class="btn btn-secondary">
-                    <span class="btn-icon">🔐</span>
-                    <span class="btn-text">Check Legacy Authentication</span>
-                  </button>
-                </div>
-              </details>
-            </div>
           </div>
         </section>
 
@@ -278,34 +261,6 @@
         </section>
         @endif
 
-      </div>
-    </div>
-  </div>
-
-  <!-- Legacy Authentication Settings Modal -->
-  <div id="auth-settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" style="display: none;">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="auth-modal-title">Legacy Calendar Authentication</h2>
-        <button class="modal-close" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div id="auth-loading" class="auth-loading">
-          <span class="loading-spinner">⏳</span>
-          <span>Checking authentication status...</span>
-        </div>
-        <div id="auth-content" style="display: none;">
-          <p class="auth-description">
-            Manage Google Calendar authentication for calendars configured in the system settings.
-          </p>
-          <div id="auth-accounts-list" class="auth-accounts-list">
-            <!-- Account authentication status will be populated by JavaScript -->
-          </div>
-        </div>
-        <div id="auth-error" class="auth-error" style="display: none;">
-          <span class="error-icon">❌</span>
-          <span id="auth-error-message">Failed to check authentication status</span>
-        </div>
       </div>
     </div>
   </div>

@@ -105,33 +105,6 @@ class CalendarController extends Controller
     }
 
     /**
-     * Check Google Calendar authentication status
-     */
-    public function checkAuth(Request $request)
-    {
-        try {
-            $filteredConfig = $this->getFilteredCalendars($request);
-
-            $authStatus = $this->googleCalendarService->checkAuthenticationStatus(
-                $filteredConfig['google_calendars']
-            );
-
-            $accountStatus = $this->googleCalendarService->getAccountAuthStatus(
-                $filteredConfig['google_calendars']
-            );
-
-            return response()->json([
-                'auth_status' => $authStatus,
-                'account_status' => $accountStatus,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
      * Serve calendar CSS
      */
     public function css(Request $request)

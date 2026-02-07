@@ -19,6 +19,7 @@
 - API endpoints for managing calendar sets and sources (`/api/calendar-sets`, `/api/calendar-sources`)
 - Database models: CalendarSet, CalendarSource with many-to-many relationships
 - Calendar configuration migration seeder to transfer static config to database
+- Mandatory user authentication for all calendar access (no guest/anonymous access)
 
 ### Changed
 - Google OAuth now uses a single shared credentials.json file for all accounts while keeping per-account tokens
@@ -38,6 +39,14 @@
 - Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
 
 ### Removed
+- Legacy AuthController and all associated routes (`/token`, `/auth/google/authorize`, `/auth/google/status`, `/auth/google/check`)
+- Legacy authentication UI section from settings modal
+- Legacy token.blade.php view for file-based authentication
+- File-based Google token storage system (replaced with user-specific database storage)
+- Legacy authentication JavaScript functions (initAuthSettings, loadAuthStatus, renderAccountStatus, revokeAuth)
+- GoogleAuthService file token methods (loadFileToken, saveTokenToFile)
+- Support for anonymous/guest calendar access (all users must now authenticate)
+- AuthControllerTest (functionality no longer exists)
 - Standalone Google sign-in button (functionality integrated into settings modal)
 
 ## [2.1.5] - 2026-02-04

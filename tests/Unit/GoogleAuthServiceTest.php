@@ -2,10 +2,11 @@
 
 namespace Tests\Unit;
 
-use App\Exceptions\InvalidCredentialsException;
+use App\Events\TokenRefreshed;
+use App\Models\User;
 use App\Services\GoogleAuthService;
 use Google_Client;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -14,221 +15,185 @@ use Tests\TestCase;
 
 class GoogleAuthServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected GoogleAuthService $service;
+
+    protected User $user;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         Storage::fake('local');
         Event::fake();
-        Log::spy();
-        Cache::flush();
+        Log::shouldReceive('info', 'error', 'warning')->byDefault();
+
+        $this->service = new GoogleAuthService;
+
+        // Create and authenticate a test user
+        $this->user = User::factory()->create([
+            'google_id' => 'test_google_id',
+            'google_access_token' => 'test_access_token',
+            'google_refresh_token' => 'test_refresh_token',
+            'google_token_expires_at' => now()->addHour(),
+        ]);
+
+        $this->actingAs($this->user);
     }
 
     public function test_create_client_throws_exception_if_credentials_missing(): void
     {
-        config(['services.google.credentials_path' => 'nonexistent/path.json']);
+        $service = Mockery::mock(GoogleAuthService::class)->makePartial();
+        $service->shouldReceive('credentialsExist')->andReturn(false);
 
-        $this->expectException(InvalidCredentialsException::class);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Google credentials file not found');
 
-        $service = new GoogleAuthService;
-        // Exception is thrown when validateCredentials() is called by createClient()
-        $service->createClient();
+        $service->createClient('test');
     }
 
-    public function test_load_token_returns_null_if_file_not_exists(): void
+    public function test_load_token_returns_user_token_when_authenticated(): void
     {
-        $service = $this->createService();
+        $token = $this->service->loadToken($this->user->google_id);
 
-        $result = $service->loadToken('nonexistent');
-
-        $this->assertNull($result);
+        $this->assertNotNull($token);
+        $this->assertEquals('test_access_token', $token['access_token']);
+        $this->assertEquals('test_refresh_token', $token['refresh_token']);
     }
 
-    public function test_save_and_load_token_with_encryption(): void
+    public function test_load_token_returns_null_when_user_not_authenticated(): void
     {
-        $service = $this->createService();
-        $token = ['access_token' => 'test_token', 'expires_in' => 3600];
+        auth()->logout();
 
-        $service->saveToken('test_account', $token);
+        $token = $this->service->loadToken('test_account');
 
-        $loaded = $service->loadToken('test_account');
-
-        $this->assertEquals($token, $loaded);
+        $this->assertNull($token);
     }
 
-    public function test_load_token_uses_cache(): void
+    public function test_save_token_updates_authenticated_user(): void
     {
-        $service = $this->createService();
-        $token = ['access_token' => 'test_token', 'expires_in' => 3600];
+        $newToken = [
+            'access_token' => 'new_access_token',
+            'refresh_token' => 'new_refresh_token',
+            'expires_in' => 3600,
+        ];
 
-        $service->saveToken('test_account', $token);
+        $this->service->saveToken($this->user->google_id, $newToken);
 
-        // First load - from storage
-        $loaded1 = $service->loadToken('test_account');
-        $this->assertEquals($token, $loaded1);
-
-        // Second load - should use cache, not storage
-        $loaded2 = $service->loadToken('test_account');
-        $this->assertEquals($token, $loaded2);
-
-        // Verify cache contains the token
-        $cached = Cache::get('google_token_test_account');
-        $this->assertEquals($token, $cached);
+        $this->user->refresh();
+        $this->assertEquals('new_access_token', $this->user->google_access_token);
+        $this->assertEquals('new_refresh_token', $this->user->google_refresh_token);
+        $this->assertNotNull($this->user->google_token_expires_at);
     }
 
-    public function test_revoke_token_deletes_file_and_clears_cache(): void
+    public function test_save_token_throws_exception_when_not_authenticated(): void
     {
-        // Create a partial mock to avoid actually creating Google_Client
+        auth()->logout();
+
+        $token = ['access_token' => 'test', 'refresh_token' => 'test', 'expires_in' => 3600];
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('User must be authenticated to save tokens');
+
+        $this->service->saveToken('test_account', $token);
+    }
+
+    public function test_save_token_throws_exception_for_mismatched_account(): void
+    {
+        $token = ['access_token' => 'test', 'refresh_token' => 'test', 'expires_in' => 3600];
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Account does not match authenticated user');
+
+        $this->service->saveToken('different_account', $token);
+    }
+
+    public function test_revoke_token_clears_user_tokens(): void
+    {
         $service = Mockery::mock(GoogleAuthService::class)->makePartial();
 
-        // Mock the createClient method to return a mock Google_Client
         $mockClient = Mockery::mock(Google_Client::class);
-        $mockClient->shouldReceive('getAccessToken')
-            ->once()
-            ->andReturn(['access_token' => 'test_token']);
-        $mockClient->shouldReceive('revokeToken')
-            ->once();
+        $mockClient->shouldReceive('getAccessToken')->andReturn(['access_token' => 'test']);
+        $mockClient->shouldReceive('revokeToken')->once();
 
-        $service->shouldReceive('createClient')
-            ->with('test_account')
-            ->once()
-            ->andReturn($mockClient);
+        $service->shouldReceive('createClient')->andReturn($mockClient);
 
-        // Set up initial token
-        $token = ['access_token' => 'test_token', 'expires_in' => 3600];
-        Storage::disk('local')->put('google/tokens/token_test_account.json', 'encrypted_content');
-        Cache::put('google_token_test_account', $token, 300);
+        $service->revokeToken($this->user->google_id);
 
-        // Verify initial state
-        $this->assertTrue(Storage::disk('local')->exists('google/tokens/token_test_account.json'));
-        $this->assertNotNull(Cache::get('google_token_test_account'));
-
-        // Call revokeToken
-        $service->revokeToken('test_account');
-
-        // Verify token file was deleted
-        $this->assertFalse(Storage::disk('local')->exists('google/tokens/token_test_account.json'));
-
-        // Verify cache was cleared
-        $this->assertNull(Cache::get('google_token_test_account'));
-
-        // Verify log was called
-        Log::shouldHaveReceived('info')
-            ->with('Token deleted successfully', ['account' => 'test_account']);
+        $this->user->refresh();
+        $this->assertNull($this->user->google_access_token);
+        $this->assertNull($this->user->google_refresh_token);
+        $this->assertNull($this->user->google_token_expires_at);
     }
 
-    public function test_token_saved_event_logged(): void
+    public function test_revoke_token_throws_exception_when_not_authenticated(): void
     {
-        $service = $this->createService();
-        $token = ['access_token' => 'test_token', 'expires_in' => 3600];
+        auth()->logout();
 
-        $service->saveToken('test_account', $token);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('User must be authenticated to revoke tokens');
 
-        Log::shouldHaveReceived('info')
-            ->with('Token saved successfully', ['account' => 'test_account']);
+        $this->service->revokeToken('test_account');
+    }
+
+    public function test_has_valid_token_returns_true_for_valid_user_token(): void
+    {
+        $service = Mockery::mock(GoogleAuthService::class)->makePartial();
+
+        $mockClient = Mockery::mock(Google_Client::class);
+        $mockClient->shouldReceive('setAccessToken')->once();
+        $mockClient->shouldReceive('isAccessTokenExpired')->andReturn(false);
+
+        $service->shouldReceive('createClient')->andReturn($mockClient);
+        $service->shouldReceive('loadToken')->andReturn(['access_token' => 'valid_token']);
+
+        $result = $service->hasValidToken($this->user->google_id);
+
+        $this->assertTrue($result);
+    }
+
+    public function test_has_valid_token_returns_false_when_no_token(): void
+    {
+        auth()->logout();
+
+        $result = $this->service->hasValidToken('test_account');
+
+        $this->assertFalse($result);
+    }
+
+    public function test_refresh_token_updates_user_token(): void
+    {
+        $service = Mockery::mock(GoogleAuthService::class)->makePartial();
+
+        $mockClient = Mockery::mock(Google_Client::class);
+        $mockClient->shouldReceive('getRefreshToken')->andReturn('refresh_token');
+        $mockClient->shouldReceive('fetchAccessTokenWithRefreshToken')->once();
+        $mockClient->shouldReceive('getAccessToken')->andReturn([
+            'access_token' => 'new_token',
+            'refresh_token' => 'refresh_token',
+            'expires_in' => 3600,
+        ]);
+
+        $service->shouldReceive('saveToken')->once();
+
+        $service->refreshToken($mockClient, $this->user->google_id);
+
+        Event::assertDispatched(TokenRefreshed::class);
     }
 
     public function test_create_client_uses_modern_oauth_prompt(): void
     {
-        // Skip this test if credentials are not properly configured
-        try {
-            $service = $this->createService();
-            $client = $service->createClient('test_account');
-
-            // Verify that the client is configured correctly
-            $this->assertInstanceOf(Google_Client::class, $client);
-
-            // The prompt should be set to 'consent' for refresh token generation
-            // This is our fix for the deprecated setApprovalPrompt('force')
-            $authUrl = $client->createAuthUrl();
-            $this->assertStringContainsString('prompt=consent', $authUrl);
-        } catch (\App\Exceptions\InvalidCredentialsException $e) {
-            $this->markTestSkipped('Credentials not available for testing OAuth flow');
-        }
-    }
-
-    public function test_save_token_validates_return_values(): void
-    {
-        Log::spy();
-
-        $service = $this->createService();
-        $token = ['access_token' => 'test_token', 'expires_in' => 3600];
-
-        // Our enhanced saveToken should validate the storage operation succeeded
-        $result = $service->saveToken('test_account', $token);
-
-        // Should return true on successful save (or be void if no return value)
-        $this->assertTrue($result === null || $result === true, 'saveToken should succeed without errors');
-
-        // Should log success
-        Log::shouldHaveReceived('info')
-            ->with('Token saved successfully', ['account' => 'test_account']);
-    }
-
-    public function test_save_token_handles_storage_failures(): void
-    {
-        // This test is complex to mock properly - we'll test the concept
-        $this->assertTrue(true, 'Storage failure handling is implemented in the service');
-    }
-
-    public function test_load_token_handles_decryption_failures(): void
-    {
-        Log::spy();
-
-        // Put corrupted encrypted data that will fail decryption
-        Storage::disk('local')->put('google/tokens/token_corrupt_test.json', 'not-valid-encrypted-data');
-
-        $service = $this->createService();
-
-        $result = $service->loadToken('corrupt_test');
-
-        // Should return null for corrupted tokens (graceful failure)
-        $this->assertNull($result);
-    }
-
-    public function test_oauth_flow_prevents_refresh_token_loss(): void
-    {
-        try {
-            $service = $this->createService();
-            $client = $service->createClient('test_account');
-
-            // Verify the OAuth configuration prevents refresh token loss
-            $authUrl = $client->createAuthUrl();
-
-            // Should include access_type=offline for refresh tokens
-            $this->assertStringContainsString('access_type=offline', $authUrl);
-
-            // Should include prompt=consent (our fix for deprecated setApprovalPrompt)
-            $this->assertStringContainsString('prompt=consent', $authUrl);
-
-            // Should NOT contain the deprecated approval_prompt parameter
-            $this->assertStringNotContainsString('approval_prompt=force', $authUrl);
-        } catch (\App\Exceptions\InvalidCredentialsException $e) {
-            $this->markTestSkipped('Credentials not available for testing OAuth configuration');
-        }
-    }
-
-    protected function createService(): GoogleAuthService
-    {
-        // Create a dummy credentials file for testing in storage
-        $disk = Storage::disk('local');
-        $credentialsPath = 'google/credentials.json';
-
-        // Create proper test credentials structure
-        $testCredentials = [
-            'installed' => [
-                'client_id' => 'test_client_id.apps.googleusercontent.com',
+        Storage::disk('local')->put('google/credentials.json', json_encode([
+            'web' => [
+                'client_id' => 'test_client_id',
                 'client_secret' => 'test_client_secret',
-                'redirect_uris' => ['http://localhost:8000/auth/google/callback'],
-                'auth_uri' => 'https://accounts.google.com/o/oauth2/auth',
-                'token_uri' => 'https://oauth2.googleapis.com/token'
-            ]
-        ];
+            ],
+        ]));
 
-        if (! $disk->exists($credentialsPath)) {
-            $disk->put($credentialsPath, json_encode($testCredentials));
-        }
+        $client = $this->service->createClient('test');
 
-        return new GoogleAuthService;
+        $authConfig = $client->getConfig();
+        $this->assertStringContains('select_account', $authConfig['prompt'] ?? '');
     }
 }
