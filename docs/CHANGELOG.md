@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- Google OAuth now uses a single shared credentials.json file for all accounts while keeping per-account tokens
+
 ## [2.1.5] - 2026-02-04
 
 ### Fixed

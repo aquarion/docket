@@ -21,9 +21,7 @@ return [
 
     'google' => [
         // Default credentials file path (relative to storage/app directory)
-        // Account-specific credentials can be placed at: google/credentials_{account}.json
-        // Example: google/credentials_aqcom.json for account 'aqcom'
-        // Falls back to this default if account-specific file doesn't exist
+        // Single shared credentials file used by all accounts
         'credentials_path' => env('GOOGLE_CREDENTIALS_PATH', 'google/credentials.json'),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/token'),
         'default_account' => env('GOOGLE_DEFAULT_ACCOUNT', 'default'),

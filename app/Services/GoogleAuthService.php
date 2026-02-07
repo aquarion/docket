@@ -32,23 +32,10 @@ class GoogleAuthService
     }
 
     /**
-     * Get credentials path for a specific account
-     * Supports account-specific credentials files (e.g., credentials_aqcom.json)
-     * Falls back to default credentials.json
+     * Get credentials path shared by all accounts
      */
     protected function getCredentialsPath(?string $account = null): string
     {
-        $disk = Storage::disk('local');
-
-        if ($account) {
-            // Try account-specific credentials first
-            $accountSpecificPath = "google/credentials_{$account}.json";
-            if ($disk->exists($accountSpecificPath)) {
-                return $accountSpecificPath;
-            }
-        }
-
-        // Fall back to default credentials
         return $this->defaultCredentialsPath;
     }
 
@@ -232,13 +219,15 @@ class GoogleAuthService
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('Invalid token JSON format', [
                     'account' => $account,
-                    'json_error' => json_last_error_msg()
+                    'json_error' => json_last_error_msg(),
                 ]);
+
                 return null;
             }
 
             if (! is_array($token)) {
                 Log::error('Invalid token format', ['account' => $account]);
+
                 return null;
             }
 

@@ -20,18 +20,25 @@ class MigrateGoogleCredentialsCommand extends Command
     $migrated = 0;
     $skipped = 0;
 
-    // Migrate credentials
+    // Migrate shared credentials
     $etcPath = base_path('etc');
     if (is_dir($etcPath)) {
       $files = glob($etcPath . '/credentials*.json');
 
       foreach ($files as $file) {
         $filename = basename($file);
+        if ($filename !== 'credentials.json') {
+          $this->warn("⚠ Skipped {$filename} (account-specific credentials are no longer supported)");
+          $skipped++;
+
+          continue;
+        }
         $newPath = "google/{$filename}";
 
         if ($disk->exists($newPath)) {
           $this->warn("⚠ Skipped {$filename} (already exists in storage)");
           $skipped++;
+
           continue;
         }
 
@@ -54,6 +61,7 @@ class MigrateGoogleCredentialsCommand extends Command
         if ($disk->exists($newPath)) {
           $this->warn("⚠ Skipped {$filename} (already exists)");
           $skipped++;
+
           continue;
         }
 
@@ -65,7 +73,7 @@ class MigrateGoogleCredentialsCommand extends Command
     }
 
     $this->newLine();
-    $this->info("Migration complete!");
+    $this->info('Migration complete!');
     $this->line("  Migrated: {$migrated} file(s)");
     $this->line("  Skipped: {$skipped} file(s)");
 
