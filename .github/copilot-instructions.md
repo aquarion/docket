@@ -425,3 +425,60 @@ When working with Vite for asset bundling:
 - Wait for elements with `->waitFor('.selector', seconds)` before assertions
 - Use `->pause(milliseconds)` when testing animations or transitions
 - Browser tests are fragile - keep selectors specific but stable
+
+## Debugging and Development Best Practices
+
+### Error Message Analysis First
+
+**CRITICAL**: Always read error messages literally before exploring complex explanations.
+
+- `NotificationUtils.info is not a function` = missing method, not timing/loading issues
+- `syntax error, unexpected variable "$decrypted", expecting "function"` = orphaned code outside functions
+- `SQLSTATE[HY000]: General error: 1 no such table: calendar_sets` = missing migrations, not application logic
+
+### Container Environment Awareness (Laravel Sail)
+
+**This application runs in Laravel Sail containers** - always think "container-first":
+
+- Use `./vendor/bin/sail artisan` instead of `php artisan`
+- Use `./vendor/bin/sail exec laravel.test` for container file operations
+- Check `./vendor/bin/sail ps` to verify all services are running before debugging
+- Application runs on `http://localhost` (port 80) via Sail, not `php artisan serve` on 8000
+- Database is inside container: `/var/www/html/database/database.sqlite`
+- Redis connection issues may resolve themselves as container services stabilize
+
+### Security Best Practices
+
+**Authentication Token Handling:**
+
+- Never expose API tokens to browser via `window.userToken` or similar (XSS risk)
+- Use session-based authentication with CSRF tokens for same-domain SPAs
+- API routes: use `auth` + `web` middleware, not `auth:sanctum` for session auth
+- Keep Google OAuth tokens server-side only - frontend never needs direct access
+- Google tokens are stored in database and used only by backend services
+
+### Systematic Legacy Code Removal
+
+When removing authentication systems or major components:
+
+- Search comprehensively: routes, controllers, services, JavaScript, views, tests, documentation
+- Remove in layers: routes → controllers → services → frontend → tests
+- Check for orphaned code fragments that can cause syntax errors
+- Update initialization code that calls removed functions (`initAuthSettings`)
+- Run migrations to ensure database changes are applied
+- Rebuild frontend assets after JavaScript changes
+
+### Development Process
+
+- **Start simple**: Check if function exists before investigating complex dependency issues
+- **Run migrations after major changes**: `./vendor/bin/sail artisan migrate --force`
+- **Rebuild assets after JS changes**: `npm run build`
+- **Clear caches when in doubt**: `./vendor/bin/sail artisan cache:clear`
+- **Test incrementally**: Fix one error, verify fix, then move to next
+
+### Missing Dependencies/Methods
+
+- Check if methods exist before assuming loading issues: `grep -r "methodName" resources/js/`
+- Add missing methods rather than complex workarounds
+- Verify script loading order only after confirming methods exist
+- Common missing methods: `NotificationUtils.info()` may need to be added alongside existing `warning`, `error`, `success`
