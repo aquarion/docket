@@ -10,7 +10,6 @@ use App\Exceptions\TokenNotFoundException;
 use Google_Client;
 use Google_Service_Calendar;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -132,20 +131,20 @@ class GoogleAuthService
         // Validate credentials file is valid JSON with required fields
         $contents = $disk->get($credentialsPath);
         if ($contents === null) {
-            throw new InvalidCredentialsException($credentialsPath . ' (failed to read file)');
+            throw new InvalidCredentialsException($credentialsPath.' (failed to read file)');
         }
 
         $credentials = json_decode($contents, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON format: ' . json_last_error_msg() . ')');
+            throw new InvalidCredentialsException($credentialsPath.' (invalid JSON format: '.json_last_error_msg().')');
         }
 
         if ($credentials === null) {
-            throw new InvalidCredentialsException($credentialsPath . ' (JSON decode returned null)');
+            throw new InvalidCredentialsException($credentialsPath.' (JSON decode returned null)');
         }
 
         if (! isset($credentials['installed']) && ! isset($credentials['web'])) {
-            throw new InvalidCredentialsException($credentialsPath . ' (missing OAuth client configuration)');
+            throw new InvalidCredentialsException($credentialsPath.' (missing OAuth client configuration)');
         }
     }
 
@@ -174,12 +173,12 @@ class GoogleAuthService
             // Load credentials from storage
             $credentialsJson = Storage::disk('local')->get($credentialsPath);
             if ($credentialsJson === null) {
-                throw new InvalidCredentialsException($credentialsPath . ' (failed to read credentials file)');
+                throw new InvalidCredentialsException($credentialsPath.' (failed to read credentials file)');
             }
 
             $credentialsArray = json_decode($credentialsJson, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new InvalidCredentialsException($credentialsPath . ' (invalid JSON: ' . json_last_error_msg() . ')');
+                throw new InvalidCredentialsException($credentialsPath.' (invalid JSON: '.json_last_error_msg().')');
             }
 
             $client->setAuthConfig($credentialsArray);
@@ -217,7 +216,7 @@ class GoogleAuthService
         if ($account) {
             $stateJson = json_encode(['account' => $account]);
             if ($stateJson === false) {
-                throw new \Exception('Failed to JSON encode state parameter: ' . json_last_error_msg());
+                throw new \Exception('Failed to JSON encode state parameter: '.json_last_error_msg());
             }
             $client->setState($stateJson);
         }
@@ -245,7 +244,7 @@ class GoogleAuthService
                     event(new AuthenticationFailed($account, $error));
                 }
 
-                throw new \Exception('OAuth error: ' . $error);
+                throw new \Exception('OAuth error: '.$error);
             }
 
             // Save token if account provided
@@ -280,98 +279,69 @@ class GoogleAuthService
      */
     public function loadToken(string $account): ?array
     {
-        // Check cache first
-        $cacheKey = "google_token_{$account}";
-        $cached = Cache::get($cacheKey);
-
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        $relativePath = "google/tokens/token_{$account}.json";
-
-        if (! Storage::disk('local')->exists($relativePath)) {
-            return null;
-        }
-
-        try {
-            $encrypted = Storage::disk('local')->get($relativePath);
-            if ($encrypted === null) {
-                return null;
-            }
-
-            $decrypted = Crypt::decryptString($encrypted);
-            $token = json_decode($decrypted, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::error('Invalid token JSON format', [
-                    'account' => $account,
-                    'json_error' => json_last_error_msg(),
-                ]);
-
-                return null;
-            }
-
-            if (! is_array($token)) {
-                Log::error('Invalid token format', ['account' => $account]);
-
-                return null;
-            }
-
-            // Cache for longer than refresh buffer to avoid cache misses during refresh
-            $cacheResult = Cache::put($cacheKey, $token, $this->expiryBuffer * 2);
-            if (! $cacheResult) {
-                Log::warning('Failed to cache token', ['account' => $account]);
-                // Don't fail - we can still return the token
-            }
-
-            return $token;
-        } catch (\Exception $e) {
-            Log::error('Failed to load token', [
-                'account' => $account,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
+        // Only use authenticated user tokens - no more file-based tokens
+        return $this->loadUserToken($account);
     }
 
     /**
-     * Save token for a specific account
+     * Load token from authenticated user
+     */
+    protected function loadUserToken(string $account): ?array
+    {
+        if (! auth()->check()) {
+            return null;
+        }
+
+        $user = auth()->user();
+
+        // If no account specified or account matches user's google_id, use user's token
+        if (($account === 'default' && $user->google_access_token) ||
+            $account === $user->google_id ||
+            $account === $user->email
+        ) {
+
+            if (! $user->google_access_token) {
+                return null;
+            }
+
+            return [
+                'access_token' => $user->google_access_token,
+                'refresh_token' => $user->google_refresh_token,
+                'expires_in' => $user->google_token_expires_at ?
+                    $user->google_token_expires_at->timestamp - time() : null,
+                'created' => $user->updated_at->timestamp ?? time(),
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Save token for authenticated user only
      */
     public function saveToken(string $account, array $token): void
     {
-        try {
-            $relativePath = "google/tokens/token_{$account}.json";
+        if (! auth()->check()) {
+            throw new \Exception('User must be authenticated to save tokens');
+        }
 
-            $jsonString = json_encode($token);
-            if ($jsonString === false) {
-                throw new \Exception('Failed to JSON encode token: ' . json_last_error_msg());
-            }
+        $user = auth()->user();
 
-            $encrypted = Crypt::encryptString($jsonString);
-
-            $writeResult = Storage::disk('local')->put($relativePath, $encrypted);
-            if (! $writeResult) {
-                throw new \Exception('Storage::put() returned false - write operation failed');
-            }
-
-            // Update cache with longer TTL than refresh buffer
-            $cacheKey = "google_token_{$account}";
-            $cacheResult = Cache::put($cacheKey, $token, $this->expiryBuffer * 2);
-            if (! $cacheResult) {
-                Log::warning('Failed to cache token (file saved successfully)', ['account' => $account]);
-                // Don't fail the entire operation for cache issues
-            }
-
-            Log::info('Token saved successfully', ['account' => $account]);
-        } catch (\Exception $e) {
-            Log::error('Failed to save token', [
-                'account' => $account,
-                'error' => $e->getMessage(),
+        // Only save for matching accounts
+        if (($account === 'default' && $user->google_access_token !== null) ||
+            $account === $user->google_id ||
+            $account === $user->email
+        ) {
+            $expiresIn = $token['expires_in'] ?? null;
+            $user->update([
+                'google_access_token' => $token['access_token'] ?? null,
+                'google_refresh_token' => $token['refresh_token'] ?? $user->google_refresh_token,
+                'google_token_expires_at' => $expiresIn ? now()->addSeconds($expiresIn) : null,
             ]);
 
-            throw $e;
+            Log::info('Token saved to user record', ['account' => $account, 'user_id' => $user->id]);
+        } else {
+            throw new \Exception('Account does not match authenticated user');
         }
     }
 
@@ -489,10 +459,14 @@ class GoogleAuthService
     }
 
     /**
-     * Revoke token for an account
+     * Revoke token for authenticated user
      */
     public function revokeToken(string $account): void
     {
+        if (! auth()->check()) {
+            throw new \Exception('User must be authenticated to revoke tokens');
+        }
+
         try {
             $client = $this->createClient($account);
 
@@ -501,17 +475,15 @@ class GoogleAuthService
                 Log::info('Token revoked via API', ['account' => $account]);
             }
 
-            // Delete token file
-            $relativePath = "google/tokens/token_{$account}.json";
-            if (Storage::disk('local')->exists($relativePath)) {
-                Storage::disk('local')->delete($relativePath);
-            }
+            // Clear user token data
+            $user = auth()->user();
+            $user->update([
+                'google_access_token' => null,
+                'google_refresh_token' => null,
+                'google_token_expires_at' => null,
+            ]);
 
-            // Clear cache
-            $cacheKey = "google_token_{$account}";
-            Cache::forget($cacheKey);
-
-            Log::info('Token deleted successfully', ['account' => $account]);
+            Log::info('User token deleted successfully', ['account' => $account, 'user_id' => $user->id]);
         } catch (\Exception $e) {
             Log::error('Failed to revoke token', [
                 'account' => $account,

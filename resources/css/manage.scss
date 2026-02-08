@@ -1,0 +1,469 @@
+/* Management page specific styles */
+
+// Variables
+$max-width: 1200px;
+$padding-base: 20px;
+$padding-section: 25px;
+$margin-section: 25px;
+$margin-header: 30px;
+$gap-base: 15px;
+
+$color-text-dark: #333;
+$color-text-medium: #555;
+$color-border-light: #eee;
+$color-white: white;
+
+$border-radius-base: 8px;
+$border-radius-small: 4px;
+$box-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+$transition-fast: 0.2s;
+
+// Mixins
+@mixin transition($property: background-color, $duration: $transition-fast) {
+  transition: $property $duration;
+}
+
+.management-container {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: $padding-base;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $margin-header;
+  flex-wrap: wrap;
+  gap: $gap-base;
+}
+
+.nav-links {
+  display: flex;
+  gap: $gap-base;
+  align-items: center;
+
+  a {
+    color: $color-text-medium;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: $border-radius-small;
+    @include transition();
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
+.section {
+  background: $color-white;
+  border-radius: $border-radius-base;
+  box-shadow: $box-shadow-light;
+  padding: $padding-section;
+  margin-bottom: $margin-section;
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: $padding-base;
+    color: $color-text-dark;
+    border-bottom: 2px solid $color-border-light;
+    padding-bottom: 10px;
+  }
+}
+
+.add-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.add-button:hover {
+  background: #0056b3;
+}
+
+.list-container {
+  display: grid;
+  gap: 15px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.item-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-grow: 1;
+}
+
+.item-emoji {
+  font-size: 20px;
+  min-width: 30px;
+}
+
+.item-details h3 {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.item-details .item-meta {
+  color: #666;
+  font-size: 13px;
+  display: flex;
+  gap: 10px;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-edit {
+  background: #ffc107;
+  color: #000;
+}
+
+.btn-edit:hover {
+  background: #e0a800;
+}
+
+.btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+}
+
+.btn-toggle {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-toggle:hover {
+  background: #545b62;
+}
+
+.btn-toggle.active {
+  background: #28a745;
+}
+
+.color-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  display: inline-block;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+/* Night mode styles */
+body.nighttime .section {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+body.nighttime .section h2 {
+  color: #e2e8f0;
+  border-bottom-color: #4a5568;
+}
+
+body.nighttime .list-item {
+  background: #4a5568;
+  border-color: #556379;
+}
+
+body.nighttime .item-details h3 {
+  color: #e2e8f0;
+}
+
+body.nighttime .item-details .item-meta {
+  color: #a0aec0;
+}
+
+body.nighttime .nav-links a {
+  color: #cbd5e0;
+}
+
+body.nighttime .nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 25px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+body.nighttime .modal-content {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+body.nighttime .form-group input,
+body.nighttime .form-group select {
+  background: #4a5568;
+  border-color: #556379;
+  color: #e2e8f0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
+}
+
+/* Emoji picker styles */
+.emoji-input-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.emoji-display {
+  flex: 1;
+  min-width: 60px;
+  text-align: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.emoji-picker-btn {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.emoji-picker-btn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+body.nighttime .emoji-picker-btn {
+  background: #4a5568;
+  border-color: #556379;
+  color: #e2e8f0;
+}
+
+body.nighttime .emoji-picker-btn:hover {
+  background: #556379;
+  border-color: #6b7a99;
+}
+
+.emoji-picker-popup {
+  position: absolute;
+  z-index: 2000;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  display: none;
+}
+
+.emoji-picker-popup.show {
+  display: block;
+}
+
+body.nighttime .emoji-picker-popup {
+  background: #2d3748;
+  border-color: #4a5568;
+}
+
+emoji-picker {
+  --background: #fff;
+  --border-color: #e0e0e0;
+  --button-active-background: #e6f3ff;
+  --button-hover-background: #f0f0f0;
+  --input-border-color: #999;
+  --input-font-color: #333;
+  --input-font-size: 14px;
+  --input-line-height: 1.5;
+  --input-padding: 8px;
+  --outline-color: #999;
+  --textarea-font-color: #333;
+  --textarea-font-size: 14px;
+}
+
+body.nighttime emoji-picker {
+  --background: #2d3748;
+  --border-color: #4a5568;
+  --button-active-background: #4a5568;
+  --button-hover-background: #556379;
+  --input-border-color: #556379;
+  --input-font-color: #e2e8f0;
+  --outline-color: #556379;
+  --textarea-font-color: #e2e8f0;
+}
+
+/* Google calendar selection styles */
+.google-calendar-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.google-calendar-item:hover {
+  background-color: #f8f9fa;
+}
+
+.google-calendar-item.selected {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+}
+
+body.nighttime .google-calendar-item {
+  border-color: #556379;
+  background-color: #4a5568;
+}
+
+body.nighttime .google-calendar-item:hover {
+  background-color: #5a6a7a;
+}
+
+body.nighttime .google-calendar-item.selected {
+  background-color: #2d4a6b;
+  border-color: #3788d8;
+}
+
+.google-calendar-checkbox {
+  margin-right: 12px;
+}
+
+.google-calendar-info {
+  flex-grow: 1;
+}
+
+.google-calendar-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.google-calendar-details {
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  gap: 10px;
+}
+
+body.nighttime .google-calendar-details {
+  color: #a0aec0;
+}
+
+.google-calendar-primary {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.google-calendar-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  margin-left: 8px;
+}

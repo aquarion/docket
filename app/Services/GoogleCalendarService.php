@@ -89,10 +89,15 @@ class GoogleCalendarService
             }
         }
 
-        // If we have authentication failures and no events, throw an error
-        if (empty($all_events) && ! empty($authFailures)) {
+        // Log authentication failures but don't throw exception - allow calendar to work without Google calendars
+        if (! empty($authFailures)) {
             $accounts = implode(', ', array_keys($authFailures));
-            throw new \Exception("Authentication failed for Google accounts: {$accounts}. Please re-authenticate.");
+            Log::warning("Google Calendar authentication failed for accounts: {$accounts}. Calendar will continue without Google events.");
+
+            // If no events were fetched and we have auth failures, return empty array
+            if (empty($all_events)) {
+                return [];
+            }
         }
 
         // If we have fetch failures but some events, log warnings
@@ -317,5 +322,47 @@ class GoogleCalendarService
         }
 
         return $status;
+    }
+
+    /**
+     * Fetch available calendars for authenticated user
+     */
+    public function getUserCalendars(): array
+    {
+        if (! auth()->check()) {
+            return [];
+        }
+
+        $user = auth()->user();
+        if (! $user->google_access_token) {
+            return [];
+        }
+
+        try {
+            $service = $this->googleAuth->getCalendarService('default');
+            $calendarList = $service->calendarList->listCalendarList();
+
+            $calendars = [];
+            foreach ($calendarList->getItems() as $calendar) {
+                $calendars[] = [
+                    'id' => $calendar->getId(),
+                    'summary' => $calendar->getSummary(),
+                    'primary' => $calendar->getPrimary() ?? false,
+                    'selected' => $calendar->getSelected() ?? true,
+                    'color' => $calendar->getColorId() ?? null,
+                    'backgroundColor' => $calendar->getBackgroundColor() ?? null,
+                    'access_role' => $calendar->getAccessRole(),
+                ];
+            }
+
+            return $calendars;
+        } catch (\Exception $e) {
+            Log::warning('Failed to fetch user calendars', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
     }
 }

@@ -1,0 +1,12 @@
+/* Accessibility Fallback Styles */
+/* This file provides minimal styling for users who cannot load the main stylesheet */
+
+.devmode-ribbon {
+	background: transparent;
+	color: white;
+	padding: 4px 8px;
+}
+
+.devmode-ribbon a:link {
+	color: #ffd700;
+}
