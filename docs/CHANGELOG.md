@@ -18,6 +18,7 @@
 - Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
 - Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
 - Sign out button now properly logs out users and invalidates sessions
+- Added missing `apiIndex` method to CalendarController for API calendar data endpoint
 - Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
 
 ### Changed
@@ -31,6 +32,7 @@
 - Google authentication interface integrated into settings modal
 - CalendarService updated to read from database with fallback to static configuration
 - Calendar configuration now supports per-user customization through database storage
+- Development mode ribbon now dynamically adjusts width based on branch name length
 
 ### Fixed
 - Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)

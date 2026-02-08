@@ -219,6 +219,23 @@ class CalendarController extends Controller
     }
 
     /**
+     * API endpoint for calendar data
+     */
+    public function apiIndex(Request $request)
+    {
+        $filteredConfig = $this->getFilteredCalendars($request);
+
+        return response()->json([
+            'data' => [
+                'ical_calendars' => $filteredConfig['ical_calendars'],
+                'google_calendars' => $filteredConfig['google_calendars'],
+                'merged_calendars' => $filteredConfig['merged_calendars'],
+                'calendar_set' => $filteredConfig['calendar_set_id'],
+            ],
+        ]);
+    }
+
+    /**
      * Get filtered calendars based on request calendar_set parameter
      */
     private function getFilteredCalendars(Request $request): array

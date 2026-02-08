@@ -553,34 +553,33 @@ canvas:focus {
 
 /* Development Mode Ribbon */
 .devmode-ribbon {
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  width: 150px;
-  height: 150px;
-  overflow: hidden;
+  position: fixed; // Use fixed positioning to avoid container constraints
+  top: 20px;
+  right: 20px;
   z-index: 99999;
-  background: transparent;
+  pointer-events: none; // Allow clicks to pass through container
   
   a {
     display: inline-block;
-    width: 200px;
-    overflow: hidden;
-    padding: 6px 0px;
-    text-align: center;
-    transform: rotate(45deg);
+    padding: 8px 16px;
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
     text-decoration: none;
-    color: rgb(255, 255, 255);
-    position: inherit;
-    top: 45px;
-    right: -40px;
-    border-width: 1px 0px;
-    border-style: dotted;
-    border-color: rgba(255, 255, 255, 0.7);
-    font: 700 13px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font: 700 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: rotate(15deg); // Smaller rotation angle
+    transform-origin: center center;
+    pointer-events: auto; // Re-enable clicks on the actual link
     
-    &:link {
+    &:link, &:visited {
       color: #ffd700;
+    }
+    
+    &:hover {
+      background: rgba(255, 0, 0, 0.9);
+      transform: rotate(15deg) scale(1.05);
     }
   }
 }
