@@ -23,7 +23,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@biomejs/biome": "2.3.14",
+    "@biomejs/biome": "2.4.2",
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.0",
     "@vitejs/plugin-legacy": "^7.2.1",
