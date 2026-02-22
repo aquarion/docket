@@ -1,74 +1,140 @@
-/* Easter Theme Styles */
+@use 'sass:map';
 
-/* Replace zeros with egg emoji in time displays */
-.easter-egg {
-  display: inline;
-  font-size: 0.85em;
-  animation: bounce-egg 0.6s ease-in-out infinite;
-  margin: 0 -0.2em;
-  vertical-align: -0.1em;
+// Easter Festival Theme Variables
+$easter-colors: (
+  'primary': #4caf50,
+  'secondary': #81c784,
+  'accent': #ff69b4,
+  'grass-light': rgba(76, 175, 80, 0.6),
+  'grass-dark': rgba(56, 142, 60, 0.5),
+  'day-bg-start': #fff9e6,
+  'day-bg-end': #f0f4c3,
+  'night-bg-start': #1b5e20,
+  'night-bg-end': #2e7d32
+);
+
+$easter-dimensions: (
+  'grass-height': 80px,
+  'grass-front': 50px,
+  'grass-back': 35px,
+  'egg-font-size': 0.85em,
+  'egg-bounce': -2px
+);
+
+$easter-animations: (
+  'egg-duration': 0.6s,
+  'sway-duration': 3s,
+  'sway-delay': 0.5s
+);
+
+// Functions
+@function easter-color($color) {
+  @return map.get($easter-colors, $color);
 }
 
-@keyframes bounce-egg {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
+@function easter-size($dimension) {
+  @return map.get($easter-dimensions, $dimension);
 }
 
-/* Animated grass at bottom of page */
-.easter-grass {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: transparent;
-  pointer-events: none;
-  z-index: 5;
-  overflow: hidden;
+@function easter-timing($timing) {
+  @return map.get($easter-animations, $timing);
 }
 
-.easter-grass::before,
-.easter-grass::after {
+// Mixins
+@mixin easter-animation($name, $duration, $easing: ease-in-out, $iteration: infinite) {
+  animation: $name $duration $easing $iteration;
+}
+
+@mixin grass-layer($height, $delay: 0s, $color: easter-color('grass-light')) {
   content: "";
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 50px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0,
-    transparent 5px,
-    rgba(76, 175, 80, 0.6) 5px,
-    rgba(76, 175, 80, 0.6) 7px
-  );
-  animation: sway 3s ease-in-out infinite;
+  height: $height;
+  background-image: grass-pattern($color);
+  @include easter-animation(sway, easter-timing('sway-duration'));
+  animation-delay: $delay;
 }
 
-.easter-grass::before {
-  height: 50px;
-  animation-delay: 0s;
-}
-
-.easter-grass::after {
-  height: 35px;
-  animation-delay: 0.5s;
-  background-image: repeating-linear-gradient(
+@function grass-pattern($color, $width: 5px, $spacing: 7px) {
+  @return repeating-linear-gradient(
     90deg,
     transparent 0,
-    transparent 8px,
-    rgba(56, 142, 60, 0.5) 8px,
-    rgba(56, 142, 60, 0.5) 10px
+    transparent $width,
+    $color $width,
+    $color $spacing
   );
 }
 
+@mixin fixed-overlay($z-index: 5) {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: $z-index;
+  overflow: hidden;
+}
+
+@mixin bounce-keyframes($name, $distance) {
+  @keyframes #{$name} {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY($distance);
+    }
+  }
+}
+
+@mixin gradient-background($start, $end, $direction: 135deg) {
+  background: linear-gradient($direction, $start 0%, $end 100%);
+}
+
+// Easter Egg Styles
+.easter-egg {
+  display: inline;
+  font-size: easter-size('egg-font-size');
+  margin: 0 -0.2em;
+  vertical-align: -0.1em;
+  @include easter-animation(bounce-egg, easter-timing('egg-duration'));
+}
+
+// Generate bounce animation
+@include bounce-keyframes('bounce-egg', easter-size('egg-bounce'));
+
+// Animated Grass Decoration
+.easter-grass {
+  @include fixed-overlay();
+  height: easter-size('grass-height');
+  background: transparent;
+
+  &::before {
+    @include grass-layer(
+      easter-size('grass-front'),
+      0s,
+      easter-color('grass-light')
+    );
+  }
+
+  &::after {
+    @include grass-layer(
+      easter-size('grass-back'),
+      easter-timing('sway-delay'),
+      easter-color('grass-dark')
+    );
+    // Custom pattern for back layer
+    background-image: grass-pattern(
+      easter-color('grass-dark'),
+      8px,
+      10px
+    );
+  }
+}
+
+// Sway animation
 @keyframes sway {
-  0%,
-  100% {
+  0%, 100% {
     transform: translateX(0);
   }
   50% {
@@ -76,18 +142,25 @@
   }
 }
 
-/* Easter color palette adjustments */
+// Easter Theme Context
 body.easter {
-  --easter-primary: #4caf50;
-  --easter-secondary: #81c784;
-  --easter-accent: #ff69b4;
-}
+  // CSS Custom Properties for theme colors
+  --easter-primary: #{easter-color('primary')};
+  --easter-secondary: #{easter-color('secondary')};
+  --easter-accent: #{easter-color('accent')};
 
-/* Optional: Add some pastel colors to the calendar based on time of day */
-body.easter.daytime {
-  background: linear-gradient(135deg, #fff9e6 0%, #f0f4c3 100%);
-}
+  // Day/Night specific backgrounds
+  &.daytime {
+    @include gradient-background(
+      easter-color('day-bg-start'),
+      easter-color('day-bg-end')
+    );
+  }
 
-body.easter.nighttime {
-  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+  &.nighttime {
+    @include gradient-background(
+      easter-color('night-bg-start'),
+      easter-color('night-bg-end')
+    );
+  }
 }

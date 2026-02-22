@@ -1,0 +1,106 @@
+@use 'variables' as *;
+
+/* Settings Modal Styles */
+.settings-section {
+  margin-bottom: $spacing-xl;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.settings-section-title {
+  color: $color-white;
+  font-size: 1.2em;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-sm;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+}
+
+.settings-section-content {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Calendar Set Selection */
+.calendar-set-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.calendar-set-item {
+  margin-bottom: $spacing-sm;
+  
+  &.active .calendar-set-link {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.calendar-set-link {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: $border-radius;
+  text-decoration: none;
+  color: $color-white;
+  @include transition(all, 0.3s);
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.calendar-set-emoji {
+  font-size: 1.2em;
+  margin-right: $spacing-sm;
+}
+
+.calendar-set-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.calendar-set-active-indicator {
+  color: $color-success;
+  font-weight: bold;
+  margin-left: $spacing-sm;
+}
+
+/* Debug Options */
+.debug-options {
+  .festival-selector {
+    margin-top: $spacing-md;
+    
+    label {
+      display: block;
+      margin-bottom: $spacing-sm;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
+    
+    select {
+      width: 100%;
+      padding: $spacing-sm;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: $border-radius;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: $color-white;
+      
+      option {
+        background-color: $color-black;
+        color: $color-white;
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.5);
+        background-color: rgba(255, 255, 255, 0.15);
+      }
+    }
+  }
+}

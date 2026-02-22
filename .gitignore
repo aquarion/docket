@@ -27,3 +27,4 @@ public/static/generated/
 bootstrap/cache
 *.junit
 .mcp.json
+database/

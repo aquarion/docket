@@ -2,9 +2,51 @@
 
 ## [Unreleased]
 
+### Added
+- Calendar source selection interface for managing which sources belong to each calendar set
+- Visual Google Calendar integration - select multiple calendars directly from your Google account
+- Dedicated calendar management page at `/manage` with full CRUD operations
+
+### Fixed
+- Night mode styling and theme switching functionality
+- Settings modal not opening for authenticated users (incorrect button selectors)
+- JavaScript initialization issues after authentication system changes
+- CSS class name validation for dynamically generated calendar styles
+- Missing core layout styles lost during SCSS modularization
+- `/all-calendars` endpoint errors when Google Calendar authentication fails
+- Calendar set selection modal now shows proper database-driven calendar sets instead of static config data
+- Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
+- Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
+- Sign out button now properly logs out users and invalidates sessions
+- Added missing `apiIndex` method to CalendarController for API calendar data endpoint
+- Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
+
 ### Changed
-- Google OAuth now uses a single shared credentials.json file for all accounts while keeping per-account tokens
-- Google OAuth now automatically uses Application Default Credentials when running on Google Cloud
+- **Authentication System**: Migrated to Google OAuth using Laravel Socialite (replaces password-based login)
+- **Database-Driven Configuration**: Calendar sources and sets now managed in database instead of static files
+- **Code Organization**: Modularized 1,275-line style.scss into focused SCSS partials; reorganized JavaScript modules
+- **CSS Utilities**: Added sanitization functions for valid CSS class names (PHP: StringHelper, JS: CssUtils)
+- Unified settings modal with calendar management, authentication, and debug options
+- All calendar access now requires user authentication (no anonymous access)
+- Festival debug options moved to settings modal (visible only in debug mode)
+- Google authentication interface integrated into settings modal
+- CalendarService updated to read from database with fallback to static configuration
+- Calendar configuration now supports per-user customization through database storage
+- Development mode ribbon now dynamically adjusts width based on branch name length
+
+### Fixed
+- Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
+
+### Removed
+- Legacy AuthController and all associated routes (`/token`, `/auth/google/authorize`, `/auth/google/status`, `/auth/google/check`)
+- Legacy authentication UI section from settings modal
+- Legacy token.blade.php view for file-based authentication
+- File-based Google token storage system (replaced with user-specific database storage)
+- Legacy authentication JavaScript functions (initAuthSettings, loadAuthStatus, renderAccountStatus, revokeAuth)
+- GoogleAuthService file token methods (loadFileToken, saveTokenToFile)
+- Support for anonymous/guest calendar access (all users must now authenticate)
+- AuthControllerTest (functionality no longer exists)
+- Standalone Google sign-in button (functionality integrated into settings modal)
 
 ## [2.1.5] - 2026-02-04
 

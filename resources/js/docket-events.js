@@ -405,12 +405,16 @@ var DocketEvents = {
    * Get CSS classes for an event based on its calendars
    */
   getEventClasses: function (event) {
-    var classes;
+    var classes, sanitizedCalendars;
 
     classes = "";
 
     if (event.calendars && event.calendars.length > 0) {
-      classes += "txtcal-" + event.calendars.join("-");
+      // Sanitize each calendar name for CSS class usage
+      sanitizedCalendars = event.calendars.map(function (calendarName) {
+        return CssUtils.sanitizeCssClassName(calendarName);
+      });
+      classes += "txtcal-" + sanitizedCalendars.join("-");
     }
 
     return classes;

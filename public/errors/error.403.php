@@ -6,7 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>403 Forbidden</title>
   <meta http-equiv="refresh" content="30"> <!-- Auto refresh every 30 seconds -->
-  <style src="static/css/style.css"></style>
+  <link rel="stylesheet" href="/build/assets/app-BwhyZnaQ.css">
+  <style>
+    body {
+      font-family: 'Playfair Display', sans-serif;
+      margin: 2rem;
+    }
   </style>
 </head>
 
