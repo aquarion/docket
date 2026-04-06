@@ -68,33 +68,7 @@ jobs:
           test -f public/build/manifest.json || (echo "Vite manifest not found"; exit 1)
 
       - name: Check iOS 12 JS compatibility
-        run: |
-          MODERN_BUNDLE=$(grep -o 'assets/app-[^"]*\.js' public/build/manifest.json | grep -v legacy | head -1)
-          POLYFILLS_BUNDLE=$(grep -o 'assets/polyfills-legacy-[^"]*\.js' public/build/manifest.json | head -1)
-
-          echo "Checking modern bundle: $MODERN_BUNDLE"
-          echo "Checking polyfills bundle: $POLYFILLS_BUNDLE"
-
-          # @vitejs/plugin-legacy v8 injects a data: URL import that iOS 12 can't load
-          if grep -qP "^import'data:" "public/build/$MODERN_BUNDLE"; then
-            echo "FAIL: data: URL guard found in modern bundle — iOS 12 will fail silently"
-            exit 1
-          fi
-          echo "PASS: No data: URL guard in modern bundle"
-
-          # Optional chaining is ES2020 — iOS 12 (Safari 12) doesn't support it
-          if grep -qP '\?\.' "public/build/$MODERN_BUNDLE"; then
-            echo "FAIL: Optional chaining (?.) found in modern bundle — iOS 12 will throw SyntaxError"
-            exit 1
-          fi
-          echo "PASS: No optional chaining in modern bundle"
-
-          # Object.hasOwn is ES2022 — must not appear in the polyfills bundle itself
-          if grep -qP 'Object\.hasOwn\b' "public/build/$POLYFILLS_BUNDLE"; then
-            echo "FAIL: Object.hasOwn found in polyfills bundle — not available on iOS 12"
-            exit 1
-          fi
-          echo "PASS: No Object.hasOwn in polyfills bundle"
+        run: bash bin/check-ios12-compat.sh
 
       # Laravel Setup
       - name: Generate key
