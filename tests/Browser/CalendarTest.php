@@ -43,8 +43,8 @@ class CalendarTest extends DuskTestCase
     {
         $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
-                ->waitFor('#calendar-selector-btn', 5)
-                ->assertVisible('#calendar-selector-btn');
+                ->waitFor('#settings-btn', 5)
+                ->assertVisible('#settings-btn');
         });
     }
 
