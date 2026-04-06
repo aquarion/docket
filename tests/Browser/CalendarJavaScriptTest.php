@@ -94,7 +94,7 @@ class CalendarJavaScriptTest extends DuskTestCase
             {end: "2026-02-03T10:00:00Z"}, // Valid event
             {} // Event without end property
           ];
-          
+
           try {
             var result = DateUtils.findFurthestDate(testEvents);
             return {success: true, result: result};

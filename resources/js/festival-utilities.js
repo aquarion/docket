@@ -7,61 +7,57 @@
  */
 // biome-ignore-start lint/correctness/noUnusedVariables: FestivalUtils is used globally
 var FestivalUtils = {
-  // biome-ignore-end lint/correctness/noUnusedVariables: FestivalUtils is used globally
+	// biome-ignore-end lint/correctness/noUnusedVariables: FestivalUtils is used globally
 
-  /**
-   * Easter-specific utilities
-   */
-  easter: {
-    /**
-     * Replace zeros with Easter egg emojis in time displays
-     * @param {HTMLElement} container - Container element to process
-     */
-    replaceZerosWithEggs: function (container) {
-      var timeElements, i, el;
+	/**
+	 * Easter-specific utilities
+	 */
+	easter: {
+		/**
+		 * Replace zeros with Easter egg emojis in time displays
+		 * @param {HTMLElement} container - Container element to process
+		 */
+		replaceZerosWithEggs: (container) => {
+			var timeElements, i, el;
 
-      if (
-        window.DocketConfig &&
-        window.DocketConfig.constants &&
-        window.DocketConfig.constants.FESTIVAL !== "easter"
-      )
-        return;
+			if (
+				window.DocketConfig?.constants &&
+				window.DocketConfig.constants.FESTIVAL !== "easter"
+			)
+				return;
 
-      // Replace zeros in time elements with egg emojis
-      timeElements = container.querySelectorAll(".event_dt, .dt_time");
-      for (i = 0; i < timeElements.length; i++) {
-        el = timeElements[i];
-        el.innerHTML = el.innerHTML.replace(
-          /0/g,
-          '<span class="easter-egg">🥚</span>',
-        );
-      }
-    },
-  },
+			// Replace zeros in time elements with egg emojis
+			timeElements = container.querySelectorAll(".event_dt, .dt_time");
+			for (i = 0; i < timeElements.length; i++) {
+				el = timeElements[i];
+				el.innerHTML = el.innerHTML.replace(
+					/0/g,
+					'<span class="easter-egg">🥚</span>',
+				);
+			}
+		},
+	},
 
-  /**
-   * Get festival-specific callback for a given hook
-   * @param {string} hook - Hook name (e.g., 'afterRenderEvents')
-   * @returns {Function|null} Callback function or null if not applicable
-   */
-  getCallback: function (hook) {
-    var festival =
-      window.DocketConfig &&
-      window.DocketConfig.constants &&
-      window.DocketConfig.constants.FESTIVAL;
-    if (!festival) return null;
+	/**
+	 * Get festival-specific callback for a given hook
+	 * @param {string} hook - Hook name (e.g., 'afterRenderEvents')
+	 * @returns {Function|null} Callback function or null if not applicable
+	 */
+	getCallback: (hook) => {
+		var festival = window.DocketConfig?.constants?.FESTIVAL;
+		if (!festival) return null;
 
-    if (festival === "easter") {
-      if (hook === "afterRenderDateTime") {
-        return FestivalUtils.easter.replaceZerosWithEggs;
-      }
-      if (hook === "afterRenderEvents") {
-        return FestivalUtils.easter.replaceZerosWithEggs;
-      }
-    }
+		if (festival === "easter") {
+			if (hook === "afterRenderDateTime") {
+				return FestivalUtils.easter.replaceZerosWithEggs;
+			}
+			if (hook === "afterRenderEvents") {
+				return FestivalUtils.easter.replaceZerosWithEggs;
+			}
+		}
 
-    return null;
-  },
+		return null;
+	},
 };
 
 // Make FestivalUtils available globally

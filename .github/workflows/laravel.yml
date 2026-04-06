@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/composer-cache
           key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
@@ -89,8 +89,8 @@ jobs:
         id: host-ip
         run: |
           HOST_IP=$(hostname -I | awk '{print $1}')
-          echo "ip=$HOST_IP" >> $GITHUB_OUTPUT
-          echo "Detected host IP: $HOST_IP"
+          echo "ip=${HOST_IP}" >> "$GITHUB_OUTPUT"
+          echo "Detected host IP: ${HOST_IP}"
 
       - name: Start Laravel server
         run: php artisan serve --env=testing --host=0.0.0.0 &

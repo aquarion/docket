@@ -43,7 +43,7 @@ class GoogleAuthCommand extends Command
             $this->line('   - storage/app/google/credentials.json');
             $this->newLine();
             $this->line('Looking for:');
-            $this->line('  ' . storage_path('app/google/credentials.json'));
+            $this->line('  '.storage_path('app/google/credentials.json'));
             $this->newLine();
             $this->line('For detailed instructions, see:');
             $this->info('https://developers.google.com/calendar/api/quickstart/php');
@@ -57,7 +57,7 @@ class GoogleAuthCommand extends Command
 
             // Show which credentials file is being used
             $credentialsPath = config('services.google.credentials_path', 'google/credentials.json');
-            $this->line('Using credentials: ' . basename($credentialsPath));
+            $this->line('Using credentials: '.basename($credentialsPath));
 
             $this->line('Testing with calendar API...');
 
@@ -96,7 +96,7 @@ class GoogleAuthCommand extends Command
         $authUrl = $googleAuth->getAuthorizationUrl($account);
 
         $this->warn("Account '{$account}' needs authorization.");
-        $this->line('Using credentials: ' . basename($credentialsPath));
+        $this->line('Using credentials: '.basename($credentialsPath));
         $this->newLine();
         $this->line('Open the following link in your browser:');
         $this->info($authUrl);

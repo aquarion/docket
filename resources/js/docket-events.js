@@ -7,538 +7,538 @@
  */
 // biome-ignore-start lint/correctness/noUnusedVariables: DocketEvents is used globally
 var DocketEvents = {
-  // biome-ignore-end lint/correctness/noUnusedVariables: DocketEvents is used globally
-  malformedEventLogCache: {},
-
-  malformedEventLogCacheSize: 0,
-
-  malformedEventLogCacheLimit: 500,
-
-  /**
-   * Build a readable label for malformed event diagnostics.
-   */
-  buildMalformedEventLabel: function (event, reason) {
-    var title, calendars, startText, endText;
-
-    title = event && event.title ? event.title : "Unknown event";
-    if (title.indexOf("⚠️ ") !== 0) {
-      title = "⚠️ " + title;
-    }
-    calendars =
-      event && event.calendars && event.calendars.length > 0
-        ? event.calendars.join(",")
-        : "unknown";
-    startText = event && event.start ? String(event.start) : "missing";
-    endText = event && event.end ? String(event.end) : "missing";
-
-    return (
-      reason +
-      " | title: " +
-      title +
-      " | calendars: " +
-      calendars +
-      " | start: " +
-      startText +
-      " | end: " +
-      endText
-    );
-  },
-
-  /**
-   * Log malformed-event problems once per unique payload to avoid unbounded spam.
-   */
-  logMalformedEventOnce: function (event, reason, level) {
-    var key, message;
-
-    key = DocketEvents.buildMalformedEventLabel(event, reason);
-    if (DocketEvents.malformedEventLogCache[key]) {
-      return;
-    }
-
-    DocketEvents.malformedEventLogCache[key] = true;
-    DocketEvents.malformedEventLogCacheSize += 1;
-
-    // Keep the dedupe cache bounded in long-running sessions.
-    if (
-      DocketEvents.malformedEventLogCacheSize >
-      DocketEvents.malformedEventLogCacheLimit
-    ) {
-      DocketEvents.malformedEventLogCache = {};
-      DocketEvents.malformedEventLogCacheSize = 0;
-    }
-
-    message = key;
-    if (level === "error") {
-      NotificationUtils.error(message);
-    } else {
-      NotificationUtils.warning(message);
-    }
-  },
-
-  /**
-   * Update the next upcoming events display
-   */
-  updateNextUp: function () {
-    var now,
-      nowF,
-      days,
-      thisDayF,
-      thisEvent,
-      end,
-      start,
-      startF,
-      endOfDay,
-      i,
-      events,
-      maxDate,
-      thisDay,
-      _set,
-      setEvents,
-      allEventsEntries;
-
-    now = new Date();
-    nowF = now.toISOString().split("T")[0];
-    days = {};
-
-    days[nowF] = { allday: [], events: [] };
-
-    // Combine all events from different sources
-    events = [];
-    allEventsEntries = Object.entries(DocketConfig.allEvents);
-    for (i = 0; i < allEventsEntries.length; i++) {
-      _set = allEventsEntries[i][0];
-      setEvents = allEventsEntries[i][1];
-      events = events.concat(setEvents);
-    }
-
-    events.sort(DateUtils.dateSort);
-
-    // Create day containers for the date range
-    maxDate = new Date(DateUtils.findFurthestDate(events));
-    thisDay = new Date();
-    while (thisDay < maxDate) {
-      thisDay.setDate(thisDay.getDate() + 1);
-      thisDayF = thisDay.toISOString().split("T")[0];
-      if (!days[thisDayF]) {
-        days[thisDayF] = { allday: [], events: [] };
-      }
-    }
-
-    // Process each event
-    for (i = 0; i < events.length; i++) {
-      thisEvent = events[i];
-
-      // Validate event dates
-      if (!thisEvent.end || !thisEvent.start) {
-        if (!thisEvent.start && !thisEvent.end) {
-          DocketEvents.logMalformedEventOnce(
-            thisEvent,
-            "Event missing start and end date",
-            "warning",
-          );
-        } else if (!thisEvent.start) {
-          DocketEvents.logMalformedEventOnce(
-            thisEvent,
-            "Event missing start date",
-            "warning",
-          );
-        } else {
-          DocketEvents.logMalformedEventOnce(
-            thisEvent,
-            "Event missing end date",
-            "warning",
-          );
-        }
-        continue;
-      }
-
-      end = new Date(thisEvent.end);
-      start = new Date(thisEvent.start);
-
-      // Skip events with invalid dates
-      if (isNaN(end.getTime()) || isNaN(start.getTime())) {
-        DocketEvents.logMalformedEventOnce(
-          thisEvent,
-          "Invalid date in event",
-          "error",
-        );
-        continue;
-      }
-
-      // Skip past events
-      if (end < now) {
-        continue;
-      }
-
-      startF = start.toISOString().split("T")[0];
-
-      // Handle events that started before today
-      if (!days[startF] && end > now) {
-        startF = now.toISOString().split("T")[0];
-        endOfDay = new Date(now);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        if (end >= endOfDay) {
-          NotificationUtils.debug(
-            "Adjusting event to all day: " +
-              thisEvent.title +
-              " as it started before today",
-          );
-          thisEvent.allDay = true;
-        } else {
-          start = new Date(endOfDay);
-        }
-      }
-
-      // Detect midnight-to-midnight events
-      if (
-        start.getHours() === 0 &&
-        start.getMinutes() === 0 &&
-        end.getHours() === 0 &&
-        end.getMinutes() === 0 &&
-        thisEvent.allDay !== true
-      ) {
-        NotificationUtils.debug(
-          "Setting all day for: " +
-            thisEvent.title +
-            " as it is midnight to midnight",
-        );
-        NotificationUtils.debug(
-          start.toISOString() + " to " + end.toISOString(),
-        );
-        thisEvent.allDay = true;
-      }
-
-      if (thisEvent.allDay) {
-        DocketEvents.processAllDayEvent(thisEvent, start, end, now, days);
-      } else if (days[startF]) {
-        NotificationUtils.debug(
-          "Adding event: " + thisEvent.title + " to " + startF,
-        );
-        days[startF].events.push(thisEvent);
-      } else {
-        NotificationUtils.debug(
-          "Skipping event: " +
-            thisEvent.title +
-            " as it is not in the next two weeks (" +
-            startF +
-            ")",
-        );
-      }
-    }
-
-    DocketEvents.renderEventsList(days);
-    DocketEvents.setupEventClickHandlers();
-
-    // Parse emojis and update relative times
-    twemoji.parse(document.body);
-    DocketUI.updateUntil();
-  },
-
-  /**
-   * Process an all-day event across multiple days
-   */
-  processAllDayEvent: function (thisEvent, start, end, now, days) {
-    var showedStarted,
-      startF,
-      durationHours,
-      _startedToday,
-      xEvent,
-      xEnd,
-      startedToday;
-
-    showedStarted = false;
-
-    if (start < now) {
-      start = new Date();
-    }
-
-    startF = start.toISOString().split("T")[0];
-    durationHours = (end - start) / (1000 * 60 * 60) - 24;
-
-    if (days[startF]) {
-      showedStarted = true;
-      _startedToday = true;
-      xEvent = Object.assign({}, thisEvent);
-
-      if (durationHours > 0) {
-        xEnd = DateUtils.subtractMinutes(end, 1);
-        xEvent.title =
-          xEvent.title +
-          "<span class='until'>(until " +
-          DateUtils.calendarFormat(xEnd) +
-          ")</span>";
-      }
-
-      days[startF].allday.push(xEvent);
-    }
-
-    // Handle multi-day events
-    while (durationHours > 0) {
-      startedToday = false;
-      start = DateUtils.addDays(start, 1);
-      startF = DateUtils.formatDate(start, "YYYY-MM-DD");
-
-      if (days[startF] && !showedStarted) {
-        days[startF].allday.push(thisEvent);
-        showedStarted = true;
-        startedToday = true;
-      }
-
-      durationHours -= 24;
-
-      if (durationHours < 1 && !startedToday) {
-        xEvent = Object.assign({}, thisEvent);
-        xEvent.title = xEvent.title + " ends";
-        days[startF].allday.push(xEvent);
-      }
-    }
-  },
-
-  /**
-   * Render the events list HTML
-   */
-  renderEventsList: function (days) {
-    var output, day, dayTitle, nextUpEl, daysEntries, i, date, data;
-
-    output = "<dl>";
-
-    daysEntries = Object.entries(days);
-    for (i = 0; i < daysEntries.length; i++) {
-      date = daysEntries[i][0];
-      data = daysEntries[i][1];
-      day = new Date(date);
-      dayTitle = DocketEvents.getDayTitle(day);
-
-      NotificationUtils.debug(
-        "Start Day " + DateUtils.formatDate(day, "YYYY-MM-DD"),
-      );
-      NotificationUtils.debug(data);
-
-      output += "<dt>" + dayTitle + ": ";
-
-      // Merge duplicate all-day events
-      DocketEvents.mergeAllDayEvents(data);
-
-      // Render all-day events
-      output += DocketEvents.renderAllDayEvents(data.allday);
-      output += "</dt>";
-
-      // Render timed events
-      output += DocketEvents.renderTimedEvents(data.events);
-    }
-
-    output += "</dl>";
-    nextUpEl = document.getElementById("nextUp");
-    if (nextUpEl) {
-      nextUpEl.innerHTML = output;
-      var callback;
-      if (
-        typeof FestivalUtils !== "undefined" &&
-        FestivalUtils &&
-        typeof FestivalUtils.getCallback === "function"
-      ) {
-        callback = FestivalUtils.getCallback("afterRenderEvents");
-        if (callback && typeof callback === "function") {
-          callback(nextUpEl);
-        }
-      }
-    }
-  },
-
-  /**
-   * Get display title for a day
-   */
-  getDayTitle: function (day) {
-    var nowDayOfYear, dayDayOfYear, title;
-
-    nowDayOfYear = DateUtils.getDayOfYear(new Date());
-    dayDayOfYear = DateUtils.getDayOfYear(day);
-
-    if (nowDayOfYear === dayDayOfYear) {
-      return "Today";
-    } else if (nowDayOfYear + 1 === dayDayOfYear) {
-      return "Tomorrow";
-    } else {
-      title = DateUtils.formatDate(day, "ddd D");
-      title += "<sup>" + DateUtils.dateOrdinal(day.getDate()) + "</sup>";
-      return title;
-    }
-  },
-
-  /**
-   * Merge duplicate all-day events by title
-   */
-  mergeAllDayEvents: function (data) {
-    var mergedAllday, i, currentEvent, existingEvent, j, k;
-
-    mergedAllday = [];
-
-    for (i = 0; i < data.allday.length; i++) {
-      currentEvent = data.allday[i];
-      existingEvent = null;
-
-      for (j = 0; j < mergedAllday.length; j++) {
-        if (mergedAllday[j].title === currentEvent.title) {
-          existingEvent = mergedAllday[j];
-          break;
-        }
-      }
-
-      if (existingEvent) {
-        for (k = 0; k < currentEvent.calendars.length; k++) {
-          existingEvent.calendars.push(currentEvent.calendars[k]);
-        }
-      } else {
-        mergedAllday.push(currentEvent);
-      }
-    }
-
-    data.allday = mergedAllday;
-  },
-
-  /**
-   * Render all-day events HTML
-   */
-  renderAllDayEvents: function (alldayEvents) {
-    var things, i, allday, classes, output;
-
-    things = [];
-
-    if (alldayEvents.length === 0) {
-      NotificationUtils.debug("No allday events");
-      return "";
-    }
-
-    for (i = 0; i < alldayEvents.length; i++) {
-      allday = alldayEvents[i];
-      classes = DocketEvents.getEventClasses(allday);
-
-      things.push(
-        '<span class="' +
-          classes +
-          '" data="' +
-          encodeURI(JSON.stringify(allday)) +
-          '">' +
-          allday.title +
-          "</span>",
-      );
-    }
-
-    output = "";
-    if (things.length === 1) {
-      output = things[0];
-    } else if (things.length > 1) {
-      output = things.slice(0, -1).join(", ") + " & " + things.pop();
-    }
-
-    return output ? '<span class="day-events">' + output + "</span>" : "";
-  },
-
-  /**
-   * Render timed events HTML
-   */
-  renderTimedEvents: function (events) {
-    var output, i, thisEvent, starts, ends, classes, titleClasses, until;
-
-    output = "";
-
-    for (i = 0; i < events.length; i++) {
-      thisEvent = events[i];
-      NotificationUtils.debug("Event: " + thisEvent.title);
-
-      starts = new Date(thisEvent.start);
-      ends = new Date(thisEvent.end);
-      classes = "event";
-      titleClasses = DocketEvents.getEventClasses(thisEvent);
-
-      if (
-        DateUtils.getDayOfYear(new Date()) === DateUtils.getDayOfYear(starts)
-      ) {
-        classes += " todayEvent";
-      }
-
-      until =
-        "(for " + DateUtils.humanizeDuration(Math.abs(ends - starts)) + ")";
-
-      output +=
-        '<dd class="' +
-        classes +
-        '" eventstarts="' +
-        starts.toISOString() +
-        '" eventends="' +
-        ends.toISOString() +
-        '" data="' +
-        encodeURI(JSON.stringify(thisEvent)) +
-        '">\n\t\t\t\t\t<span class="event_dt">' +
-        DateUtils.formatDate(starts, "HH:mm") +
-        '</span> \n\t\t\t\t\t<span class="event_title ' +
-        titleClasses +
-        '">' +
-        thisEvent.title +
-        '</span> \n\t\t\t\t\t<span class="until">' +
-        until +
-        "</span>\n\t\t\t\t</dd>";
-    }
-
-    return output;
-  },
-
-  /**
-   * Get CSS classes for an event based on its calendars
-   */
-  getEventClasses: function (event) {
-    var classes, sanitizedCalendars;
-
-    classes = "";
-
-    if (event.calendars && event.calendars.length > 0) {
-      // Sanitize each calendar name for CSS class usage
-      sanitizedCalendars = event.calendars.map(function (calendarName) {
-        return CssUtils.sanitizeCssClassName(calendarName);
-      });
-      classes += "txtcal-" + sanitizedCalendars.join("-");
-    }
-
-    return classes;
-  },
-
-  /**
-   * Setup click handlers for events
-   */
-  setupEventClickHandlers: function () {
-    var existingElements, j, elements, i;
-
-    // Remove existing handlers to prevent duplicates
-    existingElements = document.querySelectorAll(
-      "#nextUp dd, #nextUp span.day-events span",
-    );
-    for (j = 0; j < existingElements.length; j++) {
-      existingElements[j].removeEventListener(
-        "click",
-        DocketEvents.eventClickHandler,
-      );
-    }
-
-    // Store handler reference for removal
-    if (!DocketEvents.eventClickHandler) {
-      DocketEvents.eventClickHandler = function (event) {
-        try {
-          // Event data parsing for modal or other functionality
-          JSON.parse(decodeURI(this.getAttribute("data")));
-        } catch (error) {
-          console.error("Error parsing event data:", error);
-        }
-      };
-    }
-
-    elements = document.querySelectorAll(
-      "#nextUp dd, #nextUp span.day-events span",
-    );
-    for (i = 0; i < elements.length; i++) {
-      elements[i].addEventListener("click", DocketEvents.eventClickHandler);
-    }
-  },
+	// biome-ignore-end lint/correctness/noUnusedVariables: DocketEvents is used globally
+	malformedEventLogCache: {},
+
+	malformedEventLogCacheSize: 0,
+
+	malformedEventLogCacheLimit: 500,
+
+	/**
+	 * Build a readable label for malformed event diagnostics.
+	 */
+	buildMalformedEventLabel: (event, reason) => {
+		var title, calendars, startText, endText;
+
+		title = event?.title ? event.title : "Unknown event";
+		if (title.indexOf("⚠️ ") !== 0) {
+			title = "⚠️ " + title;
+		}
+		calendars =
+			event?.calendars && event.calendars.length > 0
+				? event.calendars.join(",")
+				: "unknown";
+		startText = event?.start ? String(event.start) : "missing";
+		endText = event?.end ? String(event.end) : "missing";
+
+		return (
+			reason +
+			" | title: " +
+			title +
+			" | calendars: " +
+			calendars +
+			" | start: " +
+			startText +
+			" | end: " +
+			endText
+		);
+	},
+
+	/**
+	 * Log malformed-event problems once per unique payload to avoid unbounded spam.
+	 */
+	logMalformedEventOnce: (event, reason, level) => {
+		var key, message;
+
+		key = DocketEvents.buildMalformedEventLabel(event, reason);
+		if (DocketEvents.malformedEventLogCache[key]) {
+			return;
+		}
+
+		DocketEvents.malformedEventLogCache[key] = true;
+		DocketEvents.malformedEventLogCacheSize += 1;
+
+		// Keep the dedupe cache bounded in long-running sessions.
+		if (
+			DocketEvents.malformedEventLogCacheSize >
+			DocketEvents.malformedEventLogCacheLimit
+		) {
+			DocketEvents.malformedEventLogCache = {};
+			DocketEvents.malformedEventLogCacheSize = 0;
+		}
+
+		message = key;
+		if (level === "error") {
+			NotificationUtils.error(message);
+		} else {
+			NotificationUtils.warning(message);
+		}
+	},
+
+	/**
+	 * Update the next upcoming events display
+	 */
+	updateNextUp: () => {
+		var now,
+			nowF,
+			days,
+			thisDayF,
+			thisEvent,
+			end,
+			start,
+			startF,
+			endOfDay,
+			i,
+			events,
+			maxDate,
+			thisDay,
+			_set,
+			setEvents,
+			allEventsEntries;
+
+		now = new Date();
+		nowF = now.toISOString().split("T")[0];
+		days = {};
+
+		days[nowF] = { allday: [], events: [] };
+
+		// Combine all events from different sources
+		events = [];
+		allEventsEntries = Object.entries(DocketConfig.allEvents);
+		for (i = 0; i < allEventsEntries.length; i++) {
+			_set = allEventsEntries[i][0];
+			setEvents = allEventsEntries[i][1];
+			events = events.concat(setEvents);
+		}
+
+		events.sort(DateUtils.dateSort);
+
+		// Create day containers for the date range
+		maxDate = new Date(DateUtils.findFurthestDate(events));
+		thisDay = new Date();
+		while (thisDay < maxDate) {
+			thisDay.setDate(thisDay.getDate() + 1);
+			thisDayF = thisDay.toISOString().split("T")[0];
+			if (!days[thisDayF]) {
+				days[thisDayF] = { allday: [], events: [] };
+			}
+		}
+
+		// Process each event
+		for (i = 0; i < events.length; i++) {
+			thisEvent = events[i];
+
+			// Validate event dates
+			if (!thisEvent.end || !thisEvent.start) {
+				if (!thisEvent.start && !thisEvent.end) {
+					DocketEvents.logMalformedEventOnce(
+						thisEvent,
+						"Event missing start and end date",
+						"warning",
+					);
+				} else if (!thisEvent.start) {
+					DocketEvents.logMalformedEventOnce(
+						thisEvent,
+						"Event missing start date",
+						"warning",
+					);
+				} else {
+					DocketEvents.logMalformedEventOnce(
+						thisEvent,
+						"Event missing end date",
+						"warning",
+					);
+				}
+				continue;
+			}
+
+			end = new Date(thisEvent.end);
+			start = new Date(thisEvent.start);
+
+			// Skip events with invalid dates
+			if (Number.isNaN(end.getTime()) || Number.isNaN(start.getTime())) {
+				DocketEvents.logMalformedEventOnce(
+					thisEvent,
+					"Invalid date in event",
+					"error",
+				);
+				continue;
+			}
+
+			// Skip past events
+			if (end < now) {
+				continue;
+			}
+
+			startF = start.toISOString().split("T")[0];
+
+			// Handle events that started before today
+			if (!days[startF] && end > now) {
+				startF = now.toISOString().split("T")[0];
+				endOfDay = new Date(now);
+				endOfDay.setHours(23, 59, 59, 999);
+
+				if (end >= endOfDay) {
+					NotificationUtils.debug(
+						"Adjusting event to all day: " +
+							thisEvent.title +
+							" as it started before today",
+					);
+					thisEvent.allDay = true;
+				} else {
+					start = new Date(endOfDay);
+				}
+			}
+
+			// Detect midnight-to-midnight events
+			if (
+				start.getHours() === 0 &&
+				start.getMinutes() === 0 &&
+				end.getHours() === 0 &&
+				end.getMinutes() === 0 &&
+				thisEvent.allDay !== true
+			) {
+				NotificationUtils.debug(
+					"Setting all day for: " +
+						thisEvent.title +
+						" as it is midnight to midnight",
+				);
+				NotificationUtils.debug(
+					start.toISOString() + " to " + end.toISOString(),
+				);
+				thisEvent.allDay = true;
+			}
+
+			if (thisEvent.allDay) {
+				DocketEvents.processAllDayEvent(thisEvent, start, end, now, days);
+			} else if (days[startF]) {
+				NotificationUtils.debug(
+					"Adding event: " + thisEvent.title + " to " + startF,
+				);
+				days[startF].events.push(thisEvent);
+			} else {
+				NotificationUtils.debug(
+					"Skipping event: " +
+						thisEvent.title +
+						" as it is not in the next two weeks (" +
+						startF +
+						")",
+				);
+			}
+		}
+
+		DocketEvents.renderEventsList(days);
+		DocketEvents.setupEventClickHandlers();
+
+		// Parse emojis and update relative times
+		twemoji.parse(document.body);
+		DocketUI.updateUntil();
+	},
+
+	/**
+	 * Process an all-day event across multiple days
+	 */
+	processAllDayEvent: (thisEvent, start, end, now, days) => {
+		var showedStarted,
+			startF,
+			durationHours,
+			_startedToday,
+			xEvent,
+			xEnd,
+			startedToday;
+
+		showedStarted = false;
+
+		if (start < now) {
+			start = new Date();
+		}
+
+		startF = start.toISOString().split("T")[0];
+		durationHours = (end - start) / (1000 * 60 * 60) - 24;
+
+		if (days[startF]) {
+			showedStarted = true;
+			_startedToday = true;
+			xEvent = Object.assign({}, thisEvent);
+
+			if (durationHours > 0) {
+				xEnd = DateUtils.subtractMinutes(end, 1);
+				xEvent.title =
+					xEvent.title +
+					"<span class='until'>(until " +
+					DateUtils.calendarFormat(xEnd) +
+					")</span>";
+			}
+
+			days[startF].allday.push(xEvent);
+		}
+
+		// Handle multi-day events
+		while (durationHours > 0) {
+			startedToday = false;
+			start = DateUtils.addDays(start, 1);
+			startF = DateUtils.formatDate(start, "YYYY-MM-DD");
+
+			if (days[startF] && !showedStarted) {
+				days[startF].allday.push(thisEvent);
+				showedStarted = true;
+				startedToday = true;
+			}
+
+			durationHours -= 24;
+
+			if (durationHours < 1 && !startedToday) {
+				xEvent = Object.assign({}, thisEvent);
+				xEvent.title = xEvent.title + " ends";
+				days[startF].allday.push(xEvent);
+			}
+		}
+	},
+
+	/**
+	 * Render the events list HTML
+	 */
+	renderEventsList: (days) => {
+		var output, day, dayTitle, nextUpEl, daysEntries, i, date, data;
+
+		output = "<dl>";
+
+		daysEntries = Object.entries(days);
+		for (i = 0; i < daysEntries.length; i++) {
+			date = daysEntries[i][0];
+			data = daysEntries[i][1];
+			day = new Date(date);
+			dayTitle = DocketEvents.getDayTitle(day);
+
+			NotificationUtils.debug(
+				"Start Day " + DateUtils.formatDate(day, "YYYY-MM-DD"),
+			);
+			NotificationUtils.debug(data);
+
+			output += "<dt>" + dayTitle + ": ";
+
+			// Merge duplicate all-day events
+			DocketEvents.mergeAllDayEvents(data);
+
+			// Render all-day events
+			output += DocketEvents.renderAllDayEvents(data.allday);
+			output += "</dt>";
+
+			// Render timed events
+			output += DocketEvents.renderTimedEvents(data.events);
+		}
+
+		output += "</dl>";
+		nextUpEl = document.getElementById("nextUp");
+		if (nextUpEl) {
+			nextUpEl.innerHTML = output;
+			var callback;
+			if (
+				typeof FestivalUtils !== "undefined" &&
+				FestivalUtils &&
+				typeof FestivalUtils.getCallback === "function"
+			) {
+				callback = FestivalUtils.getCallback("afterRenderEvents");
+				if (callback && typeof callback === "function") {
+					callback(nextUpEl);
+				}
+			}
+		}
+	},
+
+	/**
+	 * Get display title for a day
+	 */
+	getDayTitle: (day) => {
+		var nowDayOfYear, dayDayOfYear, title;
+
+		nowDayOfYear = DateUtils.getDayOfYear(new Date());
+		dayDayOfYear = DateUtils.getDayOfYear(day);
+
+		if (nowDayOfYear === dayDayOfYear) {
+			return "Today";
+		} else if (nowDayOfYear + 1 === dayDayOfYear) {
+			return "Tomorrow";
+		} else {
+			title = DateUtils.formatDate(day, "ddd D");
+			title += "<sup>" + DateUtils.dateOrdinal(day.getDate()) + "</sup>";
+			return title;
+		}
+	},
+
+	/**
+	 * Merge duplicate all-day events by title
+	 */
+	mergeAllDayEvents: (data) => {
+		var mergedAllday, i, currentEvent, existingEvent, j, k;
+
+		mergedAllday = [];
+
+		for (i = 0; i < data.allday.length; i++) {
+			currentEvent = data.allday[i];
+			existingEvent = null;
+
+			for (j = 0; j < mergedAllday.length; j++) {
+				if (mergedAllday[j].title === currentEvent.title) {
+					existingEvent = mergedAllday[j];
+					break;
+				}
+			}
+
+			if (existingEvent) {
+				for (k = 0; k < currentEvent.calendars.length; k++) {
+					existingEvent.calendars.push(currentEvent.calendars[k]);
+				}
+			} else {
+				mergedAllday.push(currentEvent);
+			}
+		}
+
+		data.allday = mergedAllday;
+	},
+
+	/**
+	 * Render all-day events HTML
+	 */
+	renderAllDayEvents: (alldayEvents) => {
+		var things, i, allday, classes, output;
+
+		things = [];
+
+		if (alldayEvents.length === 0) {
+			NotificationUtils.debug("No allday events");
+			return "";
+		}
+
+		for (i = 0; i < alldayEvents.length; i++) {
+			allday = alldayEvents[i];
+			classes = DocketEvents.getEventClasses(allday);
+
+			things.push(
+				'<span class="' +
+					classes +
+					'" data="' +
+					encodeURI(JSON.stringify(allday)) +
+					'">' +
+					allday.title +
+					"</span>",
+			);
+		}
+
+		output = "";
+		if (things.length === 1) {
+			output = things[0];
+		} else if (things.length > 1) {
+			output = things.slice(0, -1).join(", ") + " & " + things.pop();
+		}
+
+		return output ? '<span class="day-events">' + output + "</span>" : "";
+	},
+
+	/**
+	 * Render timed events HTML
+	 */
+	renderTimedEvents: (events) => {
+		var output, i, thisEvent, starts, ends, classes, titleClasses, until;
+
+		output = "";
+
+		for (i = 0; i < events.length; i++) {
+			thisEvent = events[i];
+			NotificationUtils.debug("Event: " + thisEvent.title);
+
+			starts = new Date(thisEvent.start);
+			ends = new Date(thisEvent.end);
+			classes = "event";
+			titleClasses = DocketEvents.getEventClasses(thisEvent);
+
+			if (
+				DateUtils.getDayOfYear(new Date()) === DateUtils.getDayOfYear(starts)
+			) {
+				classes += " todayEvent";
+			}
+
+			until =
+				"(for " + DateUtils.humanizeDuration(Math.abs(ends - starts)) + ")";
+
+			output +=
+				'<dd class="' +
+				classes +
+				'" eventstarts="' +
+				starts.toISOString() +
+				'" eventends="' +
+				ends.toISOString() +
+				'" data="' +
+				encodeURI(JSON.stringify(thisEvent)) +
+				'">\n\t\t\t\t\t<span class="event_dt">' +
+				DateUtils.formatDate(starts, "HH:mm") +
+				'</span> \n\t\t\t\t\t<span class="event_title ' +
+				titleClasses +
+				'">' +
+				thisEvent.title +
+				'</span> \n\t\t\t\t\t<span class="until">' +
+				until +
+				"</span>\n\t\t\t\t</dd>";
+		}
+
+		return output;
+	},
+
+	/**
+	 * Get CSS classes for an event based on its calendars
+	 */
+	getEventClasses: (event) => {
+		var classes, sanitizedCalendars;
+
+		classes = "";
+
+		if (event.calendars && event.calendars.length > 0) {
+			// Sanitize each calendar name for CSS class usage
+			sanitizedCalendars = event.calendars.map((calendarName) =>
+				CssUtils.sanitizeCssClassName(calendarName),
+			);
+			classes += "txtcal-" + sanitizedCalendars.join("-");
+		}
+
+		return classes;
+	},
+
+	/**
+	 * Setup click handlers for events
+	 */
+	setupEventClickHandlers: () => {
+		var existingElements, j, elements, i;
+
+		// Remove existing handlers to prevent duplicates
+		existingElements = document.querySelectorAll(
+			"#nextUp dd, #nextUp span.day-events span",
+		);
+		for (j = 0; j < existingElements.length; j++) {
+			existingElements[j].removeEventListener(
+				"click",
+				DocketEvents.eventClickHandler,
+			);
+		}
+
+		// Store handler reference for removal
+		if (!DocketEvents.eventClickHandler) {
+			DocketEvents.eventClickHandler = function (_event) {
+				try {
+					// Event data parsing for modal or other functionality
+					JSON.parse(decodeURI(this.getAttribute("data")));
+				} catch (error) {
+					console.error("Error parsing event data:", error);
+				}
+			};
+		}
+
+		elements = document.querySelectorAll(
+			"#nextUp dd, #nextUp span.day-events span",
+		);
+		for (i = 0; i < elements.length; i++) {
+			elements[i].addEventListener("click", DocketEvents.eventClickHandler);
+		}
+	},
 };
 // Make DocketEvents available globally
 window.DocketEvents = DocketEvents;

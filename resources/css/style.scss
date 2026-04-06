@@ -46,7 +46,7 @@ body {
   display: flex;
   gap: variables.$spacing-md;
   margin-bottom: variables.$spacing-lg;
-  
+
   a {
     text-decoration: none;
     padding: variables.$spacing-sm variables.$spacing-md;
@@ -54,12 +54,12 @@ body {
     background-color: variables.$color-background-light;
     color: variables.$color-text;
     @include variables.transition(all, 0.3s);
-    
+
     &:hover {
       background-color: variables.$color-background-hover;
       transform: translateY(-1px);
     }
-    
+
     &.active {
       background-color: #007bff;
       color: variables.$color-white;
@@ -72,28 +72,28 @@ body {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: variables.$spacing-xl;
-  
+
   th, td {
     border: 1px solid variables.$color-border;
     padding: variables.$spacing-sm;
     text-align: left;
     vertical-align: top;
   }
-  
+
   th {
     background-color: variables.$color-background-light;
     font-weight: bold;
   }
-  
+
   .calendar-day {
     min-height: 100px;
     position: relative;
-    
+
     .day-number {
       font-weight: bold;
       margin-bottom: variables.$spacing-xs;
     }
-    
+
     .calendar-events {
       list-style: none;
       padding: 0;
@@ -109,12 +109,12 @@ body {
   margin-bottom: variables.$spacing-xs;
   border-radius: variables.$border-radius;
   font-size: 0.9em;
-  
+
   .event-time {
     font-weight: bold;
     color: variables.$color-text-muted;
   }
-  
+
   .event-title {
     margin-top: variables.$spacing-xs;
   }
@@ -131,7 +131,7 @@ body {
   border-radius: variables.$border-radius;
   font-size: 0.8em;
   z-index: 999;
-  
+
   select {
     background: rgba(255, 255, 255, 0.1);
     color: variables.$color-white;
@@ -170,7 +170,7 @@ body {
 .user-menu {
   position: relative;
   display: inline-block;
-  
+
   &-toggle {
     background: none;
     border: none;
@@ -181,7 +181,7 @@ body {
     gap: variables.$spacing-sm;
     color: inherit;
   }
-  
+
   &-dropdown {
     position: absolute;
     top: 100%;
@@ -197,13 +197,13 @@ body {
     transform: translateY(-10px);
     @include variables.transition(all, 0.3s);
   }
-  
+
   &.open &-dropdown {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
   }
-  
+
   &-item {
     display: block;
     width: 100%;
@@ -215,7 +215,7 @@ body {
     color: variables.$color-text;
     text-decoration: none;
     @include variables.transition(background-color, 0.2s);
-    
+
     &:hover {
       background-color: variables.$color-background-light;
     }
@@ -228,7 +228,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  
+
   .user-avatar {
     width: 40px;
     height: 40px;
@@ -241,7 +241,7 @@ body {
     font-size: 1rem;
     color: variables.$color-text;
   }
-  
+
   p {
     margin: 0;
     font-size: 0.875rem;
@@ -294,13 +294,13 @@ body.night {
 table {
   border-collapse: collapse;
   width: 100%;
-  
+
   th, td {
     border: 1px solid variables.$color-border;
     padding: 8px;
     text-align: left;
   }
-  
+
   th {
     background-color: variables.$color-background-light;
     font-weight: bold;
@@ -330,12 +330,12 @@ body > * {
 #datetime {
   font-size: 32pt;
   text-align: center;
-  
+
   .dt_time {
     font-family: "Sometype Mono", monospace;
     font-size: 72pt;
   }
-  
+
   sup {
     font-size: 22pt;
   }
@@ -347,40 +347,40 @@ body > * {
   height: 275px;
   display: inline-block;
   font-size: 22pt;
-  
+
   span.event_dt {
     font-family: "Sometype Mono", monospace;
   }
-  
+
   dl {
     margin: 0;
   }
-  
+
   dt {
     width: fit-content;
     padding-left: 3em;
     text-indent: -3em;
   }
-  
+
   dd {
     padding: 0 4pt;
   }
-  
+
   ul {
     margin: 0;
     padding-left: 0;
   }
-  
+
   .day-events span {
     display: inline-block;
     text-indent: 0;
   }
-  
+
   .until {
     font-size: small;
     color: #444;
   }
-  
+
   sup {
     font-size: 12pt;
   }
@@ -558,7 +558,7 @@ canvas:focus {
   right: 20px;
   z-index: 99999;
   pointer-events: none; // Allow clicks to pass through container
-  
+
   a {
     display: inline-block;
     padding: 8px 16px;
@@ -572,11 +572,11 @@ canvas:focus {
     transform: rotate(15deg); // Smaller rotation angle
     transform-origin: center center;
     pointer-events: auto; // Re-enable clicks on the actual link
-    
+
     &:link, &:visited {
       color: #ffd700;
     }
-    
+
     &:hover {
       background: rgba(255, 0, 0, 0.9);
       transform: rotate(15deg) scale(1.05);
@@ -590,15 +590,15 @@ canvas:focus {
     flex-direction: column;
     gap: variables.$spacing-sm;
   }
-  
+
   .calendar-table {
     font-size: 0.9em;
-    
+
     th, td {
       padding: variables.$spacing-xs;
     }
   }
-  
+
   .modal-content {
     max-width: 95%;
     margin: variables.$spacing-sm;

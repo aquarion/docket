@@ -21,9 +21,9 @@ jobs:
         id: check-branch
         run: |
           if git ls-remote --heads origin dependabot-updates | grep -q dependabot-updates; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create dependabot-updates branch from main

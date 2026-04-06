@@ -184,16 +184,16 @@ If you have custom functions in `lib/` files, you can:
    ```php
    // app/Services/DocketService.php
    namespace App\Services;
-   
+
    class DocketService {
        public function getTheme() {
            // Your logic here
        }
    }
-   
+
    // In controller
    use App\Services\DocketService;
-   
+
    $service = new DocketService();
    $theme = $service->getTheme();
    ```
@@ -571,7 +571,7 @@ private function loadCalendarConfig(): array
     if (config('calendars.use_legacy_config')) {
         return $this->loadLegacyConfig();
     }
-    
+
     return [
         'ical_calendars' => config('calendars.ical_calendars', []),
         'google_calendars' => config('calendars.google_calendars', []),

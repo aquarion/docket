@@ -3,11 +3,13 @@
 ## [Unreleased]
 
 ### Added
+- Pre-commit hooks for code quality enforcement: Biome (JS/JSON linting and formatting), Laravel Pint (PHP formatting), PHPStan (PHP static analysis), actionlint (GitHub Actions validation), detect-secrets (secret scanning)
 - Calendar source selection interface for managing which sources belong to each calendar set
 - Visual Google Calendar integration - select multiple calendars directly from your Google account
 - Dedicated calendar management page at `/manage` with full CRUD operations
 
 ### Fixed
+- Pre-commit hook configuration: updated Biome schema to 2.3.14, suppressed legacy JS lint rules (`noInnerDeclarations`, `noArguments`, `noSelfCompare`, `noRedeclare`) consistent with existing `noVar: off` policy; created `phpstan.neon` so PHPStan resolves its target path; fixed SC2086 (unquoted variables) and expression injection in GitHub Actions workflows; updated `actions/cache` from v3 to v4
 - Night mode styling and theme switching functionality
 - Settings modal not opening for authenticated users (incorrect button selectors)
 - JavaScript initialization issues after authentication system changes
