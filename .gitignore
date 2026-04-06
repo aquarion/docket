@@ -26,3 +26,8 @@ public/static/generated/
 # Legacy paths
 bootstrap/cache
 *.junit
+.mcp.json
+
+# Database artifacts (keep source files tracked)
+database/*.sqlite
+database/*.sqlite-journal

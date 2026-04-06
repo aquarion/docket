@@ -1,10 +1,11 @@
 {
   "name": "docket",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "",
   "main": "index.php",
   "dependencies": {
     "@twemoji/api": "^17.0.2",
+    "emoji-picker-element": "^1.28.1",
     "fill-range": "^7.1.1",
     "ical.js": "^2.1.0",
     "sass": "^1.83.0",

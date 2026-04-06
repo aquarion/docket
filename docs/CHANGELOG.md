@@ -2,67 +2,75 @@
 
 ## [Unreleased]
 
+### Added
+- Calendar source selection interface for managing which sources belong to each calendar set
+- Visual Google Calendar integration - select multiple calendars directly from your Google account
+- Dedicated calendar management page at `/manage` with full CRUD operations
+
+### Fixed
+- Night mode styling and theme switching functionality
+- Settings modal not opening for authenticated users (incorrect button selectors)
+- JavaScript initialization issues after authentication system changes
+- CSS class name validation for dynamically generated calendar styles
+- Missing core layout styles lost during SCSS modularization
+- `/all-calendars` endpoint errors when Google Calendar authentication fails
+- Calendar set selection modal now shows proper database-driven calendar sets instead of static config data
+- Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
+- Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
+- Sign out button now properly logs out users and invalidates sessions
+- Added missing `apiIndex` method to CalendarController for API calendar data endpoint
+- Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
+- Repaired failing test suite by adding `UserFactory` and aligning authentication feature tests with Google OAuth-only routes and protected home behavior
+- Improved malformed event diagnostics to include title, calendars, and start/end values, and deduplicated repeated malformed-event warnings/errors to prevent unbounded log growth
+- Fixed `.gitignore` database rules so source files like factories are tracked in git and available in CI
+- Fixed Dusk browser test class naming collision (`CalendarSelectorTest` vs `SettingsModalTest`) that caused CI browser-tests fatal redeclare errors
+- Updated Dusk browser tests to authenticate before visiting protected calendar routes and replaced outdated auth-status route assertions with `/api/user`
+- Fixed CI Dusk authentication persistence by forcing `SESSION_DRIVER=file` for the test server and browser test execution steps
+- Fixed `CalendarTest` switcher selector to use `#settings-btn` (current UI) instead of removed `#calendar-selector-btn`, resolving the last failing CI Dusk assertion
+
+### Changed
+- **Authentication System**: Migrated to Google OAuth using Laravel Socialite (replaces password-based login)
+- **Database-Driven Configuration**: Calendar sources and sets now managed in database instead of static files
+- **Code Organization**: Modularized 1,275-line style.scss into focused SCSS partials; reorganized JavaScript modules
+- **CSS Utilities**: Added sanitization functions for valid CSS class names (PHP: StringHelper, JS: CssUtils)
+- Unified settings modal with calendar management, authentication, and debug options
+- All calendar access now requires user authentication (no anonymous access)
+- Festival debug options moved to settings modal (visible only in debug mode)
+- Google authentication interface integrated into settings modal
+- CalendarService updated to read from database with fallback to static configuration
+- Calendar configuration now supports per-user customization through database storage
+- Development mode ribbon now dynamically adjusts width based on branch name length
+- CI workflow now runs Laravel tests and browser tests in a single job to avoid duplicating dependency install and asset build steps
+- Renamed CI workflow to `Laravel and Browser Tests` and updated dependent workflow references (auto-merge trigger)
+- Renamed the combined CI job key/name from generic `tests` to `laravel-browser-tests` / `Laravel and Browser Tests` for clearer status checks
+
+### Fixed
+- Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
+
+### Removed
+- Legacy AuthController and all associated routes (`/token`, `/auth/google/authorize`, `/auth/google/status`, `/auth/google/check`)
+- Legacy authentication UI section from settings modal
+- Legacy token.blade.php view for file-based authentication
+- File-based Google token storage system (replaced with user-specific database storage)
+- Legacy authentication JavaScript functions (initAuthSettings, loadAuthStatus, renderAccountStatus, revokeAuth)
+- GoogleAuthService file token methods (loadFileToken, saveTokenToFile)
+- Support for anonymous/guest calendar access (all users must now authenticate)
+- AuthControllerTest (functionality no longer exists)
+- Standalone Google sign-in button (functionality integrated into settings modal)
+
+## [2.1.5] - 2026-02-04
+
 ### Fixed
 - Fixed `/all-calendars` endpoint requiring authentication when no Google calendars configured (returns empty array for Google calendars but allows iCal sources)
-- Fixed all Dusk browser tests by ensuring Vite hot file is removed before test execution (forces use of built assets instead of dev server)
-- Fixed `.env` file having `APP_ENV=testing` which broke the application (changed to `APP_ENV=local`)
+- Fixed all Dusk browser tests by ensuring Vite hot file is moved to backup before test execution (forces use of built assets instead of dev server, then restored after tests complete)
 - Updated browser tests to use `assertPresent` and `pause` instead of `waitFor` for better element detection reliability
 - Fixed `test_vite_assets_loaded` to check for correct built asset paths
 - Fixed `test_switching_calendar_sets` to use existing "all" calendar set instead of non-existent "work" set
 - Fixed `assertSourceDoesntContain` method name to correct `assertSourceMissing` in JavaScript tests
-- Updated browser tests to use calendar_set and current JS globals
-- Google OAuth authentication now correctly receives refresh tokens by using modern `setPrompt('consent')` instead of deprecated `setApprovalPrompt('force')`
-- Resolved issue where tokens would expire permanently without refresh capability
-- Fixed Google Auth command exit codes and improved authentication reliability
-- Calendar data now properly flows through all endpoints after successful authentication
-- Fixed OAuth token persistence issue caused by double-processing of authorization codes in AuthController
-- Enhanced OAuth flow to check for existing valid tokens before attempting code exchange to prevent "code already used" errors
-- Laravel Storage now throws exceptions on file operation failures by enabling `'throw' => true` in filesystem configuration to prevent silent failures
-- Added comprehensive return value checking for storage operations, JSON encoding/decoding, and cache operations to prevent silent failures
-- Fixed JavaScript date parsing errors with comprehensive validation and error handling for malformed calendar events
-- Added defensive programming to prevent "RangeError: invalid date" crashes when processing calendar data with missing or invalid date fields
-- Fixed `calendar_set` parameter not flowing through to JavaScript configuration (was using URLSearchParams instead of server-side Blade variable)
-- Resolved JavaScript function definition order issues in `docket-js.blade.php` (functions now defined before being called)
-- Fixed missing closing braces and structural errors in generated JavaScript that caused runtime errors
-- Corrected `this` context issues in timer functions by using `var self = this;` pattern
-- Verified all JavaScript files are fully ES5 compatible for iOS 12 Safari support
-- Fixed variable hoisting issues in `ios12-polyfills.js` and `docket-calendar.js` to comply with Biome code style rules
-- Ensured all 17 Vite modules compile correctly with production build process
-
-### Added
-- Calendar authentication status endpoint at `/auth/google/check`
-- Enhanced calendar error handling with user-friendly error notifications
-- Authentication failure detection in GoogleCalendarService with explicit error messages
-- Toastify notification system integration for better user feedback
-- Improved notification styling with modern toast design and positioning
-- Vite development server integration with Laravel Sail
-- Dedicated Vite service in docker-compose.yaml for hot module replacement
-- Sail development helper script at `bin/sail-dev.sh`
-- **Web-based OAuth authentication flow:**
-  - Modal authentication interface for browser-based Google authentication
-  - Account status checking without requiring CLI access
-  - One-click authentication and revoke functionality
-  - Proper error handling with user-friendly notifications
-- **Comprehensive test suite for OAuth authentication fixes:**
-  - Enhanced GoogleAuthServiceTest with modern OAuth prompt verification
-  - GoogleCalendarServiceTest for service error handling validation
-  - StorageConfigurationTest to verify storage exception throwing
-  - JavaScriptDateValidationTest for frontend robustness (future-ready)
-  - Enhanced AuthControllerTest for authentication endpoint validation
-  - Browser tests for calendar JavaScript functionality
 
 ### Changed
-- Updated Google OAuth flow to use `setPrompt('consent')` for consistent refresh token generation
-- Enhanced authentication logging to show refresh token availability status
-- **Converted all JavaScript to ES5 compatibility for iOS 12 Safari support:**
-  - Arrow functions converted to regular `function()` declarations
-  - Removed use of `const`/`let` in favor of `var`
-  - Replaced `.forEach()` with traditional `for` loops
-  - Converted `fetch()` API calls to `XMLHttpRequest`
-  - Eliminated template literals in favor of string concatenation
-  - Fixed optional chaining to use explicit null checks
-- Updated Biome configuration to validate for iOS 12 JavaScript compatibility
-- Improved copilot instructions with debugging methodology lessons learned
+- DuskTestCase now moves hot file to backup instead of deleting it, preserving all file attributes when running in Sail
+- Browser tests now use pause with assertPresent pattern for more reliable element detection in Dusk
 
 ## [2.1.4] - 2026-02-02
 

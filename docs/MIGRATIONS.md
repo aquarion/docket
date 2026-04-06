@@ -666,11 +666,11 @@ Google OAuth credentials and tokens have been migrated to use Laravel's Storage 
 ## What Changed
 
 ### Old Location (deprecated)
-- Credentials: `etc/credentials.json`, `etc/credentials_{account}.json`
+- Credentials: `etc/credentials.json`
 - Tokens: `storage/app/tokens/token_{account}.json`
 
 ### New Location
-- Credentials: `storage/app/google/credentials.json`, `storage/app/google/credentials_{account}.json`
+- Credentials: `storage/app/google/credentials.json`
 - Tokens: `storage/app/google/tokens/token_{account}.json`
 
 ## Migration
@@ -684,7 +684,7 @@ php artisan google:migrate-credentials
 ```
 
 This will:
-- Copy all `etc/credentials*.json` files to `storage/app/google/`
+- Copy `etc/credentials.json` to `storage/app/google/`
 - Move all tokens from `storage/app/tokens/` to `storage/app/google/tokens/`
 - Keep original files intact (you can delete them manually after verification)
 
@@ -697,7 +697,7 @@ If you prefer to migrate manually:
 mkdir -p storage/app/google/tokens
 
 # Move credentials
-mv etc/credentials*.json storage/app/google/
+mv etc/credentials.json storage/app/google/
 
 # Move tokens (if any exist in old location)
 mv storage/app/tokens/token_*.json storage/app/google/tokens/
@@ -705,16 +705,10 @@ mv storage/app/tokens/token_*.json storage/app/google/tokens/
 
 ## Setting Up New Credentials
 
-For new accounts, place credentials at:
+For all accounts, place credentials at:
 
 ```
-storage/app/google/credentials_{account}.json  # Account-specific (recommended)
-storage/app/google/credentials.json            # Default (fallback)
-```
-
-Example for account "aqcom":
-```bash
-cp ~/Downloads/client_secret.json storage/app/google/credentials_aqcom.json
+storage/app/google/credentials.json
 ```
 
 Then authenticate:

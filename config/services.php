@@ -21,14 +21,26 @@ return [
 
     'google' => [
         // Default credentials file path (relative to storage/app directory)
-        // Account-specific credentials can be placed at: google/credentials_{account}.json
-        // Example: google/credentials_aqcom.json for account 'aqcom'
-        // Falls back to this default if account-specific file doesn't exist
+        // Single shared credentials file used by all accounts
         'credentials_path' => env('GOOGLE_CREDENTIALS_PATH', 'google/credentials.json'),
-        'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/token'),
+        // Automatically detect Google Cloud and use Application Default Credentials
+        // Set to true/false to override auto-detection behavior
+        'use_application_default_credentials' => env('GOOGLE_USE_APPLICATION_DEFAULT_CREDENTIALS'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/token'),
         'default_account' => env('GOOGLE_DEFAULT_ACCOUNT', 'default'),
         'scopes' => [
             'https://www.googleapis.com/auth/photoslibrary.readonly',
+            'https://www.googleapis.com/auth/calendar.readonly',
+        ],
+
+        // OAuth configuration for Socialite user authentication
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('APP_URL').'/auth/google/callback',
+        'oauth_scopes' => [
+            'openid',
+            'email',
+            'profile',
             'https://www.googleapis.com/auth/calendar.readonly',
         ],
     ],

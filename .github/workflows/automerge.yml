@@ -2,11 +2,11 @@ name: auto-merge
 
 on:
   workflow_run:
-    workflows: ["Laravel Unit Tests"]
+    workflows: ["Laravel and Browser Tests"]
     types:
       - completed
     branches-ignore:
-      - 'main'
+      - "main"
 jobs:
   automerge:
     runs-on: ubuntu-latest

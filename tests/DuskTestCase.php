@@ -2,10 +2,12 @@
 
 namespace Tests;
 
+use App\Models\User;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Illuminate\Support\Collection;
+use Laravel\Dusk\Browser;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use PHPUnit\Framework\Attributes\BeforeClass;
 
@@ -72,12 +74,44 @@ abstract class DuskTestCase extends BaseTestCase
             ]);
         })->all());
 
+        $driverUrl = $_ENV['DUSK_DRIVER_URL'] ?? env('DUSK_DRIVER_URL');
+
+        if (static::runningInSail() && is_string($driverUrl) && str_contains($driverUrl, 'localhost')) {
+            $driverUrl = str_replace('localhost', 'selenium', $driverUrl);
+        }
+
         return RemoteWebDriver::create(
-            $_ENV['DUSK_DRIVER_URL'] ?? env('DUSK_DRIVER_URL') ?? 'http://selenium:4444',
+            $driverUrl ?? 'http://selenium:4444',
             DesiredCapabilities::chrome()->setCapability(
                 ChromeOptions::CAPABILITY,
                 $options
             )
         );
+    }
+
+    /**
+     * Get the base URL for browser visits.
+     */
+    protected function baseUrl(): string
+    {
+        $appUrl = rtrim((string) config('app.url'), '/');
+
+        if (static::runningInSail() && str_contains($appUrl, 'localhost')) {
+            return 'http://host.docker.internal';
+        }
+
+        return $appUrl;
+    }
+
+    /**
+     * Browse as an authenticated user for routes protected by auth middleware.
+     */
+    protected function browseAsAuthenticatedUser(callable $callback): void
+    {
+        $user = User::factory()->create();
+
+        $this->browse(function (Browser $browser) use ($callback, $user): void {
+            $callback($browser->loginAs($user));
+        });
     }
 }

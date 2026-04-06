@@ -12,6 +12,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - php - 8.5.2
 - laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
+- laravel/dusk (DUSK) - v8
 - laravel/mcp (MCP) - v0
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1
@@ -43,14 +44,6 @@ This project has domain-specific skills available. You MUST activate the relevan
 ## Documentation Files
 
 - You must only create documentation files if explicitly requested by the user.
-
-## Changelog Management
-
-- Keep [docs/CHANGELOG.md](../docs/CHANGELOG.md) up to date with all changes
-- Add entries to the `[Unreleased]` section before completing work
-- Use existing sections: Added, Changed, Fixed, Removed, Deprecated
-- Create new subsections as needed (e.g., "Easter Festival Theme", "Laravel 12 Upgrade")
-- Update this file in the same PR/commit as the feature implementation
 
 ## Replies
 
@@ -131,6 +124,13 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 - Add useful array shape type definitions when appropriate.
 
+=== tests rules ===
+
+# Test Enforcement
+
+- Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
+- Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test --compact` with a specific filename or filter.
+
 === laravel/core rules ===
 
 # Do Things the Laravel Way
@@ -138,7 +138,6 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using the `list-artisan-commands` tool.
 - If you're creating a generic PHP class, use `php artisan make:class`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
-- **Always check Artisan command options first** - Use `php artisan command:name --help` to see available flags before implementing complex workarounds. For example, `php artisan key:generate --env=testing` is simpler than storing test keys in config files.
 
 ## Database
 
@@ -187,37 +186,30 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
 
-=== laravel/v11 rules ===
+=== laravel/v12 rules ===
 
-# Laravel 11
+# Laravel 12
 
 - CRITICAL: ALWAYS use `search-docs` tool for version-specific Laravel documentation and updated code examples.
-- Laravel 11 brought a new streamlined file structure which this project now uses.
+- Since Laravel 11, Laravel has a new streamlined file structure which this project uses.
 
-## Laravel 11 Structure
+## Laravel 12 Structure
 
-- In Laravel 11, middleware are no longer registered in `app/Http/Kernel.php`.
+- In Laravel 12, middleware are no longer registered in `app/Http/Kernel.php`.
 - Middleware are configured declaratively in `bootstrap/app.php` using `Application::configure()->withMiddleware()`.
 - `bootstrap/app.php` is the file to register middleware, exceptions, and routing files.
 - `bootstrap/providers.php` contains application specific service providers.
-- No app\Console\Kernel.php - use `bootstrap/app.php` or `routes/console.php` for console configuration.
-- Commands auto-register - files in `app/Console/Commands/` are automatically available and do not require manual registration.
+- The `app\Console\Kernel.php` file no longer exists; use `bootstrap/app.php` or `routes/console.php` for console configuration.
+- Console commands in `app/Console/Commands/` are automatically available and do not require manual registration.
 
 ## Database
 
 - When modifying a column, the migration must include all of the attributes that were previously defined on the column. Otherwise, they will be dropped and lost.
-- Laravel 11 allows limiting eagerly loaded records natively, without external packages: `$query->latest()->limit(10);`.
+- Laravel 12 allows limiting eagerly loaded records natively, without external packages: `$query->latest()->limit(10);`.
 
 ### Models
 
 - Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
-
-## New Artisan Commands
-
-- List Artisan commands using Boost's MCP tool, if available. New commands available in Laravel 11:
-  - `php artisan make:enum`
-  - `php artisan make:class`
-  - `php artisan make:interface`
 
 === pint/core rules ===
 
@@ -243,8 +235,48 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - To run all tests: `php artisan test --compact`.
 - To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
-
   </laravel-boost-guidelines>
+
+=== Aquarion specific lessions ===
+
+## Changelog Management
+
+- Keep [docs/CHANGELOG.md](../docs/CHANGELOG.md) up to date with all changes
+- Add entries to the `[Unreleased]` section before completing work
+- Use existing sections: Added, Changed, Fixed, Removed, Deprecated
+- Create new subsections as needed (e.g., "Easter Festival Theme", "Laravel 12 Upgrade")
+- Update this file in the same PR/commit as the feature implementation
+
+## General Laravel Development Lessons
+
+- **Always check Artisan command options first** - Use `php artisan command:name --help` to see available flags before implementing complex workarounds. For example, `php artisan key:generate --env=testing` is simpler than storing test keys in config files.
+- **Use Sail consistently** - This project uses Laravel Sail for Docker containerization. Always use `./vendor/bin/sail` commands instead of `php artisan serve`. The application runs on `http://localhost` via Sail, not on a custom port with artisan serve.
+
+## Code Modularization - CRITICAL Safety Protocol
+
+**NEVER delete code during file splits without complete verification**:
+
+- **Audit first**: Do complete inventory of ALL functions/classes/styles before splitting monolithic files
+- **Diff verification**: Use `wc -l` and `diff` tools to compare before/after line counts and content
+- **Incremental testing**: Test functionality after each module is split, not after the entire refactor
+- **Keep originals**: Preserve original files as `.old` until split is verified complete
+- **Common failures**: Missing JavaScript functions (updateTheme, getTodayEvents), missing CSS layouts (#switch, #datetime, #nextUp)
+
+Pattern of data loss during modularization has occurred multiple times:
+
+- JavaScript function splits lost critical UI functions
+- SCSS modularization lost core layout styles and positioning
+- Always verify nothing is lost when moving from monolithic to modular structure
+
+## Debugging Methodology - Git Comparison First
+
+**CRITICAL**: When encountering complex syntax/structural errors, ALWAYS compare to last working version BEFORE deep debugging:
+
+- Use `git diff HEAD -- filename` to see what changed since last commit
+- Structural damage from edits is often the real issue, not the symptoms
+- Revert to working version with `git checkout HEAD -- filename` then apply minimal fixes
+- Don't get lost debugging symptoms when the structure is broken
+
 === docket-specific lessons ===
 
 # Docket Development Lessons
@@ -287,15 +319,6 @@ After HTML/component changes, verify related tests still match structure:
 - Auto-formatters (Pint, Biome) may modify files between requests
 - Don't assume file content from previous reads
 
-## Debugging Methodology - Git Comparison First
-
-**CRITICAL**: When encountering complex syntax/structural errors, ALWAYS compare to last working version BEFORE deep debugging:
-
-- Use `git diff HEAD -- filename` to see what changed since last commit
-- Structural damage from edits is often the real issue, not the symptoms
-- Revert to working version with `git checkout HEAD -- filename` then apply minimal fixes
-- Don't get lost debugging symptoms when the structure is broken
-
 ## JavaScript Template Structure (docket-js.blade.php)
 
 The Blade template generates production JavaScript - syntax errors cascade:
@@ -307,6 +330,8 @@ The Blade template generates production JavaScript - syntax errors cascade:
 - **Always test syntax**: `curl -s "https://docket.hubris.house/docket.js" | node --check`
 
 ## ES5 Compatibility (iOS 12 Support)
+
+**This application must support iOS 12 Safari, which only supports ES5 JavaScript.** When making changes to JavaScript, ensure that the generated code remains ES5 compatible. This may require using older syntax and patterns rather than modern ES6+ features.
 
 Systematic conversion patterns for legacy browser support:
 
@@ -321,7 +346,7 @@ Systematic conversion patterns for legacy browser support:
 
 For Google Calendar API multi-account support:
 
-- Account-specific credentials: `storage/app/google/credentials_{account}.json`
+- All accounts use the same credentials file: `storage/app/google/credentials.json` (or native authentication on GCP)
 - Account-specific tokens: `storage/app/google/tokens/token_{account}.json`
 - Implement fallback: specific path → default path
 - Pass account parameter through entire auth chain
@@ -407,23 +432,6 @@ When working with Vite for asset bundling:
 - Laravel serves built assets from `public/build/` automatically via @vite directive
 - Test that application works after Vite build before considering migration complete
 
-## VS Code Terminal Configuration
-
-- VS Code terminals are non-login shells by default (don't source ~/.bash_profile)
-- To enable login shells: add to user settings (not workspace settings):
-  ```json
-  {
-    "terminal.integrated.profiles.linux": {
-      "bash": {
-        "path": "bash",
-        "args": ["-l"]
-      }
-    },
-    "terminal.integrated.defaultProfile.linux": "bash"
-  }
-  ```
-- Alternative: source bash_profile from bashrc (but user preference is settings-based solution)
-
 ## Browser Testing with Dusk
 
 - Laravel Dusk is installed for browser testing (Selenium/ChromeDriver based)
@@ -433,3 +441,60 @@ When working with Vite for asset bundling:
 - Wait for elements with `->waitFor('.selector', seconds)` before assertions
 - Use `->pause(milliseconds)` when testing animations or transitions
 - Browser tests are fragile - keep selectors specific but stable
+
+## Debugging and Development Best Practices
+
+### Error Message Analysis First
+
+**CRITICAL**: Always read error messages literally before exploring complex explanations.
+
+- `NotificationUtils.info is not a function` = missing method, not timing/loading issues
+- `syntax error, unexpected variable "$decrypted", expecting "function"` = orphaned code outside functions
+- `SQLSTATE[HY000]: General error: 1 no such table: calendar_sets` = missing migrations, not application logic
+
+### Container Environment Awareness (Laravel Sail)
+
+**This application runs in Laravel Sail containers** - always think "container-first":
+
+- Use `./vendor/bin/sail artisan` instead of `php artisan`
+- Use `./vendor/bin/sail exec laravel.test` for container file operations
+- Check `./vendor/bin/sail ps` to verify all services are running before debugging
+- Application runs on `http://localhost` (port 80) via Sail, not `php artisan serve` on 8000
+- Database is inside container: `/var/www/html/database/database.sqlite`
+- Redis connection issues may resolve themselves as container services stabilize
+
+### Security Best Practices
+
+**Authentication Token Handling:**
+
+- Never expose API tokens to browser via `window.userToken` or similar (XSS risk)
+- Use session-based authentication with CSRF tokens for same-domain SPAs
+- API routes: use `auth` + `web` middleware, not `auth:sanctum` for session auth
+- Keep Google OAuth tokens server-side only - frontend never needs direct access
+- Google tokens are stored in database and used only by backend services
+
+### Systematic Legacy Code Removal
+
+When removing authentication systems or major components:
+
+- Search comprehensively: routes, controllers, services, JavaScript, views, tests, documentation
+- Remove in layers: routes → controllers → services → frontend → tests
+- Check for orphaned code fragments that can cause syntax errors
+- Update initialization code that calls removed functions (`initAuthSettings`)
+- Run migrations to ensure database changes are applied
+- Rebuild frontend assets after JavaScript changes
+
+### Development Process
+
+- **Start simple**: Check if function exists before investigating complex dependency issues
+- **Run migrations after major changes**: `./vendor/bin/sail artisan migrate --force`
+- **Rebuild assets after JS changes**: `npm run build`
+- **Clear caches when in doubt**: `./vendor/bin/sail artisan cache:clear`
+- **Test incrementally**: Fix one error, verify fix, then move to next
+
+### Missing Dependencies/Methods
+
+- Check if methods exist before assuming loading issues: `grep -r "methodName" resources/js/`
+- Add missing methods rather than complex workarounds
+- Verify script loading order only after confirming methods exist
+- Common missing methods: `NotificationUtils.info()` may need to be added alongside existing `warning`, `error`, `success`
