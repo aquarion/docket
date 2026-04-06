@@ -25,6 +25,7 @@
 - Fixed `.gitignore` database rules so source files like factories are tracked in git and available in CI
 - Fixed Dusk browser test class naming collision (`CalendarSelectorTest` vs `SettingsModalTest`) that caused CI browser-tests fatal redeclare errors
 - Updated Dusk browser tests to authenticate before visiting protected calendar routes and replaced outdated auth-status route assertions with `/api/user`
+- Fixed CI Dusk authentication persistence by forcing `SESSION_DRIVER=file` for the test server and browser test execution steps
 
 ### Changed
 - **Authentication System**: Migrated to Google OAuth using Laravel Socialite (replaces password-based login)

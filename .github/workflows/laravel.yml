@@ -96,6 +96,7 @@ jobs:
         run: php artisan serve --env=testing --host=0.0.0.0 &
         env:
           APP_URL: http://${{ steps.host-ip.outputs.ip }}:8000
+          SESSION_DRIVER: file
       - name: Check the IP address
         run: echo "Host IP is ${{ steps.host-ip.outputs.ip }}"
       - name: Wait for server
@@ -120,3 +121,4 @@ jobs:
         run: php artisan dusk --env=testing
         env:
           APP_URL: http://${{ steps.host-ip.outputs.ip }}:8000
+          SESSION_DRIVER: file
