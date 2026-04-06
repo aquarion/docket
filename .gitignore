@@ -27,4 +27,7 @@ public/static/generated/
 bootstrap/cache
 *.junit
 .mcp.json
-database/
+
+# Database artifacts (keep source files tracked)
+database/*.sqlite
+database/*.sqlite-journal

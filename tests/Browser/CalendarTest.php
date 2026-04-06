@@ -12,7 +12,7 @@ class CalendarTest extends DuskTestCase
      */
     public function test_homepage_loads_successfully(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertPresent('#calendar')
                 ->assertPresent('#datetime')
@@ -41,10 +41,10 @@ class CalendarTest extends DuskTestCase
      */
     public function test_calendar_switcher(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
-                ->assertPresent('#switch')
-                ->assertVisible('#calendar-selector-btn');
+                ->waitFor('#settings-btn', 5)
+                ->assertVisible('#settings-btn');
         });
     }
 
@@ -77,7 +77,7 @@ class CalendarTest extends DuskTestCase
      */
     public function test_next_event_display(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertPresent('#nextUp')
                 ->assertAttribute('#nextUp', 'role', 'region');
@@ -109,7 +109,7 @@ class CalendarTest extends DuskTestCase
      */
     public function test_javascript_loaded(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->waitFor('#datetime', 5)
                 ->script('return typeof window.ICAL !== "undefined"');
@@ -121,7 +121,7 @@ class CalendarTest extends DuskTestCase
      */
     public function test_keyboard_navigation(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertPresent('#calendar')
                 ->assertPresent('#datetime');
@@ -133,7 +133,7 @@ class CalendarTest extends DuskTestCase
      */
     public function test_accessibility_features(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertAttribute('#calendar', 'role', 'img')
                 ->assertAttribute('#calendar', 'aria-label', 'Calendar visualization')
@@ -147,7 +147,7 @@ class CalendarTest extends DuskTestCase
      */
     public function test_vite_assets_loaded(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertSourceHas('/build/assets/')
                 ->assertSourceHas('app-')

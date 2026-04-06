@@ -21,6 +21,12 @@
 - Added missing `apiIndex` method to CalendarController for API calendar data endpoint
 - Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
 - Repaired failing test suite by adding `UserFactory` and aligning authentication feature tests with Google OAuth-only routes and protected home behavior
+- Improved malformed event diagnostics to include title, calendars, and start/end values, and deduplicated repeated malformed-event warnings/errors to prevent unbounded log growth
+- Fixed `.gitignore` database rules so source files like factories are tracked in git and available in CI
+- Fixed Dusk browser test class naming collision (`CalendarSelectorTest` vs `SettingsModalTest`) that caused CI browser-tests fatal redeclare errors
+- Updated Dusk browser tests to authenticate before visiting protected calendar routes and replaced outdated auth-status route assertions with `/api/user`
+- Fixed CI Dusk authentication persistence by forcing `SESSION_DRIVER=file` for the test server and browser test execution steps
+- Fixed `CalendarTest` switcher selector to use `#settings-btn` (current UI) instead of removed `#calendar-selector-btn`, resolving the last failing CI Dusk assertion
 
 ### Changed
 - **Authentication System**: Migrated to Google OAuth using Laravel Socialite (replaces password-based login)
@@ -34,6 +40,9 @@
 - CalendarService updated to read from database with fallback to static configuration
 - Calendar configuration now supports per-user customization through database storage
 - Development mode ribbon now dynamically adjusts width based on branch name length
+- CI workflow now runs Laravel tests and browser tests in a single job to avoid duplicating dependency install and asset build steps
+- Renamed CI workflow to `Laravel and Browser Tests` and updated dependent workflow references (auto-merge trigger)
+- Renamed the combined CI job key/name from generic `tests` to `laravel-browser-tests` / `Laravel and Browser Tests` for clearer status checks
 
 ### Fixed
 - Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)

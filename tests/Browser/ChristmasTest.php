@@ -30,7 +30,7 @@ class ChristmasTest extends DuskTestCase
     {
         $this->travel(new \DateTime('2026-07-15'));
 
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertMissing('.christmas-lights');
         });

@@ -12,7 +12,7 @@ class ApiTest extends DuskTestCase
      */
     public function test_calendar_api_returns_json(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/all-calendars?end=2026-03-01&calendar_set=all')
                 ->assertSee('[')
                 ->assertDontSee('<!DOCTYPE');
@@ -24,7 +24,7 @@ class ApiTest extends DuskTestCase
      */
     public function test_calendar_data_fetch_via_js(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertPresent('#calendar')
                 ->assertPresent('#datetime')

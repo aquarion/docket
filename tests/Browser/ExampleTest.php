@@ -12,7 +12,7 @@ class ExampleTest extends DuskTestCase
      */
     public function test_basic_example(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertTitle('Docket - Personal Calendar')
                 ->assertPresent('#calendar');

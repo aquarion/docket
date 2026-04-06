@@ -12,7 +12,7 @@ class CalendarJavaScriptTest extends DuskTestCase
      */
     public function test_calendar_handles_malformed_ical_data(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->pause(1000) // Wait for page to load
                 ->assertPresent('#calendar')
@@ -28,7 +28,7 @@ class CalendarJavaScriptTest extends DuskTestCase
      */
     public function test_application_loads_without_errors(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->pause(1000) // Wait for page to load
                 ->assertPresent('#calendar')
@@ -47,7 +47,7 @@ class CalendarJavaScriptTest extends DuskTestCase
      */
     public function test_calendar_events_render_gracefully(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->pause(1000) // Wait for page to load
                 ->assertPresent('#calendar');
@@ -78,7 +78,7 @@ class CalendarJavaScriptTest extends DuskTestCase
      */
     public function test_ical_parsing_error_resilience(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->pause(1000) // Wait for page to load
                 ->assertPresent('#calendar');
@@ -114,7 +114,7 @@ class CalendarJavaScriptTest extends DuskTestCase
      */
     public function test_ical_error_notifications(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->pause(1000)
                 ->assertPresent('#calendar')
@@ -145,7 +145,7 @@ class CalendarJavaScriptTest extends DuskTestCase
      */
     public function test_date_utilities_handle_edge_cases(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->pause(1000)
                 ->assertPresent('#calendar')
@@ -173,13 +173,12 @@ class CalendarJavaScriptTest extends DuskTestCase
     /**
      * Test that authentication status checks work properly.
      */
-    public function test_authentication_status_endpoint(): void
+    public function test_authenticated_user_endpoint(): void
     {
-        $this->browse(function (Browser $browser) {
-            // Test that the status endpoint returns proper JSON
-            $browser->visit('/auth/google/status?account=test')
-                ->assertSee('"account":"test"')
-                ->assertSee('"has_valid_token"');
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
+            $browser->visit('/api/user')
+                ->assertSee('"id":')
+                ->assertSee('"email":');
         });
     }
 
@@ -188,7 +187,7 @@ class CalendarJavaScriptTest extends DuskTestCase
      */
     public function test_error_notifications_display(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/');
 
             // Test that Toastify is loaded and available
