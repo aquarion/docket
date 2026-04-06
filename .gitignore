@@ -31,3 +31,4 @@ bootstrap/cache
 # Database artifacts (keep source files tracked)
 database/*.sqlite
 database/*.sqlite-journal
+public/hot.backup
