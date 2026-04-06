@@ -25,6 +25,7 @@ export default defineConfig({
 	plugins: [
 		legacy({
 			targets: ["iOS >= 12"],
+			modernTargets: ["iOS >= 12"],
 			additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
 		}),
 		laravel({
@@ -35,6 +36,20 @@ export default defineConfig({
 			],
 			refresh: true,
 		}),
+		{
+			// @vitejs/plugin-legacy v8 injects a data: URL import as a feature guard.
+			// iOS 12 supports ES modules but not data: URL imports, causing the entire
+			// modern bundle to fail silently. Strip it from the output.
+			name: "strip-data-url-guard",
+			apply: "build",
+			generateBundle(_options, bundle) {
+				for (const chunk of Object.values(bundle)) {
+					if (chunk.type === "chunk" && chunk.code.startsWith("import'data:")) {
+						chunk.code = chunk.code.replace(/^import'data:[^']*';/, "");
+					}
+				}
+			},
+		},
 		{
 			name: "scss-compiler",
 			apply: "serve",
