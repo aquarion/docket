@@ -24,6 +24,7 @@
 - Improved malformed event diagnostics to include title, calendars, and start/end values, and deduplicated repeated malformed-event warnings/errors to prevent unbounded log growth
 - Fixed `.gitignore` database rules so source files like factories are tracked in git and available in CI
 - Fixed Dusk browser test class naming collision (`CalendarSelectorTest` vs `SettingsModalTest`) that caused CI browser-tests fatal redeclare errors
+- Updated Dusk browser tests to authenticate before visiting protected calendar routes and replaced outdated auth-status route assertions with `/api/user`
 
 ### Changed
 - **Authentication System**: Migrated to Google OAuth using Laravel Socialite (replaces password-based login)

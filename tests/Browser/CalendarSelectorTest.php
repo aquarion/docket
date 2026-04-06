@@ -12,7 +12,7 @@ class CalendarSelectorTest extends DuskTestCase
      */
     public function test_settings_button_exists(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->assertPresent('#settings-btn');
         });
@@ -23,7 +23,7 @@ class CalendarSelectorTest extends DuskTestCase
      */
     public function test_settings_modal_opens_on_button_click(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->waitFor('#settings-btn', 5)
                 ->assertPresent('#settings-modal')
@@ -40,7 +40,7 @@ class CalendarSelectorTest extends DuskTestCase
      */
     public function test_settings_modal_displays_calendar_sets(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->waitFor('#settings-btn', 5)
                 ->click('#settings-btn')
@@ -57,7 +57,7 @@ class CalendarSelectorTest extends DuskTestCase
      */
     public function test_settings_modal_closes_on_close_button(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->waitFor('#settings-btn', 5)
                 ->click('#settings-btn')
@@ -74,7 +74,7 @@ class CalendarSelectorTest extends DuskTestCase
      */
     public function test_settings_modal_closes_on_escape_key(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/')
                 ->waitFor('#settings-btn', 5)
                 ->click('#settings-btn')
@@ -92,7 +92,7 @@ class CalendarSelectorTest extends DuskTestCase
      */
     public function test_active_calendar_set_highlighted(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/?calendar_set=all')
                 ->waitFor('#settings-btn', 5)
                 ->click('#settings-btn')
@@ -107,7 +107,7 @@ class CalendarSelectorTest extends DuskTestCase
      */
     public function test_switching_calendar_sets_via_settings(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browseAsAuthenticatedUser(function (Browser $browser) {
             $browser->visit('/?calendar_set=all')
                 ->waitFor('#settings-btn', 5)
                 ->click('#settings-btn')
