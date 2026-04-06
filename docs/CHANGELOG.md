@@ -21,6 +21,7 @@
 - Added missing `apiIndex` method to CalendarController for API calendar data endpoint
 - Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
 - Repaired failing test suite by adding `UserFactory` and aligning authentication feature tests with Google OAuth-only routes and protected home behavior
+- Improved malformed event diagnostics to include title, calendars, and start/end values, and deduplicated repeated malformed-event warnings/errors to prevent unbounded log growth
 
 ### Changed
 - **Authentication System**: Migrated to Google OAuth using Laravel Socialite (replaces password-based login)

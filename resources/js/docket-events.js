@@ -8,6 +8,73 @@
 // biome-ignore-start lint/correctness/noUnusedVariables: DocketEvents is used globally
 var DocketEvents = {
   // biome-ignore-end lint/correctness/noUnusedVariables: DocketEvents is used globally
+  malformedEventLogCache: {},
+
+  malformedEventLogCacheSize: 0,
+
+  malformedEventLogCacheLimit: 500,
+
+  /**
+   * Build a readable label for malformed event diagnostics.
+   */
+  buildMalformedEventLabel: function (event, reason) {
+    var title, calendars, startText, endText;
+
+    title = event && event.title ? event.title : "Unknown event";
+    if (title.indexOf("⚠️ ") !== 0) {
+      title = "⚠️ " + title;
+    }
+    calendars =
+      event && event.calendars && event.calendars.length > 0
+        ? event.calendars.join(",")
+        : "unknown";
+    startText = event && event.start ? String(event.start) : "missing";
+    endText = event && event.end ? String(event.end) : "missing";
+
+    return (
+      reason +
+      " | title: " +
+      title +
+      " | calendars: " +
+      calendars +
+      " | start: " +
+      startText +
+      " | end: " +
+      endText
+    );
+  },
+
+  /**
+   * Log malformed-event problems once per unique payload to avoid unbounded spam.
+   */
+  logMalformedEventOnce: function (event, reason, level) {
+    var key, message;
+
+    key = DocketEvents.buildMalformedEventLabel(event, reason);
+    if (DocketEvents.malformedEventLogCache[key]) {
+      return;
+    }
+
+    DocketEvents.malformedEventLogCache[key] = true;
+    DocketEvents.malformedEventLogCacheSize += 1;
+
+    // Keep the dedupe cache bounded in long-running sessions.
+    if (
+      DocketEvents.malformedEventLogCacheSize >
+      DocketEvents.malformedEventLogCacheLimit
+    ) {
+      DocketEvents.malformedEventLogCache = {};
+      DocketEvents.malformedEventLogCacheSize = 0;
+    }
+
+    message = key;
+    if (level === "error") {
+      NotificationUtils.error(message);
+    } else {
+      NotificationUtils.warning(message);
+    }
+  },
+
   /**
    * Update the next upcoming events display
    */
@@ -63,10 +130,25 @@ var DocketEvents = {
 
       // Validate event dates
       if (!thisEvent.end || !thisEvent.start) {
-        NotificationUtils.warning(
-          "Event missing start or end date:",
-          thisEvent.title || "Unknown event",
-        );
+        if (!thisEvent.start && !thisEvent.end) {
+          DocketEvents.logMalformedEventOnce(
+            thisEvent,
+            "Event missing start and end date",
+            "warning",
+          );
+        } else if (!thisEvent.start) {
+          DocketEvents.logMalformedEventOnce(
+            thisEvent,
+            "Event missing start date",
+            "warning",
+          );
+        } else {
+          DocketEvents.logMalformedEventOnce(
+            thisEvent,
+            "Event missing end date",
+            "warning",
+          );
+        }
         continue;
       }
 
@@ -75,9 +157,10 @@ var DocketEvents = {
 
       // Skip events with invalid dates
       if (isNaN(end.getTime()) || isNaN(start.getTime())) {
-        NotificationUtils.error(
-          "Invalid date in event:",
-          thisEvent.title || "Unknown event",
+        DocketEvents.logMalformedEventOnce(
+          thisEvent,
+          "Invalid date in event",
+          "error",
         );
         continue;
       }
