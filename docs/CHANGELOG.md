@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-04-06
+
 ### Added
 - Pre-commit hooks for code quality enforcement: Biome (JS/JSON linting and formatting), Laravel Pint (PHP formatting), PHPStan (PHP static analysis), actionlint (GitHub Actions validation), detect-secrets (secret scanning)
 - Calendar source selection interface for managing which sources belong to each calendar set
@@ -21,7 +23,6 @@
 - Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
 - Sign out button now properly logs out users and invalidates sessions
 - Added missing `apiIndex` method to CalendarController for API calendar data endpoint
-- Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
 - Repaired failing test suite by adding `UserFactory` and aligning authentication feature tests with Google OAuth-only routes and protected home behavior
 - Improved malformed event diagnostics to include title, calendars, and start/end values, and deduplicated repeated malformed-event warnings/errors to prevent unbounded log growth
 - Fixed `.gitignore` database rules so source files like factories are tracked in git and available in CI
@@ -45,9 +46,6 @@
 - CI workflow now runs Laravel tests and browser tests in a single job to avoid duplicating dependency install and asset build steps
 - Renamed CI workflow to `Laravel and Browser Tests` and updated dependent workflow references (auto-merge trigger)
 - Renamed the combined CI job key/name from generic `tests` to `laravel-browser-tests` / `Laravel and Browser Tests` for clearer status checks
-
-### Fixed
-- Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
 
 ### Removed
 - Legacy AuthController and all associated routes (`/token`, `/auth/google/authorize`, `/auth/google/status`, `/auth/google/check`)
