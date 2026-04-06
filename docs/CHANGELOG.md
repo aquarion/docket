@@ -39,6 +39,7 @@
 - Development mode ribbon now dynamically adjusts width based on branch name length
 - CI workflow now runs Laravel tests and browser tests in a single job to avoid duplicating dependency install and asset build steps
 - Renamed CI workflow to `Laravel and Browser Tests` and updated dependent workflow references (auto-merge trigger)
+- Renamed the combined CI job key/name from generic `tests` to `laravel-browser-tests` / `Laravel and Browser Tests` for clearer status checks
 
 ### Fixed
 - Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)

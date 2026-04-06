@@ -7,7 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  tests:
+  laravel-browser-tests:
+    name: Laravel and Browser Tests
     runs-on: ubuntu-latest
 
     services:
