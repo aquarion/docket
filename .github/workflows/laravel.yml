@@ -2,9 +2,9 @@ name: Laravel and Browser Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/*', 'dependabot-updates']
   pull_request:
-    branches: [main]
+    branches: [main', 'release/*']
 
 jobs:
   laravel-browser-tests:
@@ -66,6 +66,9 @@ jobs:
         run: |
           test -d public/build || (echo "Vite build directory not found"; exit 1)
           test -f public/build/manifest.json || (echo "Vite manifest not found"; exit 1)
+
+      - name: Check iOS 12 JS compatibility
+        run: bash bin/check-ios12-compat.sh
 
       # Laravel Setup
       - name: Generate key

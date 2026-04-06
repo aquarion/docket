@@ -35,6 +35,13 @@ repos:
         language: system
         files: composer\.(json|lock)$
         pass_filenames: false
+      - id: check-ios12-compat
+        name: iOS 12 JS compatibility
+        entry: bash bin/check-ios12-compat.sh
+        language: system
+        files: ^(resources/js/|vite\.config\.js)
+        pass_filenames: false
+        stages: [manual]
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.11
     hooks:

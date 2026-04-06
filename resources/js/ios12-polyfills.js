@@ -113,7 +113,7 @@ if (typeof Object.assign !== "function") {
 
 			if (nextSource != null) {
 				for (nextKey in nextSource) {
-					if (Object.hasOwn(nextSource, nextKey)) {
+					if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
 						to[nextKey] = nextSource[nextKey];
 					}
 				}
@@ -221,5 +221,33 @@ if (typeof Promise === "undefined") {
 			});
 
 		executor(resolve, reject);
+	};
+}
+
+// Polyfill for queueMicrotask (Safari 13+)
+if (typeof window.queueMicrotask !== "function") {
+	window.queueMicrotask = function (callback) {
+		Promise.resolve().then(callback);
+	};
+}
+
+// Polyfill for structuredClone (Safari 15.4+)
+if (typeof window.structuredClone !== "function") {
+	window.structuredClone = function (obj) {
+		return JSON.parse(JSON.stringify(obj));
+	};
+}
+
+// Polyfill for ResizeObserver (Safari 13.1+)
+if (typeof window.ResizeObserver === "undefined") {
+	window.ResizeObserver = function (callback) {
+		this.observe = function (el) {
+			callback([{ target: el, contentRect: el.getBoundingClientRect() }]);
+			window.addEventListener("resize", function () {
+				callback([{ target: el, contentRect: el.getBoundingClientRect() }]);
+			});
+		};
+		this.unobserve = function () {};
+		this.disconnect = function () {};
 	};
 }
