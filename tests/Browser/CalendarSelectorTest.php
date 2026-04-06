@@ -5,7 +5,7 @@ namespace Tests\Browser;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
-class SettingsModalTest extends DuskTestCase
+class CalendarSelectorTest extends DuskTestCase
 {
     /**
      * Test that settings button exists
