@@ -41,7 +41,6 @@ if (!Array.prototype.includes) {
 			currentElement = o[k];
 			// NaN is the only value that is not equal to itself.
 			// Using a === check against NaN is pointless, so we use a !== check.
-			// biome-ignore lint/suspicious/noSelfCompare: Intentional - standard Array.find polyfill pattern
 			if (
 				searchElement === currentElement ||
 				(searchElement !== searchElement && currentElement !== currentElement)

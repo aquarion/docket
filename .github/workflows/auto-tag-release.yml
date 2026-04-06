@@ -23,10 +23,11 @@ jobs:
 
       - name: Extract version from branch name
         id: version
+        env:
+          BRANCH_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          VERSION="${BRANCH_NAME#release/}"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          VERSION="${BRANCH_REF#release/}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Creating tag: ${VERSION}"
 
       - name: Create and push tag
