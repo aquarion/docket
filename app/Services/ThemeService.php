@@ -63,6 +63,7 @@ class ThemeService
 
             case 'month':
                 $month = (int) date('m');
+
                 return $month === ($festival['month'] ?? 0);
 
             default:
@@ -70,6 +71,7 @@ class ThemeService
                 if (isset($festival['callback']) && is_callable($festival['callback'])) {
                     return $festival['callback']();
                 }
+
                 return false;
         }
     }
