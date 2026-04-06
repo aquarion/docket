@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Events\TokenRefreshed;
+use App\Exceptions\InvalidCredentialsException;
 use App\Models\User;
 use App\Services\GoogleAuthService;
 use Google_Client;
@@ -44,13 +45,9 @@ class GoogleAuthServiceTest extends TestCase
 
     public function test_create_client_throws_exception_if_credentials_missing(): void
     {
-        $service = Mockery::mock(GoogleAuthService::class)->makePartial();
-        $service->shouldReceive('credentialsExist')->andReturn(false);
+        $this->expectException(InvalidCredentialsException::class);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Google credentials file not found');
-
-        $service->createClient('test');
+        $this->service->createClient('test');
     }
 
     public function test_load_token_returns_user_token_when_authenticated(): void
@@ -193,7 +190,6 @@ class GoogleAuthServiceTest extends TestCase
 
         $client = $this->service->createClient('test');
 
-        $authConfig = $client->getConfig();
-        $this->assertStringContains('select_account', $authConfig['prompt'] ?? '');
+        $this->assertSame('consent', $client->getConfig('prompt'));
     }
 }

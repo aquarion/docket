@@ -20,6 +20,7 @@
 - Sign out button now properly logs out users and invalidates sessions
 - Added missing `apiIndex` method to CalendarController for API calendar data endpoint
 - Google Calendar color import now preserves original calendar colors when adding calendars through mass selector
+- Repaired failing test suite by adding `UserFactory` and aligning authentication feature tests with Google OAuth-only routes and protected home behavior
 
 ### Changed
 - **Authentication System**: Migrated to Google OAuth using Laravel Socialite (replaces password-based login)
