@@ -7,8 +7,19 @@ on:
     branches: [main]
 
 jobs:
-  laravel-tests:
+  tests:
     runs-on: ubuntu-latest
+
+    services:
+      chromedriver:
+        image: selenium/standalone-chrome:latest
+        options: >-
+          --health-cmd "curl http://127.0.0.1:4444/status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+        ports:
+          - 4444:4444
 
     steps:
       - uses: actions/checkout@v6
@@ -64,79 +75,12 @@ jobs:
         run: |
           mkdir -p database
           touch database/database.sqlite
-      # Run tests
+
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
         run: vendor/bin/phpunit
-
-  browser-tests:
-    runs-on: ubuntu-latest
-
-    services:
-      chromedriver:
-        image: selenium/standalone-chrome:latest
-        options: >-
-          --health-cmd "curl http://127.0.0.1:4444/status"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 3
-        ports:
-          - 4444:4444
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v3
-        with:
-          path: /tmp/composer-cache
-          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-
-      - name: Allow safe directory for git
-        run: git config --global --add safe.directory /app
-
-      - name: Create required directories
-        run: |
-          mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
-      - name: Directory Permissions
-        run: sudo chmod -R 777 storage bootstrap/cache
-
-      # PHP Setup first
-      - name: PHP - Configure Version
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.4
-
-      - name: Install Composer dependencies
-        uses: php-actions/composer@v6
-        with:
-          php_version: 8.4
-          args: --prefer-dist --no-progress --ignore-platform-reqs
-
-      # File management
-      - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-
-      # Node Setup
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "20.x"
-      - name: NPM - Install dependencies
-        run: npm ci
-      - name: Build assets with Vite
-        run: npm run build
-      # Laravel Setup
-      - name: Generate key
-        run: php artisan key:generate
-      - name: Generate testing key
-        run: php artisan key:generate --env=testing
-      - name: Create Database
-        run: |
-          mkdir -p database
-          touch database/database.sqlite
 
       # Browser Tests
 

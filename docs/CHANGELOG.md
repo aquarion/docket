@@ -37,6 +37,7 @@
 - CalendarService updated to read from database with fallback to static configuration
 - Calendar configuration now supports per-user customization through database storage
 - Development mode ribbon now dynamically adjusts width based on branch name length
+- CI workflow now runs Laravel tests and browser tests in a single job to avoid duplicating dependency install and asset build steps
 
 ### Fixed
 - Fixed OAuth scopes to include calendar access during Google authentication (now requests `calendar.readonly` scope along with basic profile scopes)
