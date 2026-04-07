@@ -30,7 +30,7 @@
     "@vitejs/plugin-legacy": "^8.0.0",
     "core-js": "^3.48.0",
     "jshint": "^2.13.6",
-    "laravel-vite-plugin": "^2.1.0",
+    "laravel-vite-plugin": "^3.0.1",
     "regenerator-runtime": "^0.14.1",
     "stylelint": "^17.0.0",
     "stylelint-config-standard": "^40.0.0",
