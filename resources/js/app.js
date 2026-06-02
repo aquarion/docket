@@ -21,6 +21,7 @@ import "./notification-utils.js";
 import "./circle-progress.js";
 import "./calendar-management/calendar-manager.js";
 import "./docket-ui.js";
+import "./docket-weather.js";
 import "./docket-calendar.js";
 import "./docket-events.js";
 import "./docket-main.js";

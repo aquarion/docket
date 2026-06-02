@@ -309,13 +309,14 @@ var DocketEvents = {
 			data = daysEntries[i][1];
 			day = new Date(date);
 			dayTitle = DocketEvents.getDayTitle(day);
+			var weatherEmoji = DocketWeather.getWeatherForDate(date);
 
 			NotificationUtils.debug(
 				"Start Day " + DateUtils.formatDate(day, "YYYY-MM-DD"),
 			);
 			NotificationUtils.debug(data);
 
-			output += "<dt>" + dayTitle + ": ";
+			output += "<dt>" + dayTitle + " " + weatherEmoji + ": ";
 
 			// Merge duplicate all-day events
 			DocketEvents.mergeAllDayEvents(data);
