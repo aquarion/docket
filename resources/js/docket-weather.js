@@ -99,7 +99,7 @@ var DocketWeather = {
 			.catch(
 				function (error) {
 					console.error("Failed to fetch weather data:", error);
-					// Return existing data on failure
+					this.lastFetchTime = Date.now(); // throttle retries during outages
 					return this.weatherData;
 				}.bind(this),
 			);
