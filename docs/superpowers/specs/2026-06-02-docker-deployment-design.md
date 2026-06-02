@@ -128,7 +128,7 @@ This is a one-time operational command; it can remain in the codebase afterwards
 **`ci.yml`** (modelled on Sprouter's, adapted for FPM):
 - Triggers: `push` to `dependabot-updates`, `pull_request` to any branch, `workflow_dispatch`, `workflow_call` with `tag` input
 - Jobs:
-  1. `test` — PHP 8.4 + Node 22, composer + npm install, migrate (SQLite for CI), run phpunit
+  1. `test` — PHP 8.4 + Node 22; composer install with `actions/cache` on `~/.composer/cache`; npm ci with `actions/setup-node` built-in cache (`cache: 'npm'`); migrate (SQLite for CI), run phpunit
   2. `build-and-push` — needs `test`; skips on dependabot-updates push and external forks; logs into GHCR, extracts metadata (semver tags + `latest` on release, `staging` on PR, sha always), builds and pushes with GHA cache
   3. `deploy-staging` — needs `build-and-push`, on `pull_request` only; SSH to firth, `docker compose pull && up -d`, wait for container ready, copy Vite assets from container (migrations run in entrypoint)
   4. `deploy-production` — needs `build-and-push`, on `workflow_call` with tag only; same SSH pattern as staging
