@@ -50,10 +50,11 @@ Validate APP_KEY is set (exit 1 if not)
 mkdir -p storage dirs
 php artisan config:cache
 php artisan view:cache
+if RUN_MIGRATIONS != "false": php artisan migrate --force
 exec php-fpm
 ```
 
-Migrations are run externally by Ansible after deploy, so no migration step here. No `RUN_MIGRATIONS` flag needed.
+`RUN_MIGRATIONS` defaults to `true`. Set to `false` on additional replicas to avoid concurrent migration attempts. Deployments come from GitHub Actions (SSH → `docker compose pull && up -d`), so migrations run at container startup rather than being driven externally.
 
 ---
 
@@ -129,7 +130,7 @@ This is a one-time operational command; it can remain in the codebase afterwards
 - Jobs:
   1. `test` — PHP 8.4 + Node 22, composer + npm install, migrate (SQLite for CI), run phpunit
   2. `build-and-push` — needs `test`; skips on dependabot-updates push and external forks; logs into GHCR, extracts metadata (semver tags + `latest` on release, `staging` on PR, sha always), builds and pushes with GHA cache
-  3. `deploy-staging` — needs `build-and-push`, on `pull_request` only; SSH to firth, `docker compose pull && up -d`, copy Vite assets from container, run migrations
+  3. `deploy-staging` — needs `build-and-push`, on `pull_request` only; SSH to firth, `docker compose pull && up -d`, wait for container ready, copy Vite assets from container (migrations run in entrypoint)
   4. `deploy-production` — needs `build-and-push`, on `workflow_call` with tag only; same SSH pattern as staging
 
 **`release.yml`** — copy from Sprouter verbatim (calculates next semver, creates tag, calls `ci.yml`)
