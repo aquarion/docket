@@ -60,7 +60,8 @@ class MigrateFromSqliteCommand extends Command
                 $this->truncateTable($table);
             }
 
-            $rows = $source->query("SELECT * FROM {$table}")->fetchAll(PDO::FETCH_ASSOC);
+            $quotedTable = '"'.str_replace('"', '""', $table).'"';
+            $rows = $source->query("SELECT * FROM {$quotedTable}")->fetchAll(PDO::FETCH_ASSOC);
 
             if (empty($rows)) {
                 $this->line("  {$table}: 0 rows (empty, skipped)");
@@ -91,9 +92,8 @@ class MigrateFromSqliteCommand extends Command
         $driver = DB::connection()->getDriverName();
 
         if ($driver === 'mysql') {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+            // FK checks already disabled globally by handle() for the full migration
             DB::table($table)->truncate();
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
         } elseif ($driver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = OFF');
             DB::table($table)->truncate();

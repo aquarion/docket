@@ -169,8 +169,8 @@ jobs:
               echo "Attempt ${i}/30: container not ready, waiting..."
               sleep 2
             done
-            rm -rf public/build/assets && mkdir -p public/build
-            docker compose cp app:/var/www/html/public/build/assets public/build/
+            rm -rf public/build && mkdir -p public/build
+            docker compose cp app:/var/www/html/public/build/. public/build/
 
   deploy-production:
     needs: build-and-push
@@ -215,5 +215,5 @@ jobs:
               echo "Attempt ${i}/30: container not ready, waiting..."
               sleep 2
             done
-            rm -rf public/build/assets && mkdir -p public/build
-            docker compose cp app:/var/www/html/public/build/assets public/build/
+            rm -rf public/build && mkdir -p public/build
+            docker compose cp app:/var/www/html/public/build/. public/build/

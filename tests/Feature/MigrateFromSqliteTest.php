@@ -16,7 +16,7 @@ class MigrateFromSqliteTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->sqlitePath = tempnam(sys_get_temp_dir(), 'docket_sqlite_').'.sqlite';
+        $this->sqlitePath = sys_get_temp_dir().'/docket_sqlite_'.uniqid().'.sqlite';
     }
 
     protected function tearDown(): void
