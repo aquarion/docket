@@ -316,7 +316,11 @@ var DocketEvents = {
 			);
 			NotificationUtils.debug(data);
 
-			output += "<dt>" + dayTitle + " " + weatherEmoji + ": ";
+			output += "<dt>" + dayTitle;
+			if (weatherEmoji) {
+				output += " " + weatherEmoji;
+			}
+			output += ": ";
 
 			// Merge duplicate all-day events
 			DocketEvents.mergeAllDayEvents(data);
