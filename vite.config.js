@@ -43,10 +43,20 @@ export default defineConfig({
 			name: "strip-data-url-guard",
 			apply: "build",
 			generateBundle(_options, bundle) {
+				let strippedCount = 0;
 				for (const chunk of Object.values(bundle)) {
 					if (chunk.type === "chunk" && chunk.code.startsWith("import'data:")) {
 						chunk.code = chunk.code.replace(/^import'data:[^']*';/, "");
+						strippedCount++;
+						console.log(
+							`[strip-data-url-guard] Stripped data: URL guard from ${chunk.fileName}`,
+						);
 					}
+				}
+				if (strippedCount === 0) {
+					console.warn(
+						"[strip-data-url-guard] WARNING: No data: URL guard found — plugin-legacy may have changed its output format",
+					);
 				}
 			},
 		},
@@ -67,6 +77,11 @@ export default defineConfig({
 						return [];
 					} catch (e) {
 						console.error("SCSS compilation failed:", e);
+						server.ws.send({
+							type: "error",
+							err: { message: e.message, stack: e.stack },
+						});
+						return [];
 					}
 				}
 			},

@@ -1,6 +1,6 @@
 /**
  * Polyfills for iOS 12 compatibility
- * Must be loaded before other scripts
+ * Must be the first import in app.js so polyfills are available before any application code runs.
  */
 
 // Polyfill for String.prototype.includes
@@ -39,8 +39,7 @@ if (!Array.prototype.includes) {
 		var currentElement;
 		while (k < len) {
 			currentElement = o[k];
-			// NaN is the only value that is not equal to itself.
-			// Using a === check against NaN is pointless, so we use a !== check.
+			// NaN is the only value not equal to itself; use self-inequality (x !== x) to detect it.
 			if (
 				searchElement === currentElement ||
 				(searchElement !== searchElement && currentElement !== currentElement)
@@ -113,7 +112,8 @@ if (typeof Object.assign !== "function") {
 
 			if (nextSource != null) {
 				for (nextKey in nextSource) {
-					if (Object.hasOwn(nextSource, nextKey)) {
+					// biome-ignore lint: Object.hasOwn is ES2022 and unavailable on iOS 12
+					if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
 						to[nextKey] = nextSource[nextKey];
 					}
 				}
@@ -123,14 +123,16 @@ if (typeof Object.assign !== "function") {
 	};
 }
 
-// Simple fetch polyfill for basic GET requests
+// Minimal fetch polyfill — supports method, headers, and body but omits streaming, abort, credentials, and redirect handling.
 if (!window.fetch) {
 	window.fetch = (url, options) =>
 		new Promise((resolve, reject) => {
 			var xhr = new XMLHttpRequest();
-			xhr.open(options?.method || "GET", url);
+			// biome-ignore lint: optional chaining is unsafe in polyfill files before transpilation
+			xhr.open((options && options.method) || "GET", url);
 
-			if (options?.headers) {
+			// biome-ignore lint: optional chaining is unsafe in polyfill files before transpilation
+			if (options && options.headers) {
 				Object.keys(options.headers).forEach((key) => {
 					xhr.setRequestHeader(key, options.headers[key]);
 				});
@@ -142,7 +144,13 @@ if (!window.fetch) {
 					status: xhr.status,
 					statusText: xhr.statusText,
 					text: () => Promise.resolve(xhr.responseText),
-					json: () => Promise.resolve(JSON.parse(xhr.responseText)),
+					json: () => {
+						try {
+							return Promise.resolve(JSON.parse(xhr.responseText));
+						} catch (e) {
+							return Promise.reject(e);
+						}
+					},
 				});
 			};
 
@@ -150,11 +158,13 @@ if (!window.fetch) {
 				reject(new Error("Network request failed"));
 			};
 
-			xhr.send(options?.body || null);
+			// biome-ignore lint: optional chaining is unsafe in polyfill files before transpilation
+			xhr.send((options && options.body) || null);
 		});
 }
 
-// Promise polyfill (basic version)
+// Promise polyfill for pre-iOS 12 browsers — iOS 12 (Safari 12) ships Promise natively,
+// so this only runs on iOS 9–11 devices that receive the legacy bundle.
 if (typeof Promise === "undefined") {
 	window.Promise = function (executor) {
 		var self = this;
@@ -224,16 +234,23 @@ if (typeof Promise === "undefined") {
 	};
 }
 
-// Polyfill for queueMicrotask (Safari 13+)
+// Polyfill for queueMicrotask (Safari 12.1+ / iOS 12.2+)
 if (typeof window.queueMicrotask !== "function") {
 	window.queueMicrotask = (callback) => {
 		new Promise((resolve) => {
 			resolve();
-		}).then(callback);
+		})
+			.then(callback)
+			.catch((e) => {
+				setTimeout(() => {
+					throw e;
+				}, 0);
+			});
 	};
 }
 
 // Polyfill for structuredClone (Safari 15.4+)
+// Note: JSON-based approximation only — does not support Date, undefined, Map, Set, functions, or circular references.
 if (typeof window.structuredClone !== "function") {
 	window.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
