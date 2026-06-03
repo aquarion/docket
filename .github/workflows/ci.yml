@@ -166,12 +166,18 @@ jobs:
               fi
               if [ "$i" -eq 30 ]; then
                 echo "ERROR: Container failed to become ready after 30 attempts"
+                echo "--- Final health check output ---"
+                docker compose exec -T app php artisan --version || true
                 docker compose logs --tail=50 app
                 exit 1
               fi
               echo "Attempt ${i}/30: container not ready, waiting..."
               sleep 2
             done
+            docker compose exec -T app test -d /var/www/html/public/build || {
+              echo "ERROR: /var/www/html/public/build not found in container, aborting asset copy"
+              exit 1
+            }
             rm -rf public/build && mkdir -p public/build
             docker compose cp app:/var/www/html/public/build/. public/build/
 
@@ -212,11 +218,17 @@ jobs:
               fi
               if [ "$i" -eq 30 ]; then
                 echo "ERROR: Container failed to become ready after 30 attempts"
+                echo "--- Final health check output ---"
+                docker compose exec -T app php artisan --version || true
                 docker compose logs --tail=50 app
                 exit 1
               fi
               echo "Attempt ${i}/30: container not ready, waiting..."
               sleep 2
             done
+            docker compose exec -T app test -d /var/www/html/public/build || {
+              echo "ERROR: /var/www/html/public/build not found in container, aborting asset copy"
+              exit 1
+            }
             rm -rf public/build && mkdir -p public/build
             docker compose cp app:/var/www/html/public/build/. public/build/
