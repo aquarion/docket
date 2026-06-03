@@ -113,7 +113,7 @@ if (typeof Object.assign !== "function") {
 
 			if (nextSource != null) {
 				for (nextKey in nextSource) {
-					if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+					if (Object.hasOwn(nextSource, nextKey)) {
 						to[nextKey] = nextSource[nextKey];
 					}
 				}
@@ -226,28 +226,44 @@ if (typeof Promise === "undefined") {
 
 // Polyfill for queueMicrotask (Safari 13+)
 if (typeof window.queueMicrotask !== "function") {
-	window.queueMicrotask = function (callback) {
-		Promise.resolve().then(callback);
+	window.queueMicrotask = (callback) => {
+		new Promise((resolve) => {
+			resolve();
+		}).then(callback);
 	};
 }
 
 // Polyfill for structuredClone (Safari 15.4+)
 if (typeof window.structuredClone !== "function") {
-	window.structuredClone = function (obj) {
-		return JSON.parse(JSON.stringify(obj));
-	};
+	window.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
 // Polyfill for ResizeObserver (Safari 13.1+)
 if (typeof window.ResizeObserver === "undefined") {
 	window.ResizeObserver = function (callback) {
-		this.observe = function (el) {
+		var listeners = [];
+		this.observe = (el) => {
 			callback([{ target: el, contentRect: el.getBoundingClientRect() }]);
-			window.addEventListener("resize", function () {
+			var handler = () => {
 				callback([{ target: el, contentRect: el.getBoundingClientRect() }]);
+			};
+			listeners.push({ el: el, handler: handler });
+			window.addEventListener("resize", handler);
+		};
+		this.unobserve = (el) => {
+			listeners = listeners.filter((entry) => {
+				if (entry.el === el) {
+					window.removeEventListener("resize", entry.handler);
+					return false;
+				}
+				return true;
 			});
 		};
-		this.unobserve = function () {};
-		this.disconnect = function () {};
+		this.disconnect = () => {
+			listeners.forEach((entry) => {
+				window.removeEventListener("resize", entry.handler);
+			});
+			listeners = [];
+		};
 	};
 }
