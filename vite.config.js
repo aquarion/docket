@@ -25,6 +25,7 @@ export default defineConfig({
 	plugins: [
 		legacy({
 			targets: ["iOS >= 12"],
+			modernTargets: ["iOS >= 12"],
 			additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
 		}),
 		laravel({
@@ -35,6 +36,30 @@ export default defineConfig({
 			],
 			refresh: true,
 		}),
+		{
+			// @vitejs/plugin-legacy v8 injects a data: URL import as a feature guard.
+			// iOS 12 supports ES modules but not data: URL imports, causing the entire
+			// modern bundle to fail silently. Strip it from the output.
+			name: "strip-data-url-guard",
+			apply: "build",
+			generateBundle(_options, bundle) {
+				let strippedCount = 0;
+				for (const chunk of Object.values(bundle)) {
+					if (chunk.type === "chunk" && chunk.code.startsWith("import'data:")) {
+						chunk.code = chunk.code.replace(/^import'data:[^']*';/, "");
+						strippedCount++;
+						console.log(
+							`[strip-data-url-guard] Stripped data: URL guard from ${chunk.fileName}`,
+						);
+					}
+				}
+				if (strippedCount === 0) {
+					console.warn(
+						"[strip-data-url-guard] WARNING: No data: URL guard found — plugin-legacy may have changed its output format",
+					);
+				}
+			},
+		},
 		{
 			name: "scss-compiler",
 			apply: "serve",
@@ -52,6 +77,11 @@ export default defineConfig({
 						return [];
 					} catch (e) {
 						console.error("SCSS compilation failed:", e);
+						server.ws.send({
+							type: "error",
+							err: { message: e.message, stack: e.stack },
+						});
+						return [];
 					}
 				}
 			},

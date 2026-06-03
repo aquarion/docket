@@ -20,6 +20,8 @@ yarn-error.log
 /.idea
 /.vscode
 
+/cache
+
 # Generated files
 public/static/generated/
 
@@ -31,3 +33,4 @@ public/static/generated/
 database/*.sqlite
 database/*.sqlite-journal
 public/hot.backup
+/.claude

@@ -29,6 +29,9 @@
 
   <title>Docket - Personal Calendar</title>
 
+  <!-- iOS 12 compatibility: globalThis polyfill must run before Vite bundles -->
+  <script>if(typeof globalThis==='undefined'){window.globalThis=window;}</script>
+
   <!-- Vite Assets - Load base styles first -->
   @vite(['resources/css/app.scss', 'resources/js/app.js'])
 
