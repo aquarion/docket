@@ -12,7 +12,7 @@ WORKDIR /var/www/html
 
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/bin/install-php-extensions
 
-RUN install-php-extensions pdo_mysql redis pcntl opcache calendar
+RUN install-php-extensions pdo_mysql redis pcntl opcache calendar gmp intl
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
