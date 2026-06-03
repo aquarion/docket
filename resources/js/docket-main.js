@@ -37,8 +37,9 @@ var Docket = {
 		DocketUI.updateTheme();
 		DocketUI.initializeSettingsModal();
 
-		// Setup calendar
+		// Setup calendar and weather
 		DocketCalendar.setup();
+		DocketWeather.fetch();
 
 		// Setup event handlers
 		this.setupEventHandlers();
@@ -98,6 +99,7 @@ var Docket = {
 					CircleProgress.trackPercent = 0;
 					this.checkFestivalChange();
 					DocketCalendar.setup();
+					DocketWeather.fetch();
 				}
 			}, this.config.refreshIntervalMs),
 		);

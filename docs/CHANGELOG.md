@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+- Production Docker deployment via PHP-FPM multi-stage Dockerfile and `docker/entrypoint.sh`
+- GitHub Actions CI pipeline: build and push to GHCR, deploy staging on PRs, deploy production on release
+- `docket:migrate-from-sqlite` artisan command for one-time SQLite → MySQL data migration
+- MySQL service added to Laravel Sail for local development
+
+### Changed
+- Default database switched from SQLite to MySQL (matching production deployment model)
+- GitHub Actions workflows replaced with self-contained release and Dependabot automation matching Sprouter's model
+
 ## [2.2.0] - 2026-04-06
 
 ### Added
