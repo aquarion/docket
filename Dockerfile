@@ -7,7 +7,7 @@ COPY vite.config.js ./
 COPY public public
 RUN npm run build
 
-FROM php:8.4-fpm-alpine
+FROM php:8.5-fpm-alpine
 WORKDIR /var/www/html
 
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/bin/install-php-extensions
