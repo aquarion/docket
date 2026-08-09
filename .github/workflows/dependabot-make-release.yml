@@ -115,6 +115,12 @@ jobs:
           echo "Conflicting files:"
           echo "$CONFLICTS"
 
+          if [ -z "$CONFLICTS" ]; then
+            echo "::error::Merge failed but no conflicted files were found - not a simple content conflict, needs manual investigation"
+            git merge --abort
+            exit 1
+          fi
+
           NON_LOCKFILE_CONFLICTS=$(echo "$CONFLICTS" | grep -vE '^(composer\.lock|package-lock\.json)$' || true)
           if [ -n "$NON_LOCKFILE_CONFLICTS" ]; then
             echo "::error::Conflicts outside of composer.lock/package-lock.json need manual resolution:"
@@ -126,14 +132,14 @@ jobs:
           if echo "$CONFLICTS" | grep -qx 'composer.lock'; then
             echo "Regenerating composer.lock"
             rm -f composer.lock
-            composer update --no-interaction
+            composer update --no-interaction --no-scripts
             git add composer.lock
           fi
 
           if echo "$CONFLICTS" | grep -qx 'package-lock.json'; then
             echo "Regenerating package-lock.json"
             rm -f package-lock.json
-            npm install
+            npm install --package-lock-only --ignore-scripts --no-audit --no-fund
             git add package-lock.json
           fi
 
