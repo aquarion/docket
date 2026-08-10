@@ -29,12 +29,16 @@
 		"@biomejs/biome": "2.5.5",
 		"@vitejs/plugin-legacy": "^8.0.0",
 		"core-js": "^3.48.0",
-		"jshint": "^2.13.6",
+		"jshint": "^0.5.9",
 		"laravel-vite-plugin": "^3.0.1",
 		"regenerator-runtime": "^0.14.1",
 		"stylelint": "^17.0.0",
 		"stylelint-config-standard": "^40.0.0",
 		"suncalc": "^2.0.1",
 		"vite": "^8.0.0"
+	},
+	"allowScripts": {
+		"@parcel/watcher@2.6.0": true,
+		"core-js@3.50.0": true
 	}
 }
