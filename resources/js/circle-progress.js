@@ -1,7 +1,3 @@
-/* jshint esversion: 9 */
-/* jshint browser: true */
-/* jshint devel: true */
-
 /**
  * Circle progress animation functionality for countdown display
  */

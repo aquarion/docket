@@ -1,6 +1,3 @@
-/* jshint esversion: 9 */
-/* jshint browser: true */
-
 /**
  * Festival-specific utilities and enhancements
  * Only loaded when a festival is active
