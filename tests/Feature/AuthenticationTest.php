@@ -88,7 +88,13 @@ class AuthenticationTest extends TestCase
 
     public function test_google_callback_failure_is_logged(): void
     {
-        Socialite::shouldReceive('driver->user')
+        Socialite::shouldReceive('driver')
+            ->once()
+            ->with('google')
+            ->andReturnSelf();
+
+        Socialite::shouldReceive('user')
+            ->once()
             ->andThrow(new \Exception('invalid_grant'));
 
         Log::shouldReceive('error')

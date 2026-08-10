@@ -14,6 +14,7 @@
 
 ### Fixed
 - Production build failure after `suncalc` upgraded to v2 and dropped its CommonJS default export in favor of named-only ESM exports; switched to a namespace import (`import * as SunCalc from "suncalc"`) that works against both v1 and v2
+- Google OAuth callback failures are now logged instead of being silently swallowed, so login errors (e.g. readonly database, misconfigured `GOOGLE_DEFAULT_ACCOUNT`) can be diagnosed from logs
 
 ## [2.2.0] - 2026-04-06
 
