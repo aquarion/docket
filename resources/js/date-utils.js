@@ -1,6 +1,3 @@
-/* jshint esversion: 9 */
-/* jshint browser: true */
-
 /**
  * Date utility functions to replace moment.js functionality
  * Organized as an object for better namespace management

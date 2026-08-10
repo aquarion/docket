@@ -1,7 +1,3 @@
-/* jshint esversion: 9 */
-/* jshint browser: true */
-/* jshint devel: true */
-
 /**
  * Calendar Management functionality for the manage page
  * Handles CRUD operations for calendar sets and sources

@@ -1,6 +1,3 @@
-/* jshint esversion: 9 */
-/* jshint browser: true */
-
 /**
  * CSS utility functions
  * Provides helpers for working with CSS classes and styles

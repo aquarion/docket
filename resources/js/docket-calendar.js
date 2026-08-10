@@ -1,7 +1,3 @@
-/* jshint esversion: 9 */
-/* jshint browser: true */
-/* jshint devel: true */
-
 /**
  * Calendar management functions for fetching and processing calendar data
  */

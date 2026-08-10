@@ -1,7 +1,3 @@
-/* jshint esversion: 9 */
-/* jshint browser: true */
-/* jshint devel: true */
-
 /**
  * Weather management functions for fetching and processing weather data from Open-Meteo
  */
@@ -65,19 +61,23 @@ var DocketWeather = {
 			"&daily=weather_code&timezone=auto";
 
 		return fetch(url)
-			.then(function (response) {
-				if (!response.ok) throw new Error("Weather API HTTP " + response.status);
+			.then((response) => {
+				if (!response.ok)
+					throw new Error("Weather API HTTP " + response.status);
 				return response.json();
 			})
 			.then(
 				function (data) {
-					if (data.daily && data.daily.time && data.daily.weather_code) {
+					if (data.daily?.time && data.daily.weather_code) {
 						// Clear old data to prevent stale entries
 						this.weatherData = {};
 						this.lastFetchTime = Date.now();
 
 						// Use the shorter length to avoid undefined values
-						var len = Math.min(data.daily.time.length, data.daily.weather_code.length);
+						var len = Math.min(
+							data.daily.time.length,
+							data.daily.weather_code.length,
+						);
 						for (var i = 0; i < len; i++) {
 							var date = data.daily.time[i];
 							var code = data.daily.weather_code[i];
@@ -119,9 +119,7 @@ var DocketWeather = {
 	 * @param {number} code - WMO weather code
 	 * @returns {string} Weather emoji
 	 */
-	getEmoji: function (code) {
-		return weatherCodes[code] || "";
-	},
+	getEmoji: (code) => weatherCodes[code] || "",
 };
 
 // Make DocketWeather available globally

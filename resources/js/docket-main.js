@@ -1,7 +1,3 @@
-/* jshint esversion: 9 */
-/* jshint browser: true */
-/* jshint devel: true */
-
 /**
  * Main Docket application controller
  * Coordinates all modules and manages application lifecycle
