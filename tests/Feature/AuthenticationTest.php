@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
+use Laravel\Socialite\Facades\Socialite;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -82,5 +84,23 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect(route('home'));
+    }
+
+    public function test_google_callback_failure_is_logged(): void
+    {
+        Socialite::shouldReceive('driver->user')
+            ->andThrow(new \Exception('invalid_grant'));
+
+        Log::shouldReceive('error')
+            ->once()
+            ->with('Google OAuth callback failed', \Mockery::on(fn ($context) => ($context['exception'] ?? null) === 'invalid_grant'
+                && array_key_exists('trace', $context)
+            ));
+
+        $response = $this->get('/auth/google/callback');
+
+        $this->assertGuest();
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('error', 'Unable to login with Google. Please try again.');
     }
 }
