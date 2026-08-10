@@ -4,7 +4,7 @@ import "./ios12-polyfills.js";
 import twemoji from "@twemoji/api";
 // Import external libraries from node_modules
 import ICAL from "ical.js";
-import SunCalc from "suncalc";
+import * as SunCalc from "suncalc";
 import "emoji-picker-element";
 
 // Make libraries available globally BEFORE importing application files
