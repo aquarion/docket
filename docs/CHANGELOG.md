@@ -12,6 +12,9 @@
 - Default database switched from SQLite to MySQL (matching production deployment model)
 - GitHub Actions workflows replaced with self-contained release and Dependabot automation matching Sprouter's model
 
+### Fixed
+- Production build failure after `suncalc` upgraded to v2 and dropped its CommonJS default export in favor of named-only ESM exports; switched to a namespace import (`import * as SunCalc from "suncalc"`) that works against both v1 and v2
+
 ## [2.2.0] - 2026-04-06
 
 ### Added
