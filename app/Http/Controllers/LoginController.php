@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -72,6 +73,8 @@ class LoginController extends Controller
 
             return redirect()->intended(route('home'));
         } catch (\Exception $e) {
+            Log::error('Google OAuth callback failed', ['exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return redirect()->route('login')->with('error', 'Unable to login with Google. Please try again.');
         }
     }
