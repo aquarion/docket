@@ -15,6 +15,12 @@ php artisan config:cache || {
     exit 1
 }
 
+echo "[entrypoint] Caching routes..."
+php artisan route:cache || {
+    echo "[entrypoint] ERROR: php artisan route:cache failed" >&2
+    exit 1
+}
+
 echo "[entrypoint] Caching views..."
 php artisan view:cache || {
     echo "[entrypoint] ERROR: php artisan view:cache failed" >&2
