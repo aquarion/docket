@@ -569,8 +569,8 @@ canvas:focus {
     white-space: nowrap;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transform: rotate(15deg); // Smaller rotation angle
-    transform-origin: center center;
+    transform: rotate(45deg);
+    transform-origin: right center;
     pointer-events: auto; // Re-enable clicks on the actual link
 
     &:link, &:visited {
@@ -579,7 +579,7 @@ canvas:focus {
 
     &:hover {
       background: rgba(255, 0, 0, 0.9);
-      transform: rotate(15deg) scale(1.05);
+      transform: rotate(45deg) scale(1.05);
     }
   }
 }
