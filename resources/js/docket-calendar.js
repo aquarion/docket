@@ -237,8 +237,8 @@ var DocketCalendar = {
 				msPerDay = 86400000;
 				approxDaysInMonth = 30;
 				endRange = new Date(Date.now() + msPerDay * approxDaysInMonth);
-				rangeStart = ICAL.Time.fromJSDate(start);
-				rangeEnd = ICAL.Time.fromJSDate(endRange);
+				rangeStart = ICAL.Time.fromJSDate(start, true);
+				rangeEnd = ICAL.Time.fromJSDate(endRange, true);
 				allDayMinutes = 1440;
 				events = [];
 
