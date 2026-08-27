@@ -553,24 +553,32 @@ canvas:focus {
 
 /* Development Mode Ribbon */
 .devmode-ribbon {
-  position: fixed; // Use fixed positioning to avoid container constraints
-  top: 20px;
-  right: 20px;
+  position: fixed; // Clipping box anchored to the corner, independent of label length
+  top: -10px;
+  right: -10px;
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
   z-index: 99999;
   pointer-events: none; // Allow clicks to pass through container
 
   a {
-    display: inline-block;
-    padding: 8px 16px;
+    position: absolute;
+    display: block;
+    width: 225px; // Wider than the clip box so the strip spans the full diagonal
+    top: 30px;
+    right: -25px; // Centers the strip on the corner's 45deg diagonal
+    padding: 8px 0;
     background: rgba(255, 0, 0, 0.8);
     color: white;
     text-decoration: none;
     font: 700 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    text-align: center;
     white-space: nowrap;
-    border-radius: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     transform: rotate(45deg);
-    transform-origin: right center;
     pointer-events: auto; // Re-enable clicks on the actual link
 
     &:link, &:visited {
