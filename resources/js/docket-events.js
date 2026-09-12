@@ -181,6 +181,13 @@ var DocketEvents = {
 							" as it started before today",
 					);
 					thisEvent.allDay = true;
+					// Distinguishes this heuristic promotion (a real timed
+					// event with a real, literal end instant) from a
+					// genuine all-day event, whose end - even one with a
+					// non-midnight time-of-day, e.g. an Outlook/Apple
+					// all-day event recurring at a fixed local time - is
+					// an exclusive day-after-last-covered-day boundary.
+					thisEvent.longRunning = true;
 				} else {
 					start = new Date(endOfDay);
 				}
@@ -267,12 +274,14 @@ var DocketEvents = {
 				(1000 * 60 * 60 * 24),
 		);
 		// daySpan counts a whole exclusive-end day (the day-after-last-
-		// covered-day convention every true all-day end uses), hence the
-		// -1. But updateNextUp also sets allDay on a long timed event
-		// that started before today, whose end is a real, non-midnight
+		// covered-day convention every true all-day end uses - even one
+		// with a non-midnight time-of-day, e.g. an Outlook/Apple all-day
+		// event recurring at a fixed local time), hence the -1. But
+		// updateNextUp also sets allDay on a long timed event that started
+		// before today (longRunning), whose end is a real, literal
 		// instant - there the end day itself is still covered up to that
 		// time, so don't drop it from the span.
-		durationHours = DateUtils.isMidnight(end) ? (daySpan - 1) * 24 : daySpan * 24;
+		durationHours = thisEvent.longRunning ? daySpan * 24 : (daySpan - 1) * 24;
 
 		if (days[startF]) {
 			showedStarted = true;

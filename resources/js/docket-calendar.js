@@ -129,14 +129,15 @@ var DocketCalendar = {
 			}
 
 			// All-day end dates are exclusive (the day after the event's last
-			// covered day, per RFC 5545 and Google Calendar's convention), so
-			// compare against the last day the event actually covers. Only
-			// apply that adjustment when end is actually local midnight -
+			// covered day, per RFC 5545 and Google Calendar's convention) -
+			// even one with a non-midnight time-of-day, e.g. an Outlook/
+			// Apple all-day event recurring at a fixed local time - so
+			// compare against the last day the event actually covers.
 			// updateNextUp also sets allDay on a long timed event that
-			// started before today, whose end is a real (non-midnight)
-			// instant that must be compared as-is.
+			// started before today (longRunning), whose end is a real,
+			// literal instant that must be compared as-is instead.
 			var inclusiveEnd =
-				event.allDay && DateUtils.isMidnight(end)
+				event.allDay && !event.longRunning
 					? DateUtils.addDays(end, -1)
 					: end;
 
@@ -149,7 +150,12 @@ var DocketCalendar = {
 				endDateF === nowF ||
 				(startDateF < nowF && endDateF > nowF)
 			) {
-				todayEvents.push(event);
+				// Push a copy with start/end normalized to real Dates - the
+				// shared DocketConfig.allEvents object can carry a bare
+				// "YYYY-MM-DD" string (Google all-day events), which
+				// DocketUI.updateUntil would otherwise subtract directly,
+				// producing NaN ("NaN seconds ago") instead of a duration.
+				todayEvents.push(Object.assign({}, event, { start: start, end: end }));
 			}
 		}
 
