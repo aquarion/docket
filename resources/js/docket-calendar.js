@@ -130,8 +130,15 @@ var DocketCalendar = {
 
 			// All-day end dates are exclusive (the day after the event's last
 			// covered day, per RFC 5545 and Google Calendar's convention), so
-			// compare against the last day the event actually covers.
-			var inclusiveEnd = event.allDay ? DateUtils.addDays(end, -1) : end;
+			// compare against the last day the event actually covers. Only
+			// apply that adjustment when end is actually local midnight -
+			// updateNextUp also sets allDay on a long timed event that
+			// started before today, whose end is a real (non-midnight)
+			// instant that must be compared as-is.
+			var inclusiveEnd =
+				event.allDay && DateUtils.isMidnight(end)
+					? DateUtils.addDays(end, -1)
+					: end;
 
 			// Check if event is today (starts today, ends today, or spans today)
 			var startDateF = DateUtils.formatDate(start, "YYYY-MM-DD");

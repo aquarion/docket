@@ -266,7 +266,13 @@ var DocketEvents = {
 				)) /
 				(1000 * 60 * 60 * 24),
 		);
-		durationHours = (daySpan - 1) * 24;
+		// daySpan counts a whole exclusive-end day (the day-after-last-
+		// covered-day convention every true all-day end uses), hence the
+		// -1. But updateNextUp also sets allDay on a long timed event
+		// that started before today, whose end is a real, non-midnight
+		// instant - there the end day itself is still covered up to that
+		// time, so don't drop it from the span.
+		durationHours = DateUtils.isMidnight(end) ? (daySpan - 1) * 24 : daySpan * 24;
 
 		if (days[startF]) {
 			showedStarted = true;

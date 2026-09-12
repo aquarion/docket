@@ -20,6 +20,22 @@ var DateUtils = {
 					: "th",
 
 	/**
+	 * True if a Date's local time-of-day is exactly midnight.
+	 *
+	 * Used to tell a genuine all-day event's exclusive-end boundary
+	 * (always local midnight) apart from an event that was heuristically
+	 * promoted to allDay because it started before today and runs long,
+	 * but still has a real, non-midnight end instant.
+	 * @param {Date} date
+	 * @returns {boolean}
+	 */
+	isMidnight: (date) =>
+		date.getHours() === 0 &&
+		date.getMinutes() === 0 &&
+		date.getSeconds() === 0 &&
+		date.getMilliseconds() === 0,
+
+	/**
 	 * Get day of year for a given date (1-366)
 	 * @param {Date} date - The date to calculate day of year for
 	 * @returns {number} Day of year
