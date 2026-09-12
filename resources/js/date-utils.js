@@ -61,7 +61,7 @@ var DateUtils = {
 			// this string is used as a calendar-day bucket key, so it must
 			// match the day the viewer actually sees the date/time fall on.
 			return (
-				date.getFullYear() +
+				String(date.getFullYear()).padStart(4, "0") +
 				"-" +
 				String(date.getMonth() + 1).padStart(2, "0") +
 				"-" +
@@ -71,6 +71,34 @@ var DateUtils = {
 			return date.toTimeString().substr(0, 5);
 		}
 		return date.toString();
+	},
+
+	/**
+	 * Parse an event's start/end value into a Date.
+	 *
+	 * Timed events arrive as either a Date (from ical.js) or a full
+	 * ISO datetime string with an offset (from Google Calendar), both of
+	 * which `new Date(...)` resolves to the correct instant. All-day
+	 * events from Google Calendar arrive as a bare "YYYY-MM-DD" string
+	 * with no timezone; `new Date(...)` would parse that as UTC midnight,
+	 * shifting it a day for any viewer behind UTC. Treat it as a local
+	 * calendar date instead, matching how ical.js resolves ICS all-day
+	 * (floating) dates.
+	 * @param {Date|string} value - The event's start or end value
+	 * @returns {Date}
+	 */
+	parseEventDate: (value) => {
+		if (value instanceof Date) {
+			return new Date(value);
+		}
+		if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+			return new Date(
+				Number(value.slice(0, 4)),
+				Number(value.slice(5, 7)) - 1,
+				Number(value.slice(8, 10)),
+			);
+		}
+		return new Date(value);
 	},
 
 	/**
@@ -212,8 +240,8 @@ var DateUtils = {
 	 * @returns {number} Sort comparison result (-1, 0, 1)
 	 */
 	dateSort: (a, b) => {
-		var astart = new Date(a.start);
-		var bstart = new Date(b.start);
+		var astart = DateUtils.parseEventDate(a.start);
+		var bstart = DateUtils.parseEventDate(b.start);
 
 		if (astart.getTime() === bstart.getTime()) {
 			return 0;
@@ -236,7 +264,7 @@ var DateUtils = {
 				continue; // Skip events without end dates
 			}
 
-			var end = new Date(events[i].end);
+			var end = DateUtils.parseEventDate(events[i].end);
 			if (Number.isNaN(end.getTime())) {
 				console.warn("Invalid end date found in event:", events[i]);
 				continue; // Skip invalid dates

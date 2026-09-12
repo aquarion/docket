@@ -15,9 +15,13 @@ var DocketCalendar = {
 		twoWeeks = DateUtils.addDays(new Date(), 30);
 
 		// Fetch JSON calendar data
+		// `end` is parsed by the backend with strtotime() in the app's
+		// timezone (UTC) and passed straight through as Google Calendar's
+		// exclusive timeMax, so it must stay a UTC calendar date - not the
+		// viewer's local date used elsewhere for display bucketing.
 		fetch(
 			"/all-calendars?end=" +
-				DateUtils.formatDate(twoWeeks, "YYYY-MM-DD") +
+				twoWeeks.toISOString().split("T")[0] +
 				"&calendar_set=" +
 				DocketConfig.constants.CALENDAR_SET,
 		)
@@ -116,8 +120,8 @@ var DocketCalendar = {
 				continue;
 			}
 
-			start = new Date(event.start);
-			end = new Date(event.end);
+			start = DateUtils.parseEventDate(event.start);
+			end = DateUtils.parseEventDate(event.end);
 
 			// Skip events with invalid dates
 			if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
@@ -138,7 +142,9 @@ var DocketCalendar = {
 		}
 
 		// Sort events by start time
-		todayEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+		todayEvents.sort(
+			(a, b) => DateUtils.parseEventDate(a.start) - DateUtils.parseEventDate(b.start),
+		);
 
 		return todayEvents;
 	},

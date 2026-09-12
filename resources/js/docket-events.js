@@ -148,8 +148,8 @@ var DocketEvents = {
 				continue;
 			}
 
-			end = new Date(thisEvent.end);
-			start = new Date(thisEvent.start);
+			end = DateUtils.parseEventDate(thisEvent.end);
+			start = DateUtils.parseEventDate(thisEvent.start);
 
 			// Skip events with invalid dates
 			if (Number.isNaN(end.getTime()) || Number.isNaN(start.getTime())) {
@@ -448,8 +448,8 @@ var DocketEvents = {
 			thisEvent = events[i];
 			NotificationUtils.debug("Event: " + thisEvent.title);
 
-			starts = new Date(thisEvent.start);
-			ends = new Date(thisEvent.end);
+			starts = DateUtils.parseEventDate(thisEvent.start);
+			ends = DateUtils.parseEventDate(thisEvent.end);
 			classes = "event";
 			titleClasses = DocketEvents.getEventClasses(thisEvent);
 
