@@ -128,13 +128,10 @@ var DocketCalendar = {
 				continue;
 			}
 
-			// See DateUtils.isMidnight()'s JSDoc for why this compares
-			// against (exclusiveEnd || isMidnight(end)) rather than
-			// exclusiveEnd alone.
-			var inclusiveEnd =
-				event.exclusiveEnd || DateUtils.isMidnight(end)
-					? DateUtils.addDays(end, -1)
-					: end;
+			// See DateUtils.lastCoveredDay for why exclusiveEnd and
+			// isMidnight are both checked when finding the last day an
+			// event covers.
+			var inclusiveEnd = DateUtils.lastCoveredDay(event, end);
 
 			// Check if event is today (starts today, ends today, or spans today)
 			var startDateF = DateUtils.formatDate(start, "YYYY-MM-DD");
@@ -381,7 +378,11 @@ var DocketCalendar = {
 		name,
 		events,
 	) => {
-		var expand, next, end, minutesLength, title, allDay;
+		var expand, next, end, minutesLength, title, allDay, explicitAllDay;
+
+		// item (and therefore this) is invariant across every occurrence
+		// this loop expands, so compute it once rather than per-iteration.
+		explicitAllDay = DocketCalendar.isExplicitAllDay(item);
 
 		expand = new ICAL.RecurExpansion({
 			component: item,
@@ -411,7 +412,7 @@ var DocketCalendar = {
 			minutesLength = duration.toSeconds() / 60;
 			title = item.getFirstPropertyValue("summary");
 			allDay = DocketCalendar.determineAllDay(
-				item,
+				explicitAllDay,
 				minutesLength,
 				allDayMinutes,
 				title,
@@ -426,7 +427,7 @@ var DocketCalendar = {
 				allDay: allDay,
 				// See processSingleEvent for why this is tracked separately
 				// from allDay.
-				exclusiveEnd: DocketCalendar.isExplicitAllDay(item),
+				exclusiveEnd: explicitAllDay,
 			});
 		}
 	},
@@ -510,21 +511,21 @@ var DocketCalendar = {
 		item.getFirstPropertyValue("x-apple-allday") === "TRUE",
 
 	/**
-	 * Determine if an event should be marked as all-day
+	 * Determine if an event should be marked as all-day, logging which
+	 * signal (if any) decided it.
+	 * @param {boolean} explicitAllDay - DocketCalendar.isExplicitAllDay(item)
 	 */
-	determineAllDay: (item, minutesLength, allDayMinutes, title) => {
-		if (DocketCalendar.isExplicitAllDay(item)) {
+	determineAllDay: (explicitAllDay, minutesLength, allDayMinutes, title) => {
+		if (explicitAllDay) {
 			NotificationUtils.debug(
 				`Setting all day for: ${title} from all-day marker`,
 			);
-			return true;
 		} else if (minutesLength >= allDayMinutes) {
 			NotificationUtils.warning(
 				`All-day flag not found for long event: ${title}`,
 			);
-			return false;
 		}
-		return false;
+		return explicitAllDay;
 	},
 };
 

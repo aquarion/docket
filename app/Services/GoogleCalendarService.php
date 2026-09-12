@@ -175,10 +175,12 @@ class GoogleCalendarService
             $start = $event->start->dateTime ?? $event->start->date;
             $end = $event->end->dateTime ?? $event->end->date;
 
+            $isAllDay = (bool) $event->start->date;
+
             $events_out[] = [
                 'title' => $event->getSummary(),
-                'allDay' => $event->start->date ? true : false,
-                'exclusiveEnd' => $event->start->date ? true : false,
+                'allDay' => $isAllDay,
+                'exclusiveEnd' => $isAllDay,
                 'id' => $event->getId(),
                 'start' => $start,
                 'end' => $end,
@@ -239,14 +241,17 @@ class GoogleCalendarService
                     $margin = $background = $colour;
                 }
 
+                // Google only sets `date` (vs. `dateTime`) for a genuine
+                // all-day event, so its end is always the RFC 5545
+                // exclusive day-after-last-covered-day boundary - unlike
+                // the ICS side, there's no separate "long timed event"
+                // heuristic muddying this signal, so allDay and
+                // exclusiveEnd are always the same value here.
+                $isAllDay = (bool) $event->start->date;
+
                 $all_events[$event_id] = [
-                    'allDay' => $event->start->date ? true : false,
-                    // Google only sets `date` (vs. `dateTime`) for a
-                    // genuine all-day event, so its end is always the
-                    // RFC 5545 exclusive day-after-last-covered-day
-                    // boundary - unlike the ICS side, there's no separate
-                    // "long timed event" heuristic muddying this signal.
-                    'exclusiveEnd' => $event->start->date ? true : false,
+                    'allDay' => $isAllDay,
+                    'exclusiveEnd' => $isAllDay,
                     'title' => $summary,
                     'first' => $calendar['src'],
                     'clean' => $clean_summary,

@@ -96,7 +96,7 @@ var DocketEvents = {
 		nowF = DateUtils.formatDate(now, "YYYY-MM-DD");
 		days = {};
 
-		days[nowF] = { date: now, allday: [], events: [] };
+		days[nowF] = { allday: [], events: [] };
 
 		// Combine all events from different sources
 		events = [];
@@ -116,7 +116,7 @@ var DocketEvents = {
 			thisDay.setDate(thisDay.getDate() + 1);
 			thisDayF = DateUtils.formatDate(thisDay, "YYYY-MM-DD");
 			if (!days[thisDayF]) {
-				days[thisDayF] = { date: new Date(thisDay), allday: [], events: [] };
+				days[thisDayF] = { allday: [], events: [] };
 			}
 		}
 
@@ -193,10 +193,8 @@ var DocketEvents = {
 
 			// Detect midnight-to-midnight events
 			if (
-				start.getHours() === 0 &&
-				start.getMinutes() === 0 &&
-				end.getHours() === 0 &&
-				end.getMinutes() === 0 &&
+				DateUtils.isMidnight(start) &&
+				DateUtils.isMidnight(end) &&
 				thisEvent.allDay !== true
 			) {
 				NotificationUtils.debug(
@@ -242,8 +240,7 @@ var DocketEvents = {
 	processAllDayEvent: (thisEvent, start, end, now, days) => {
 		var showedStarted,
 			startF,
-			daySpan,
-			durationHours,
+			daysRemaining,
 			_startedToday,
 			xEvent,
 			xEnd,
@@ -256,40 +253,22 @@ var DocketEvents = {
 		}
 
 		startF = DateUtils.formatDate(start, "YYYY-MM-DD");
-		// Count whole calendar days between start and end (via their local
-		// Y/M/D) rather than dividing elapsed milliseconds by 24h - a
-		// local-midnight span that crosses a DST transition isn't exactly
-		// 24 (or 48, ...) hours, which would miscount the day span.
-		// DateUtils.buildUtcTime() is used instead of Date.UTC() directly
-		// since the latter also has the "years 0-99 mean 1900-1999" quirk.
-		daySpan = Math.round(
-			(DateUtils.buildUtcTime(
-				end.getFullYear(),
-				end.getMonth(),
-				end.getDate(),
-			) -
-				DateUtils.buildUtcTime(
-					start.getFullYear(),
-					start.getMonth(),
-					start.getDate(),
-				)) /
-				(1000 * 60 * 60 * 24),
-		);
-		// daySpan counts a whole exclusive-end day (the day-after-last-
-		// covered-day convention every true all-day end uses), hence the
-		// -1. See DateUtils.isMidnight()'s JSDoc for why this is gated on
-		// (exclusiveEnd || isMidnight(end)) rather than exclusiveEnd alone.
-		durationHours =
-			thisEvent.exclusiveEnd || DateUtils.isMidnight(end)
-				? (daySpan - 1) * 24
-				: daySpan * 24;
+		// Whole calendar days from start's day up to (and including) the
+		// last day the event actually covers - see DateUtils.lastCoveredDay
+		// for why exclusiveEnd and isMidnight are both checked, and
+		// DateUtils.getDayNumber for why this counts local Y/M/D rather
+		// than dividing elapsed milliseconds by 24h (which miscounts
+		// across a DST transition).
+		daysRemaining =
+			DateUtils.getDayNumber(DateUtils.lastCoveredDay(thisEvent, end)) -
+			DateUtils.getDayNumber(start);
 
 		if (days[startF]) {
 			showedStarted = true;
 			_startedToday = true;
 			xEvent = Object.assign({}, thisEvent);
 
-			if (durationHours > 0) {
+			if (daysRemaining > 0) {
 				xEnd = DateUtils.subtractMinutes(end, 1);
 				xEvent.title =
 					xEvent.title +
@@ -302,7 +281,7 @@ var DocketEvents = {
 		}
 
 		// Handle multi-day events
-		while (durationHours > 0) {
+		while (daysRemaining > 0) {
 			startedToday = false;
 			start = DateUtils.addDays(start, 1);
 			startF = DateUtils.formatDate(start, "YYYY-MM-DD");
@@ -312,7 +291,7 @@ var DocketEvents = {
 			// already exist - but create it on demand rather than risk
 			// dereferencing undefined below.
 			if (!days[startF]) {
-				days[startF] = { date: new Date(start), allday: [], events: [] };
+				days[startF] = { allday: [], events: [] };
 			}
 
 			if (!showedStarted) {
@@ -321,9 +300,9 @@ var DocketEvents = {
 				startedToday = true;
 			}
 
-			durationHours -= 24;
+			daysRemaining -= 1;
 
-			if (durationHours < 1 && !startedToday) {
+			if (daysRemaining < 1 && !startedToday) {
 				xEvent = Object.assign({}, thisEvent);
 				xEvent.title = xEvent.title + " ends";
 				days[startF].allday.push(xEvent);
@@ -339,15 +318,16 @@ var DocketEvents = {
 
 		output = "<dl>";
 
-		// Insertion order usually already matches chronological order (days
-		// are pre-created in sequence in updateNextUp), except when
-		// processAllDayEvent creates one on demand mid-loop - sort
-		// explicitly so that can never put a day out of place.
-		daysEntries = Object.entries(days).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+		// Keys are "YYYY-MM-DD" bucket dates, so a plain string sort is a
+		// chronological sort - days created on demand in processAllDayEvent
+		// aren't guaranteed to land in the object in date order otherwise.
+		daysEntries = Object.entries(days).sort((a, b) =>
+			a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0,
+		);
 		for (i = 0; i < daysEntries.length; i++) {
 			date = daysEntries[i][0];
 			data = daysEntries[i][1];
-			day = data.date;
+			day = DateUtils.parseEventDate(date);
 			dayTitle = DocketEvents.getDayTitle(day);
 			var weatherEmoji = DocketWeather.getWeatherForDate(date);
 

@@ -20,23 +20,8 @@ var DateUtils = {
 					: "th",
 
 	/**
-	 * True if a Date's local time-of-day is exactly midnight.
-	 *
-	 * Canonical explanation for the `event.exclusiveEnd || DateUtils.isMidnight(end)`
-	 * rule used at this function's two call sites (docket-calendar.js's
-	 * getTodayEvents, docket-events.js's processAllDayEvent): exclusiveEnd
-	 * (set once at each event's origin) is the authoritative signal for an
-	 * end that's deliberately an exclusive day-after boundary - RFC 5545/
-	 * Google Calendar's convention for all-day events, even one with a
-	 * non-midnight time-of-day like an Outlook/Apple all-day event
-	 * recurring at a fixed local time. A literal (non-exclusiveEnd) event -
-	 * an ordinary timed event that just runs long, or got heuristically
-	 * promoted to all-day - has a real, literal end instant that must be
-	 * compared as-is, EXCEPT when that instant happens to land exactly on
-	 * local midnight (e.g. a midnight-to-midnight timed event, or a long
-	 * event ending tomorrow at 00:00): it has, in effect, already ended at
-	 * the close of the previous day, so treat that the same as an
-	 * exclusive boundary regardless of the exclusiveEnd flag.
+	 * True if a Date's local time-of-day is exactly midnight. See
+	 * lastCoveredDay() for why this matters alongside exclusiveEnd.
 	 * @param {Date} date
 	 * @returns {boolean}
 	 */
@@ -45,6 +30,30 @@ var DateUtils = {
 		date.getMinutes() === 0 &&
 		date.getSeconds() === 0 &&
 		date.getMilliseconds() === 0,
+
+	/**
+	 * The last calendar day an event actually covers.
+	 *
+	 * All-day event ends are exclusive (the day after the event's last
+	 * covered day, per RFC 5545 and Google Calendar's convention) - even
+	 * one with a non-midnight time-of-day, e.g. an Outlook/Apple all-day
+	 * event recurring at a fixed local time. event.exclusiveEnd (set once
+	 * at the event's origin) is the authoritative signal for this, since
+	 * allDay alone also covers ordinary timed events that just happen to
+	 * run long, or got heuristically promoted to all-day - both of which
+	 * have a real, literal end instant that covers the end day itself.
+	 * But even a literal end can land exactly on local midnight (e.g. a
+	 * midnight-to-midnight timed event, or a long event ending tomorrow
+	 * at 00:00) - it hasn't actually run into that day at all, so treat
+	 * that the same as an exclusive boundary regardless of exclusiveEnd.
+	 * @param {Object} event - event with an optional exclusiveEnd flag
+	 * @param {Date} end - the event's parsed end Date
+	 * @returns {Date}
+	 */
+	lastCoveredDay: (event, end) =>
+		event.exclusiveEnd || DateUtils.isMidnight(end)
+			? DateUtils.addDays(end, -1)
+			: end,
 
 	/**
 	 * Absolute, ever-increasing day number for a given local calendar date -
