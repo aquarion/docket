@@ -96,11 +96,19 @@ var DateUtils = {
 			var month = Number(value.slice(5, 7));
 			var day = Number(value.slice(8, 10));
 
-			// setFullYear (unlike the Date(y, m, d) constructor) has no
-			// legacy "years 0-99 mean 1900-1999" special case, so a
-			// four-digit year like 0001 round-trips correctly.
-			var result = new Date(0);
-			result.setFullYear(year, month - 1, day);
+			// The Date(y, m, d) constructor already resolves month/day to
+			// local midnight correctly; its only quirk is mapping a
+			// two-digit year (0-99) to 1900-1999. Fix just the year
+			// afterward for that case via setFullYear(year) - the
+			// single-argument form touches only the year, leaving the
+			// month/day/midnight it already got right untouched. (Seeding
+			// setFullYear(y, m, d) from new Date(0) instead would keep
+			// that seed's local time-of-day - e.g. 19:00 in America/New_York -
+			// instead of midnight.)
+			var result = new Date(year, month - 1, day);
+			if (year >= 0 && year <= 99) {
+				result.setFullYear(year);
+			}
 
 			// Out-of-range components (e.g. day 31 in a 30-day month)
 			// silently roll over into a different date rather than
