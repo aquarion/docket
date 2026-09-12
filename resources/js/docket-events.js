@@ -251,13 +251,19 @@ var DocketEvents = {
 		}
 
 		startF = DateUtils.formatDate(start, "YYYY-MM-DD");
-		// Count whole calendar days between start and end (via Date.UTC on
-		// their local Y/M/D) rather than dividing elapsed milliseconds by
-		// 24h - a local-midnight span that crosses a DST transition isn't
-		// exactly 24 (or 48, ...) hours, which would miscount the day span.
+		// Count whole calendar days between start and end (via their local
+		// Y/M/D) rather than dividing elapsed milliseconds by 24h - a
+		// local-midnight span that crosses a DST transition isn't exactly
+		// 24 (or 48, ...) hours, which would miscount the day span.
+		// DateUtils.buildUtcTime() is used instead of Date.UTC() directly
+		// since the latter also has the "years 0-99 mean 1900-1999" quirk.
 		daySpan = Math.round(
-			(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()) -
-				Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())) /
+			(DateUtils.buildUtcTime(end.getFullYear(), end.getMonth(), end.getDate()) -
+				DateUtils.buildUtcTime(
+					start.getFullYear(),
+					start.getMonth(),
+					start.getDate(),
+				)) /
 				(1000 * 60 * 60 * 24),
 		);
 		durationHours = (daySpan - 1) * 24;

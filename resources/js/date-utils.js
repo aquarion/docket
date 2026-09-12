@@ -96,19 +96,16 @@ var DateUtils = {
 			var month = Number(value.slice(5, 7));
 			var day = Number(value.slice(8, 10));
 
-			// The Date(y, m, d) constructor already resolves month/day to
-			// local midnight correctly; its only quirk is mapping a
-			// two-digit year (0-99) to 1900-1999. Fix just the year
-			// afterward for that case via setFullYear(year) - the
-			// single-argument form touches only the year, leaving the
-			// month/day/midnight it already got right untouched. (Seeding
-			// setFullYear(y, m, d) from new Date(0) instead would keep
-			// that seed's local time-of-day - e.g. 19:00 in America/New_York -
-			// instead of midnight.)
-			var result = new Date(year, month - 1, day);
-			if (year >= 0 && year <= 99) {
-				result.setFullYear(year);
-			}
+			// setFullYear(y, m, d)'s 3-argument form has none of the
+			// Date(y, m, d) constructor's quirks: no "years 0-99 mean
+			// 1900-1999" remapping (which would resolve Feb 29 against
+			// the wrong century's leap-year-ness), and it doesn't touch
+			// the time-of-day, so an explicit setHours(0,0,0,0) after it
+			// reliably lands on local midnight regardless of the seed
+			// Date's own local time.
+			var result = new Date(0);
+			result.setFullYear(year, month - 1, day);
+			result.setHours(0, 0, 0, 0);
 
 			// Out-of-range components (e.g. day 31 in a 30-day month)
 			// silently roll over into a different date rather than
@@ -124,6 +121,25 @@ var DateUtils = {
 			return result;
 		}
 		return new Date(value);
+	},
+
+	/**
+	 * UTC timestamp (ms) for local calendar components at midnight.
+	 *
+	 * Unlike Date.UTC(), which shares the Date(y, m, d) constructor's
+	 * "years 0-99 mean 1900-1999" special case, this has no such quirk -
+	 * useful for day-count arithmetic that must stay correct for early
+	 * four-digit years.
+	 * @param {number} year
+	 * @param {number} month - 0-indexed, matching Date.UTC()
+	 * @param {number} day
+	 * @returns {number}
+	 */
+	buildUtcTime: (year, month, day) => {
+		var result = new Date(0);
+		result.setUTCFullYear(year, month, day);
+		result.setUTCHours(0, 0, 0, 0);
+		return result.getTime();
 	},
 
 	/**
