@@ -303,7 +303,14 @@ var DocketEvents = {
 		for (i = 0; i < daysEntries.length; i++) {
 			date = daysEntries[i][0];
 			data = daysEntries[i][1];
-			day = new Date(date);
+			// `date` is a "YYYY-MM-DD" bucket key; parsing it directly would be
+			// read as UTC midnight and shift a day backward once local getDay()/
+			// getDate() render it, so build it from local date components instead.
+			day = new Date(
+				Number(date.slice(0, 4)),
+				Number(date.slice(5, 7)) - 1,
+				Number(date.slice(8, 10)),
+			);
 			dayTitle = DocketEvents.getDayTitle(day);
 			var weatherEmoji = DocketWeather.getWeatherForDate(date);
 
