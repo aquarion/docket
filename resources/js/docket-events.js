@@ -276,20 +276,9 @@ var DocketEvents = {
 				(1000 * 60 * 60 * 24),
 		);
 		// daySpan counts a whole exclusive-end day (the day-after-last-
-		// covered-day convention every true all-day end uses - even one
-		// with a non-midnight time-of-day, e.g. an Outlook/Apple all-day
-		// event recurring at a fixed local time), hence the -1.
-		// thisEvent.exclusiveEnd (set once at the event's origin) is the
-		// authoritative signal for this: allDay alone also covers
-		// ordinary timed events that just happen to run long
-		// (processSingleEvent) or got heuristically promoted above - both
-		// have a real, literal end instant, where the end day itself is
-		// still covered up to that time, so it shouldn't be dropped from
-		// the span. But even one of those literal ends can land exactly
-		// on local midnight (e.g. the midnight-to-midnight detection
-		// above, or a long event ending tomorrow at 00:00) - it hasn't
-		// actually run into that day at all, so treat that the same as
-		// an exclusive boundary regardless of the exclusiveEnd flag.
+		// covered-day convention every true all-day end uses), hence the
+		// -1. See DateUtils.isMidnight()'s JSDoc for why this is gated on
+		// (exclusiveEnd || isMidnight(end)) rather than exclusiveEnd alone.
 		durationHours =
 			thisEvent.exclusiveEnd || DateUtils.isMidnight(end)
 				? (daySpan - 1) * 24
@@ -350,7 +339,11 @@ var DocketEvents = {
 
 		output = "<dl>";
 
-		daysEntries = Object.entries(days);
+		// Insertion order usually already matches chronological order (days
+		// are pre-created in sequence in updateNextUp), except when
+		// processAllDayEvent creates one on demand mid-loop - sort
+		// explicitly so that can never put a day out of place.
+		daysEntries = Object.entries(days).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
 		for (i = 0; i < daysEntries.length; i++) {
 			date = daysEntries[i][0];
 			data = daysEntries[i][1];

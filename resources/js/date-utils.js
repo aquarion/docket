@@ -22,13 +22,21 @@ var DateUtils = {
 	/**
 	 * True if a Date's local time-of-day is exactly midnight.
 	 *
-	 * A literal (non-exclusiveEnd) event whose end happens to land exactly
-	 * on local midnight has still, in effect, ended at the close of the
-	 * previous day - e.g. an event ending "tomorrow at 00:00" doesn't
-	 * actually run into tomorrow. Used alongside (never instead of)
-	 * exclusiveEnd, which is the authoritative signal for events whose
-	 * end is deliberately an exclusive boundary regardless of its time
-	 * of day.
+	 * Canonical explanation for the `event.exclusiveEnd || DateUtils.isMidnight(end)`
+	 * rule used at this function's two call sites (docket-calendar.js's
+	 * getTodayEvents, docket-events.js's processAllDayEvent): exclusiveEnd
+	 * (set once at each event's origin) is the authoritative signal for an
+	 * end that's deliberately an exclusive day-after boundary - RFC 5545/
+	 * Google Calendar's convention for all-day events, even one with a
+	 * non-midnight time-of-day like an Outlook/Apple all-day event
+	 * recurring at a fixed local time. A literal (non-exclusiveEnd) event -
+	 * an ordinary timed event that just runs long, or got heuristically
+	 * promoted to all-day - has a real, literal end instant that must be
+	 * compared as-is, EXCEPT when that instant happens to land exactly on
+	 * local midnight (e.g. a midnight-to-midnight timed event, or a long
+	 * event ending tomorrow at 00:00): it has, in effect, already ended at
+	 * the close of the previous day, so treat that the same as an
+	 * exclusive boundary regardless of the exclusiveEnd flag.
 	 * @param {Date} date
 	 * @returns {boolean}
 	 */

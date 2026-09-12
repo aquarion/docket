@@ -128,22 +128,9 @@ var DocketCalendar = {
 				continue;
 			}
 
-			// All-day end dates are exclusive (the day after the event's last
-			// covered day, per RFC 5545 and Google Calendar's convention) -
-			// even one with a non-midnight time-of-day, e.g. an Outlook/
-			// Apple all-day event recurring at a fixed local time - so
-			// compare against the last day the event actually covers.
-			// exclusiveEnd (set once at each event's origin) is the
-			// authoritative signal for this, since allDay alone also
-			// covers ordinary timed events that just happen to run long
-			// (processSingleEvent) or got heuristically promoted by
-			// updateNextUp - both have a real, literal end instant that
-			// must be compared as-is. But even one of those literal ends
-			// can land exactly on local midnight (e.g. a midnight-to-
-			// midnight timed event, or a long event ending tomorrow at
-			// 00:00) - it has, in effect, already ended at the close of
-			// the previous day, so treat that the same as an exclusive
-			// boundary regardless of the exclusiveEnd flag.
+			// See DateUtils.isMidnight()'s JSDoc for why this compares
+			// against (exclusiveEnd || isMidnight(end)) rather than
+			// exclusiveEnd alone.
 			var inclusiveEnd =
 				event.exclusiveEnd || DateUtils.isMidnight(end)
 					? DateUtils.addDays(end, -1)
