@@ -95,7 +95,7 @@ var DocketCalendar = {
 			end;
 
 		now = new Date();
-		nowF = now.toISOString().split("T")[0]; // Today's date in YYYY-MM-DD format
+		nowF = DateUtils.formatDate(now, "YYYY-MM-DD"); // Today's date in YYYY-MM-DD format
 		todayEvents = [];
 
 		// Combine all events from different sources
@@ -125,8 +125,8 @@ var DocketCalendar = {
 			}
 
 			// Check if event is today (starts today, ends today, or spans today)
-			var startDateF = start.toISOString().split("T")[0];
-			var endDateF = end.toISOString().split("T")[0];
+			var startDateF = DateUtils.formatDate(start, "YYYY-MM-DD");
+			var endDateF = DateUtils.formatDate(end, "YYYY-MM-DD");
 
 			if (
 				startDateF === nowF ||

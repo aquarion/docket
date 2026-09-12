@@ -57,7 +57,16 @@ var DateUtils = {
 		if (format === "ddd D") {
 			return days[date.getDay()] + " " + date.getDate();
 		} else if (format === "YYYY-MM-DD") {
-			return date.toISOString().split("T")[0];
+			// Build from local components, not toISOString() (which is UTC) -
+			// this string is used as a calendar-day bucket key, so it must
+			// match the day the viewer actually sees the date/time fall on.
+			return (
+				date.getFullYear() +
+				"-" +
+				String(date.getMonth() + 1).padStart(2, "0") +
+				"-" +
+				String(date.getDate()).padStart(2, "0")
+			);
 		} else if (format === "HH:mm") {
 			return date.toTimeString().substr(0, 5);
 		}

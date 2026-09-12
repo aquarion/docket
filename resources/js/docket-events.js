@@ -93,7 +93,7 @@ var DocketEvents = {
 			allEventsEntries;
 
 		now = new Date();
-		nowF = now.toISOString().split("T")[0];
+		nowF = DateUtils.formatDate(now, "YYYY-MM-DD");
 		days = {};
 
 		days[nowF] = { allday: [], events: [] };
@@ -114,7 +114,7 @@ var DocketEvents = {
 		thisDay = new Date();
 		while (thisDay < maxDate) {
 			thisDay.setDate(thisDay.getDate() + 1);
-			thisDayF = thisDay.toISOString().split("T")[0];
+			thisDayF = DateUtils.formatDate(thisDay, "YYYY-MM-DD");
 			if (!days[thisDayF]) {
 				days[thisDayF] = { allday: [], events: [] };
 			}
@@ -166,11 +166,11 @@ var DocketEvents = {
 				continue;
 			}
 
-			startF = start.toISOString().split("T")[0];
+			startF = DateUtils.formatDate(start, "YYYY-MM-DD");
 
 			// Handle events that started before today
 			if (!days[startF] && end > now) {
-				startF = now.toISOString().split("T")[0];
+				startF = DateUtils.formatDate(now, "YYYY-MM-DD");
 				endOfDay = new Date(now);
 				endOfDay.setHours(23, 59, 59, 999);
 
@@ -249,7 +249,7 @@ var DocketEvents = {
 			start = new Date();
 		}
 
-		startF = start.toISOString().split("T")[0];
+		startF = DateUtils.formatDate(start, "YYYY-MM-DD");
 		durationHours = (end - start) / (1000 * 60 * 60) - 24;
 
 		if (days[startF]) {
