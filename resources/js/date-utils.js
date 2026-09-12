@@ -41,10 +41,19 @@ var DateUtils = {
 	 * @returns {number} Day of year
 	 */
 	getDayOfYear: (date) => {
-		var start = new Date(date.getFullYear(), 0, 0);
-		var diff = date - start;
+		// Compare via buildUtcTime() (calendar-day midnights in UTC, which
+		// has no DST) rather than diffing local Date instants directly -
+		// a local calendar day can be 23 or 25 real elapsed hours across a
+		// DST transition, which would floor two different calendar days
+		// to the same day-of-year number.
+		var start = DateUtils.buildUtcTime(date.getFullYear(), 0, 0);
+		var current = DateUtils.buildUtcTime(
+			date.getFullYear(),
+			date.getMonth(),
+			date.getDate(),
+		);
 		var oneDay = 1000 * 60 * 60 * 24;
-		return Math.floor(diff / oneDay);
+		return Math.round((current - start) / oneDay);
 	},
 
 	/**
