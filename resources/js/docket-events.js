@@ -237,6 +237,7 @@ var DocketEvents = {
 	processAllDayEvent: (thisEvent, start, end, now, days) => {
 		var showedStarted,
 			startF,
+			daySpan,
 			durationHours,
 			_startedToday,
 			xEvent,
@@ -250,7 +251,16 @@ var DocketEvents = {
 		}
 
 		startF = DateUtils.formatDate(start, "YYYY-MM-DD");
-		durationHours = (end - start) / (1000 * 60 * 60) - 24;
+		// Count whole calendar days between start and end (via Date.UTC on
+		// their local Y/M/D) rather than dividing elapsed milliseconds by
+		// 24h - a local-midnight span that crosses a DST transition isn't
+		// exactly 24 (or 48, ...) hours, which would miscount the day span.
+		daySpan = Math.round(
+			(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()) -
+				Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())) /
+				(1000 * 60 * 60 * 24),
+		);
+		durationHours = (daySpan - 1) * 24;
 
 		if (days[startF]) {
 			showedStarted = true;

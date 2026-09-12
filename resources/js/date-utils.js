@@ -92,11 +92,28 @@ var DateUtils = {
 			return new Date(value);
 		}
 		if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-			return new Date(
-				Number(value.slice(0, 4)),
-				Number(value.slice(5, 7)) - 1,
-				Number(value.slice(8, 10)),
-			);
+			var year = Number(value.slice(0, 4));
+			var month = Number(value.slice(5, 7));
+			var day = Number(value.slice(8, 10));
+
+			// setFullYear (unlike the Date(y, m, d) constructor) has no
+			// legacy "years 0-99 mean 1900-1999" special case, so a
+			// four-digit year like 0001 round-trips correctly.
+			var result = new Date(0);
+			result.setFullYear(year, month - 1, day);
+
+			// Out-of-range components (e.g. day 31 in a 30-day month)
+			// silently roll over into a different date rather than
+			// erroring; treat that as invalid instead of guessing.
+			if (
+				result.getFullYear() !== year ||
+				result.getMonth() !== month - 1 ||
+				result.getDate() !== day
+			) {
+				return new Date(Number.NaN);
+			}
+
+			return result;
 		}
 		return new Date(value);
 	},

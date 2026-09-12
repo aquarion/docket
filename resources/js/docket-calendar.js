@@ -128,9 +128,14 @@ var DocketCalendar = {
 				continue;
 			}
 
+			// All-day end dates are exclusive (the day after the event's last
+			// covered day, per RFC 5545 and Google Calendar's convention), so
+			// compare against the last day the event actually covers.
+			var inclusiveEnd = event.allDay ? DateUtils.addDays(end, -1) : end;
+
 			// Check if event is today (starts today, ends today, or spans today)
 			var startDateF = DateUtils.formatDate(start, "YYYY-MM-DD");
-			var endDateF = DateUtils.formatDate(end, "YYYY-MM-DD");
+			var endDateF = DateUtils.formatDate(inclusiveEnd, "YYYY-MM-DD");
 
 			if (
 				startDateF === nowF ||
