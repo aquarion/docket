@@ -178,6 +178,7 @@ class GoogleCalendarService
             $events_out[] = [
                 'title' => $event->getSummary(),
                 'allDay' => $event->start->date ? true : false,
+                'exclusiveEnd' => $event->start->date ? true : false,
                 'id' => $event->getId(),
                 'start' => $start,
                 'end' => $end,

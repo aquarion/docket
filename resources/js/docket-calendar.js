@@ -169,7 +169,8 @@ var DocketCalendar = {
 
 		// Sort events by start time
 		todayEvents.sort(
-			(a, b) => DateUtils.parseEventDate(a.start) - DateUtils.parseEventDate(b.start),
+			(a, b) =>
+				DateUtils.parseEventDate(a.start) - DateUtils.parseEventDate(b.start),
 		);
 
 		return todayEvents;
@@ -526,7 +527,9 @@ var DocketCalendar = {
 	 */
 	determineAllDay: (item, minutesLength, allDayMinutes, title) => {
 		if (DocketCalendar.isExplicitAllDay(item)) {
-			NotificationUtils.debug(`Setting all day for: ${title} from all-day marker`);
+			NotificationUtils.debug(
+				`Setting all day for: ${title} from all-day marker`,
+			);
 			return true;
 		} else if (minutesLength >= allDayMinutes) {
 			NotificationUtils.warning(

@@ -263,7 +263,11 @@ var DocketEvents = {
 		// DateUtils.buildUtcTime() is used instead of Date.UTC() directly
 		// since the latter also has the "years 0-99 mean 1900-1999" quirk.
 		daySpan = Math.round(
-			(DateUtils.buildUtcTime(end.getFullYear(), end.getMonth(), end.getDate()) -
+			(DateUtils.buildUtcTime(
+				end.getFullYear(),
+				end.getMonth(),
+				end.getDate(),
+			) -
 				DateUtils.buildUtcTime(
 					start.getFullYear(),
 					start.getMonth(),
