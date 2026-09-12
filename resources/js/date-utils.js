@@ -20,6 +20,25 @@ var DateUtils = {
 					: "th",
 
 	/**
+	 * True if a Date's local time-of-day is exactly midnight.
+	 *
+	 * A literal (non-exclusiveEnd) event whose end happens to land exactly
+	 * on local midnight has still, in effect, ended at the close of the
+	 * previous day - e.g. an event ending "tomorrow at 00:00" doesn't
+	 * actually run into tomorrow. Used alongside (never instead of)
+	 * exclusiveEnd, which is the authoritative signal for events whose
+	 * end is deliberately an exclusive boundary regardless of its time
+	 * of day.
+	 * @param {Date} date
+	 * @returns {boolean}
+	 */
+	isMidnight: (date) =>
+		date.getHours() === 0 &&
+		date.getMinutes() === 0 &&
+		date.getSeconds() === 0 &&
+		date.getMilliseconds() === 0,
+
+	/**
 	 * Absolute, ever-increasing day number for a given local calendar date -
 	 * an opaque value only meaningful for ordering/equality comparisons
 	 * (e.g. "is this tomorrow?"), not for display. Unlike a day-of-year

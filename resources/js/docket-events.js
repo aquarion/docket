@@ -281,8 +281,15 @@ var DocketEvents = {
 		// (processSingleEvent) or got heuristically promoted above - both
 		// have a real, literal end instant, where the end day itself is
 		// still covered up to that time, so it shouldn't be dropped from
-		// the span.
-		durationHours = thisEvent.exclusiveEnd ? (daySpan - 1) * 24 : daySpan * 24;
+		// the span. But even one of those literal ends can land exactly
+		// on local midnight (e.g. the midnight-to-midnight detection
+		// above, or a long event ending tomorrow at 00:00) - it hasn't
+		// actually run into that day at all, so treat that the same as
+		// an exclusive boundary regardless of the exclusiveEnd flag.
+		durationHours =
+			thisEvent.exclusiveEnd || DateUtils.isMidnight(end)
+				? (daySpan - 1) * 24
+				: daySpan * 24;
 
 		if (days[startF]) {
 			showedStarted = true;

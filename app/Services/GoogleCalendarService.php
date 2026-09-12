@@ -30,8 +30,13 @@ class GoogleCalendarService
         $start = $start ?? date('Y-m-01');
         $end = $end ?? date('Y-m-d', strtotime('+1 month'));
 
-        // Create cache key based on calendars, date range, and merged config
+        // Create cache key based on calendars, date range, and merged config.
+        // `schema` guards against a stale cached payload from before a
+        // field was added/changed to the per-event shape (e.g. exclusiveEnd)
+        // being served as-is until it naturally expires; bump it whenever
+        // that shape changes so a deploy gets a clean cache miss.
         $cacheKey = 'google_calendar_events:'.md5(serialize([
+            'schema' => 2,
             'calendars' => array_keys($googleCalendars),
             'merged' => $mergedCalendars,
             'start' => $start,

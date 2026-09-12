@@ -138,10 +138,16 @@ var DocketCalendar = {
 			// covers ordinary timed events that just happen to run long
 			// (processSingleEvent) or got heuristically promoted by
 			// updateNextUp - both have a real, literal end instant that
-			// must be compared as-is instead.
-			var inclusiveEnd = event.exclusiveEnd
-				? DateUtils.addDays(end, -1)
-				: end;
+			// must be compared as-is. But even one of those literal ends
+			// can land exactly on local midnight (e.g. a midnight-to-
+			// midnight timed event, or a long event ending tomorrow at
+			// 00:00) - it has, in effect, already ended at the close of
+			// the previous day, so treat that the same as an exclusive
+			// boundary regardless of the exclusiveEnd flag.
+			var inclusiveEnd =
+				event.exclusiveEnd || DateUtils.isMidnight(end)
+					? DateUtils.addDays(end, -1)
+					: end;
 
 			// Check if event is today (starts today, ends today, or spans today)
 			var startDateF = DateUtils.formatDate(start, "YYYY-MM-DD");
@@ -432,11 +438,7 @@ var DocketCalendar = {
 				allDay: allDay,
 				// See processSingleEvent for why this is tracked separately
 				// from allDay.
-				exclusiveEnd:
-					item.getFirstPropertyValue("dtstart").isDate === true ||
-					item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") ===
-						"TRUE" ||
-					item.getFirstPropertyValue("x-apple-allday") === "TRUE",
+				exclusiveEnd: DocketCalendar.isExplicitAllDay(item),
 			});
 		}
 	},
@@ -450,6 +452,7 @@ var DocketCalendar = {
 			minutesLength,
 			eventTitle,
 			allDay,
+			explicitAllDay,
 			dtstartProp,
 			dtendProp;
 
@@ -481,7 +484,13 @@ var DocketCalendar = {
 
 		minutesLength = (dtend - dtstart) / (1000 * 60);
 		eventTitle = item.getFirstPropertyValue("summary");
-		allDay = minutesLength >= allDayMinutes;
+		explicitAllDay = DocketCalendar.isExplicitAllDay(item);
+		// Duration alone already catches every normal date-only event,
+		// since a VALUE=DATE span is always a whole number of days - but
+		// an explicitly-flagged Outlook/Apple all-day event isn't
+		// guaranteed to meet that duration threshold on its own, so it's
+		// also checked here rather than only in exclusiveEnd below.
+		allDay = explicitAllDay || minutesLength >= allDayMinutes;
 
 		events.push({
 			title: eventTitle,
@@ -492,32 +501,32 @@ var DocketCalendar = {
 			allDay: allDay,
 			// Distinct from allDay (which also covers ordinary timed events
 			// that just happen to run long): true only when `end` is
-			// genuinely an exclusive day-after-last-covered-day boundary -
-			// a real date-only (VALUE=DATE) value, or an event explicitly
-			// flagged all-day by Outlook/Apple even if its DTSTART/DTEND
-			// are date-times (e.g. a recurring all-day event anchored at a
-			// fixed local time).
-			exclusiveEnd:
-				dtendProp.isDate === true ||
-				item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") ===
-					"TRUE" ||
-				item.getFirstPropertyValue("x-apple-allday") === "TRUE",
+			// genuinely an exclusive day-after-last-covered-day boundary.
+			exclusiveEnd: explicitAllDay,
 		});
 	},
+
+	/**
+	 * True if an ICS item is explicitly all-day: a genuine date-only
+	 * (VALUE=DATE) DTSTART, or an Outlook/Apple all-day flag - regardless
+	 * of whether its actual DTSTART/DTEND are date-times (e.g. a
+	 * recurring all-day event anchored at a fixed local time). Duration
+	 * alone is deliberately not considered here - see determineAllDay()
+	 * and processSingleEvent(), which each fold this in as one signal
+	 * among others for "should this render as all-day", but a long
+	 * ordinary timed event is never explicitly all-day.
+	 */
+	isExplicitAllDay: (item) =>
+		item.getFirstPropertyValue("dtstart").isDate === true ||
+		item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") === "TRUE" ||
+		item.getFirstPropertyValue("x-apple-allday") === "TRUE",
 
 	/**
 	 * Determine if an event should be marked as all-day
 	 */
 	determineAllDay: (item, minutesLength, allDayMinutes, title) => {
-		if (item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") === "TRUE") {
-			NotificationUtils.debug(
-				`Setting all day for: ${title} from Microsoft Calendar flag`,
-			);
-			return true;
-		} else if (item.getFirstPropertyValue("x-apple-allday") === "TRUE") {
-			NotificationUtils.debug(
-				`Setting all day for: ${title} from Apple Calendar flag`,
-			);
+		if (DocketCalendar.isExplicitAllDay(item)) {
+			NotificationUtils.debug(`Setting all day for: ${title} from all-day marker`);
 			return true;
 		} else if (minutesLength >= allDayMinutes) {
 			NotificationUtils.warning(
