@@ -16,7 +16,7 @@
 - Production build failure after `suncalc` upgraded to v2 and dropped its CommonJS default export in favor of named-only ESM exports; switched to a namespace import (`import * as SunCalc from "suncalc"`) that works against both v1 and v2
 - Google OAuth callback failures are now logged instead of being silently swallowed, so login errors (e.g. readonly database, misconfigured `GOOGLE_DEFAULT_ACCOUNT`) can be diagnosed from logs
 - All-day calendar events (Outlook/ICS and Google Calendar) could render or bucket under the wrong day depending on the viewer's timezone offset from UTC, be excluded from the fetched event window near a UTC day boundary, render twice with a spurious "ends" marker on the following day for a single-day event spanning a DST transition, or (for a long timed event that started before today and got treated as all-day) be dropped from "today" or from the following day it still runs into
-- "Today"/"Tomorrow" day headers could mislabel the day after a spring-forward DST transition as "Today" (and the day after that as "Tomorrow"), since day-of-year numbering was computed from elapsed real time rather than calendar dates
+- "Today"/"Tomorrow" day headers could mislabel the day after a spring-forward DST transition as "Today" (and the day after that as "Tomorrow"), since day-of-year numbering was computed from elapsed real time rather than calendar dates; also affected "Tomorrow" labeling across a Dec 31 → Jan 1 year boundary, since a day-of-year ordinal resets to 1 at the start of each year
 
 ### Removed
 - Unused `jshint` devDependency and its dead `/* jshint ... */` header comments; it wasn't run by any script, pre-commit hook, or CI step, and Biome already covers JS/JSON linting

@@ -36,24 +36,25 @@ var DateUtils = {
 		date.getMilliseconds() === 0,
 
 	/**
-	 * Get day of year for a given date (1-366)
-	 * @param {Date} date - The date to calculate day of year for
-	 * @returns {number} Day of year
+	 * Absolute, ever-increasing day number for a given local calendar date -
+	 * an opaque value only meaningful for ordering/equality comparisons
+	 * (e.g. "is this tomorrow?"), not for display. Unlike a day-of-year
+	 * ordinal, it doesn't reset at year boundaries, so Dec 31 and the
+	 * following Jan 1 compare correctly as consecutive days. Built on
+	 * buildUtcTime() (UTC has no DST) rather than diffing local Date
+	 * instants directly, so a local calendar day that's 23 or 25 real
+	 * elapsed hours across a DST transition still counts as exactly one day.
+	 * @param {Date} date - The date to calculate the day number for
+	 * @returns {number} Absolute day number
 	 */
-	getDayOfYear: (date) => {
-		// Compare via buildUtcTime() (calendar-day midnights in UTC, which
-		// has no DST) rather than diffing local Date instants directly -
-		// a local calendar day can be 23 or 25 real elapsed hours across a
-		// DST transition, which would floor two different calendar days
-		// to the same day-of-year number.
-		var start = DateUtils.buildUtcTime(date.getFullYear(), 0, 0);
-		var current = DateUtils.buildUtcTime(
+	getDayNumber: (date) => {
+		var time = DateUtils.buildUtcTime(
 			date.getFullYear(),
 			date.getMonth(),
 			date.getDate(),
 		);
 		var oneDay = 1000 * 60 * 60 * 24;
-		return Math.round((current - start) / oneDay);
+		return Math.round(time / oneDay);
 	},
 
 	/**

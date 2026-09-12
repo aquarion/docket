@@ -373,14 +373,14 @@ var DocketEvents = {
 	 * Get display title for a day
 	 */
 	getDayTitle: (day) => {
-		var nowDayOfYear, dayDayOfYear, title;
+		var nowDayNumber, dayDayNumber, title;
 
-		nowDayOfYear = DateUtils.getDayOfYear(new Date());
-		dayDayOfYear = DateUtils.getDayOfYear(day);
+		nowDayNumber = DateUtils.getDayNumber(new Date());
+		dayDayNumber = DateUtils.getDayNumber(day);
 
-		if (nowDayOfYear === dayDayOfYear) {
+		if (nowDayNumber === dayDayNumber) {
 			return "Today";
-		} else if (nowDayOfYear + 1 === dayDayOfYear) {
+		} else if (nowDayNumber + 1 === dayDayNumber) {
 			return "Tomorrow";
 		} else {
 			title = DateUtils.formatDate(day, "ddd D");
@@ -476,7 +476,7 @@ var DocketEvents = {
 			titleClasses = DocketEvents.getEventClasses(thisEvent);
 
 			if (
-				DateUtils.getDayOfYear(new Date()) === DateUtils.getDayOfYear(starts)
+				DateUtils.getDayNumber(new Date()) === DateUtils.getDayNumber(starts)
 			) {
 				classes += " todayEvent";
 			}
