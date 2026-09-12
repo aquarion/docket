@@ -180,14 +180,12 @@ var DocketEvents = {
 							thisEvent.title +
 							" as it started before today",
 					);
+					// Only routes it through processAllDayEvent for
+					// multi-day bucketing - thisEvent.exclusiveEnd (set at
+					// the event's origin) is left as whatever it already
+					// was, since this is a real timed event with a real,
+					// literal end instant, not a genuine all-day event.
 					thisEvent.allDay = true;
-					// Distinguishes this heuristic promotion (a real timed
-					// event with a real, literal end instant) from a
-					// genuine all-day event, whose end - even one with a
-					// non-midnight time-of-day, e.g. an Outlook/Apple
-					// all-day event recurring at a fixed local time - is
-					// an exclusive day-after-last-covered-day boundary.
-					thisEvent.longRunning = true;
 				} else {
 					start = new Date(endOfDay);
 				}
@@ -276,12 +274,15 @@ var DocketEvents = {
 		// daySpan counts a whole exclusive-end day (the day-after-last-
 		// covered-day convention every true all-day end uses - even one
 		// with a non-midnight time-of-day, e.g. an Outlook/Apple all-day
-		// event recurring at a fixed local time), hence the -1. But
-		// updateNextUp also sets allDay on a long timed event that started
-		// before today (longRunning), whose end is a real, literal
-		// instant - there the end day itself is still covered up to that
-		// time, so don't drop it from the span.
-		durationHours = thisEvent.longRunning ? daySpan * 24 : (daySpan - 1) * 24;
+		// event recurring at a fixed local time), hence the -1.
+		// thisEvent.exclusiveEnd (set once at the event's origin) is the
+		// authoritative signal for this: allDay alone also covers
+		// ordinary timed events that just happen to run long
+		// (processSingleEvent) or got heuristically promoted above - both
+		// have a real, literal end instant, where the end day itself is
+		// still covered up to that time, so it shouldn't be dropped from
+		// the span.
+		durationHours = thisEvent.exclusiveEnd ? (daySpan - 1) * 24 : daySpan * 24;
 
 		if (days[startF]) {
 			showedStarted = true;
@@ -306,7 +307,15 @@ var DocketEvents = {
 			start = DateUtils.addDays(start, 1);
 			startF = DateUtils.formatDate(start, "YYYY-MM-DD");
 
-			if (days[startF] && !showedStarted) {
+			// The day-container pre-creation loop in updateNextUp sizes
+			// itself off every event's raw end value, so this should
+			// already exist - but create it on demand rather than risk
+			// dereferencing undefined below.
+			if (!days[startF]) {
+				days[startF] = { date: new Date(start), allday: [], events: [] };
+			}
+
+			if (!showedStarted) {
 				days[startF].allday.push(thisEvent);
 				showedStarted = true;
 				startedToday = true;

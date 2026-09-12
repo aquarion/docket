@@ -133,13 +133,15 @@ var DocketCalendar = {
 			// even one with a non-midnight time-of-day, e.g. an Outlook/
 			// Apple all-day event recurring at a fixed local time - so
 			// compare against the last day the event actually covers.
-			// updateNextUp also sets allDay on a long timed event that
-			// started before today (longRunning), whose end is a real,
-			// literal instant that must be compared as-is instead.
-			var inclusiveEnd =
-				event.allDay && !event.longRunning
-					? DateUtils.addDays(end, -1)
-					: end;
+			// exclusiveEnd (set once at each event's origin) is the
+			// authoritative signal for this, since allDay alone also
+			// covers ordinary timed events that just happen to run long
+			// (processSingleEvent) or got heuristically promoted by
+			// updateNextUp - both have a real, literal end instant that
+			// must be compared as-is instead.
+			var inclusiveEnd = event.exclusiveEnd
+				? DateUtils.addDays(end, -1)
+				: end;
 
 			// Check if event is today (starts today, ends today, or spans today)
 			var startDateF = DateUtils.formatDate(start, "YYYY-MM-DD");
@@ -428,6 +430,13 @@ var DocketCalendar = {
 				location: item.getFirstPropertyValue("location"),
 				calendars: [name],
 				allDay: allDay,
+				// See processSingleEvent for why this is tracked separately
+				// from allDay.
+				exclusiveEnd:
+					item.getFirstPropertyValue("dtstart").isDate === true ||
+					item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") ===
+						"TRUE" ||
+					item.getFirstPropertyValue("x-apple-allday") === "TRUE",
 			});
 		}
 	},
@@ -481,6 +490,18 @@ var DocketCalendar = {
 			location: item.getFirstPropertyValue("location"),
 			calendars: [name],
 			allDay: allDay,
+			// Distinct from allDay (which also covers ordinary timed events
+			// that just happen to run long): true only when `end` is
+			// genuinely an exclusive day-after-last-covered-day boundary -
+			// a real date-only (VALUE=DATE) value, or an event explicitly
+			// flagged all-day by Outlook/Apple even if its DTSTART/DTEND
+			// are date-times (e.g. a recurring all-day event anchored at a
+			// fixed local time).
+			exclusiveEnd:
+				dtendProp.isDate === true ||
+				item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") ===
+					"TRUE" ||
+				item.getFirstPropertyValue("x-apple-allday") === "TRUE",
 		});
 	},
 

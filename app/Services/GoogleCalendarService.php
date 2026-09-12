@@ -235,6 +235,12 @@ class GoogleCalendarService
 
                 $all_events[$event_id] = [
                     'allDay' => $event->start->date ? true : false,
+                    // Google only sets `date` (vs. `dateTime`) for a
+                    // genuine all-day event, so its end is always the
+                    // RFC 5545 exclusive day-after-last-covered-day
+                    // boundary - unlike the ICS side, there's no separate
+                    // "long timed event" heuristic muddying this signal.
+                    'exclusiveEnd' => $event->start->date ? true : false,
                     'title' => $summary,
                     'first' => $calendar['src'],
                     'clean' => $clean_summary,
