@@ -93,7 +93,7 @@ var DocketEvents = {
 			allEventsEntries;
 
 		now = new Date();
-		nowF = now.toISOString().split("T")[0];
+		nowF = DateUtils.formatDate(now, "YYYY-MM-DD");
 		days = {};
 
 		days[nowF] = { allday: [], events: [] };
@@ -114,7 +114,7 @@ var DocketEvents = {
 		thisDay = new Date();
 		while (thisDay < maxDate) {
 			thisDay.setDate(thisDay.getDate() + 1);
-			thisDayF = thisDay.toISOString().split("T")[0];
+			thisDayF = DateUtils.formatDate(thisDay, "YYYY-MM-DD");
 			if (!days[thisDayF]) {
 				days[thisDayF] = { allday: [], events: [] };
 			}
@@ -148,8 +148,8 @@ var DocketEvents = {
 				continue;
 			}
 
-			end = new Date(thisEvent.end);
-			start = new Date(thisEvent.start);
+			end = DateUtils.parseEventDate(thisEvent.end);
+			start = DateUtils.parseEventDate(thisEvent.start);
 
 			// Skip events with invalid dates
 			if (Number.isNaN(end.getTime()) || Number.isNaN(start.getTime())) {
@@ -166,11 +166,11 @@ var DocketEvents = {
 				continue;
 			}
 
-			startF = start.toISOString().split("T")[0];
+			startF = DateUtils.formatDate(start, "YYYY-MM-DD");
 
 			// Handle events that started before today
 			if (!days[startF] && end > now) {
-				startF = now.toISOString().split("T")[0];
+				startF = DateUtils.formatDate(now, "YYYY-MM-DD");
 				endOfDay = new Date(now);
 				endOfDay.setHours(23, 59, 59, 999);
 
@@ -180,6 +180,11 @@ var DocketEvents = {
 							thisEvent.title +
 							" as it started before today",
 					);
+					// Only routes it through processAllDayEvent for
+					// multi-day bucketing - thisEvent.exclusiveEnd (set at
+					// the event's origin) is left as whatever it already
+					// was, since this is a real timed event with a real,
+					// literal end instant, not a genuine all-day event.
 					thisEvent.allDay = true;
 				} else {
 					start = new Date(endOfDay);
@@ -188,10 +193,8 @@ var DocketEvents = {
 
 			// Detect midnight-to-midnight events
 			if (
-				start.getHours() === 0 &&
-				start.getMinutes() === 0 &&
-				end.getHours() === 0 &&
-				end.getMinutes() === 0 &&
+				DateUtils.isMidnight(start) &&
+				DateUtils.isMidnight(end) &&
 				thisEvent.allDay !== true
 			) {
 				NotificationUtils.debug(
@@ -237,7 +240,7 @@ var DocketEvents = {
 	processAllDayEvent: (thisEvent, start, end, now, days) => {
 		var showedStarted,
 			startF,
-			durationHours,
+			daysRemaining,
 			_startedToday,
 			xEvent,
 			xEnd,
@@ -249,15 +252,23 @@ var DocketEvents = {
 			start = new Date();
 		}
 
-		startF = start.toISOString().split("T")[0];
-		durationHours = (end - start) / (1000 * 60 * 60) - 24;
+		startF = DateUtils.formatDate(start, "YYYY-MM-DD");
+		// Whole calendar days from start's day up to (and including) the
+		// last day the event actually covers - see DateUtils.lastCoveredDay
+		// for why exclusiveEnd and isMidnight are both checked, and
+		// DateUtils.getDayNumber for why this counts local Y/M/D rather
+		// than dividing elapsed milliseconds by 24h (which miscounts
+		// across a DST transition).
+		daysRemaining =
+			DateUtils.getDayNumber(DateUtils.lastCoveredDay(thisEvent, end)) -
+			DateUtils.getDayNumber(start);
 
 		if (days[startF]) {
 			showedStarted = true;
 			_startedToday = true;
 			xEvent = Object.assign({}, thisEvent);
 
-			if (durationHours > 0) {
+			if (daysRemaining > 0) {
 				xEnd = DateUtils.subtractMinutes(end, 1);
 				xEvent.title =
 					xEvent.title +
@@ -270,20 +281,28 @@ var DocketEvents = {
 		}
 
 		// Handle multi-day events
-		while (durationHours > 0) {
+		while (daysRemaining > 0) {
 			startedToday = false;
 			start = DateUtils.addDays(start, 1);
 			startF = DateUtils.formatDate(start, "YYYY-MM-DD");
 
-			if (days[startF] && !showedStarted) {
+			// The day-container pre-creation loop in updateNextUp sizes
+			// itself off every event's raw end value, so this should
+			// already exist - but create it on demand rather than risk
+			// dereferencing undefined below.
+			if (!days[startF]) {
+				days[startF] = { allday: [], events: [] };
+			}
+
+			if (!showedStarted) {
 				days[startF].allday.push(thisEvent);
 				showedStarted = true;
 				startedToday = true;
 			}
 
-			durationHours -= 24;
+			daysRemaining -= 1;
 
-			if (durationHours < 1 && !startedToday) {
+			if (daysRemaining < 1 && !startedToday) {
 				xEvent = Object.assign({}, thisEvent);
 				xEvent.title = xEvent.title + " ends";
 				days[startF].allday.push(xEvent);
@@ -299,11 +318,16 @@ var DocketEvents = {
 
 		output = "<dl>";
 
-		daysEntries = Object.entries(days);
+		// Keys are "YYYY-MM-DD" bucket dates, so a plain string sort is a
+		// chronological sort - days created on demand in processAllDayEvent
+		// aren't guaranteed to land in the object in date order otherwise.
+		daysEntries = Object.entries(days).sort((a, b) =>
+			a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0,
+		);
 		for (i = 0; i < daysEntries.length; i++) {
 			date = daysEntries[i][0];
 			data = daysEntries[i][1];
-			day = new Date(date);
+			day = DateUtils.parseEventDate(date);
 			dayTitle = DocketEvents.getDayTitle(day);
 			var weatherEmoji = DocketWeather.getWeatherForDate(date);
 
@@ -351,14 +375,14 @@ var DocketEvents = {
 	 * Get display title for a day
 	 */
 	getDayTitle: (day) => {
-		var nowDayOfYear, dayDayOfYear, title;
+		var nowDayNumber, dayDayNumber, title;
 
-		nowDayOfYear = DateUtils.getDayOfYear(new Date());
-		dayDayOfYear = DateUtils.getDayOfYear(day);
+		nowDayNumber = DateUtils.getDayNumber(new Date());
+		dayDayNumber = DateUtils.getDayNumber(day);
 
-		if (nowDayOfYear === dayDayOfYear) {
+		if (nowDayNumber === dayDayNumber) {
 			return "Today";
-		} else if (nowDayOfYear + 1 === dayDayOfYear) {
+		} else if (nowDayNumber + 1 === dayDayNumber) {
 			return "Tomorrow";
 		} else {
 			title = DateUtils.formatDate(day, "ddd D");
@@ -448,13 +472,13 @@ var DocketEvents = {
 			thisEvent = events[i];
 			NotificationUtils.debug("Event: " + thisEvent.title);
 
-			starts = new Date(thisEvent.start);
-			ends = new Date(thisEvent.end);
+			starts = DateUtils.parseEventDate(thisEvent.start);
+			ends = DateUtils.parseEventDate(thisEvent.end);
 			classes = "event";
 			titleClasses = DocketEvents.getEventClasses(thisEvent);
 
 			if (
-				DateUtils.getDayOfYear(new Date()) === DateUtils.getDayOfYear(starts)
+				DateUtils.getDayNumber(new Date()) === DateUtils.getDayNumber(starts)
 			) {
 				classes += " todayEvent";
 			}

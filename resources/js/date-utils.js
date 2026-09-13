@@ -20,15 +20,61 @@ var DateUtils = {
 					: "th",
 
 	/**
-	 * Get day of year for a given date (1-366)
-	 * @param {Date} date - The date to calculate day of year for
-	 * @returns {number} Day of year
+	 * True if a Date's local time-of-day is exactly midnight. See
+	 * lastCoveredDay() for why this matters alongside exclusiveEnd.
+	 * @param {Date} date
+	 * @returns {boolean}
 	 */
-	getDayOfYear: (date) => {
-		var start = new Date(date.getFullYear(), 0, 0);
-		var diff = date - start;
+	isMidnight: (date) =>
+		date.getHours() === 0 &&
+		date.getMinutes() === 0 &&
+		date.getSeconds() === 0 &&
+		date.getMilliseconds() === 0,
+
+	/**
+	 * The last calendar day an event actually covers.
+	 *
+	 * All-day event ends are exclusive (the day after the event's last
+	 * covered day, per RFC 5545 and Google Calendar's convention) - even
+	 * one with a non-midnight time-of-day, e.g. an Outlook/Apple all-day
+	 * event recurring at a fixed local time. event.exclusiveEnd (set once
+	 * at the event's origin) is the authoritative signal for this, since
+	 * allDay alone also covers ordinary timed events that just happen to
+	 * run long, or got heuristically promoted to all-day - both of which
+	 * have a real, literal end instant that covers the end day itself.
+	 * But even a literal end can land exactly on local midnight (e.g. a
+	 * midnight-to-midnight timed event, or a long event ending tomorrow
+	 * at 00:00) - it hasn't actually run into that day at all, so treat
+	 * that the same as an exclusive boundary regardless of exclusiveEnd.
+	 * @param {Object} event - event with an optional exclusiveEnd flag
+	 * @param {Date} end - the event's parsed end Date
+	 * @returns {Date}
+	 */
+	lastCoveredDay: (event, end) =>
+		event.exclusiveEnd || DateUtils.isMidnight(end)
+			? DateUtils.addDays(end, -1)
+			: end,
+
+	/**
+	 * Absolute, ever-increasing day number for a given local calendar date -
+	 * an opaque value only meaningful for ordering/equality comparisons
+	 * (e.g. "is this tomorrow?"), not for display. Unlike a day-of-year
+	 * ordinal, it doesn't reset at year boundaries, so Dec 31 and the
+	 * following Jan 1 compare correctly as consecutive days. Built on
+	 * buildUtcTime() (UTC has no DST) rather than diffing local Date
+	 * instants directly, so a local calendar day that's 23 or 25 real
+	 * elapsed hours across a DST transition still counts as exactly one day.
+	 * @param {Date} date - The date to calculate the day number for
+	 * @returns {number} Absolute day number
+	 */
+	getDayNumber: (date) => {
+		var time = DateUtils.buildUtcTime(
+			date.getFullYear(),
+			date.getMonth(),
+			date.getDate(),
+		);
 		var oneDay = 1000 * 60 * 60 * 24;
-		return Math.floor(diff / oneDay);
+		return Math.round(time / oneDay);
 	},
 
 	/**
@@ -57,11 +103,89 @@ var DateUtils = {
 		if (format === "ddd D") {
 			return days[date.getDay()] + " " + date.getDate();
 		} else if (format === "YYYY-MM-DD") {
-			return date.toISOString().split("T")[0];
+			// Build from local components, not toISOString() (which is UTC) -
+			// this string is used as a calendar-day bucket key, so it must
+			// match the day the viewer actually sees the date/time fall on.
+			return (
+				String(date.getFullYear()).padStart(4, "0") +
+				"-" +
+				String(date.getMonth() + 1).padStart(2, "0") +
+				"-" +
+				String(date.getDate()).padStart(2, "0")
+			);
 		} else if (format === "HH:mm") {
 			return date.toTimeString().substr(0, 5);
 		}
 		return date.toString();
+	},
+
+	/**
+	 * Parse an event's start/end value into a Date.
+	 *
+	 * Timed events arrive as either a Date (from ical.js) or a full
+	 * ISO datetime string with an offset (from Google Calendar), both of
+	 * which `new Date(...)` resolves to the correct instant. All-day
+	 * events from Google Calendar arrive as a bare "YYYY-MM-DD" string
+	 * with no timezone; `new Date(...)` would parse that as UTC midnight,
+	 * shifting it a day for any viewer behind UTC. Treat it as a local
+	 * calendar date instead, matching how ical.js resolves ICS all-day
+	 * (floating) dates.
+	 * @param {Date|string} value - The event's start or end value
+	 * @returns {Date}
+	 */
+	parseEventDate: (value) => {
+		if (value instanceof Date) {
+			return new Date(value);
+		}
+		if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+			var year = Number(value.slice(0, 4));
+			var month = Number(value.slice(5, 7));
+			var day = Number(value.slice(8, 10));
+
+			// setFullYear(y, m, d)'s 3-argument form has none of the
+			// Date(y, m, d) constructor's quirks: no "years 0-99 mean
+			// 1900-1999" remapping (which would resolve Feb 29 against
+			// the wrong century's leap-year-ness), and it doesn't touch
+			// the time-of-day, so an explicit setHours(0,0,0,0) after it
+			// reliably lands on local midnight regardless of the seed
+			// Date's own local time.
+			var result = new Date(0);
+			result.setFullYear(year, month - 1, day);
+			result.setHours(0, 0, 0, 0);
+
+			// Out-of-range components (e.g. day 31 in a 30-day month)
+			// silently roll over into a different date rather than
+			// erroring; treat that as invalid instead of guessing.
+			if (
+				result.getFullYear() !== year ||
+				result.getMonth() !== month - 1 ||
+				result.getDate() !== day
+			) {
+				return new Date(Number.NaN);
+			}
+
+			return result;
+		}
+		return new Date(value);
+	},
+
+	/**
+	 * UTC timestamp (ms) for local calendar components at midnight.
+	 *
+	 * Unlike Date.UTC(), which shares the Date(y, m, d) constructor's
+	 * "years 0-99 mean 1900-1999" special case, this has no such quirk -
+	 * useful for day-count arithmetic that must stay correct for early
+	 * four-digit years.
+	 * @param {number} year
+	 * @param {number} month - 0-indexed, matching Date.UTC()
+	 * @param {number} day
+	 * @returns {number}
+	 */
+	buildUtcTime: (year, month, day) => {
+		var result = new Date(0);
+		result.setUTCFullYear(year, month, day);
+		result.setUTCHours(0, 0, 0, 0);
+		return result.getTime();
 	},
 
 	/**
@@ -203,8 +327,8 @@ var DateUtils = {
 	 * @returns {number} Sort comparison result (-1, 0, 1)
 	 */
 	dateSort: (a, b) => {
-		var astart = new Date(a.start);
-		var bstart = new Date(b.start);
+		var astart = DateUtils.parseEventDate(a.start);
+		var bstart = DateUtils.parseEventDate(b.start);
 
 		if (astart.getTime() === bstart.getTime()) {
 			return 0;
@@ -227,7 +351,7 @@ var DateUtils = {
 				continue; // Skip events without end dates
 			}
 
-			var end = new Date(events[i].end);
+			var end = DateUtils.parseEventDate(events[i].end);
 			if (Number.isNaN(end.getTime())) {
 				console.warn("Invalid end date found in event:", events[i]);
 				continue; // Skip invalid dates

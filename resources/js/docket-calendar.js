@@ -15,9 +15,13 @@ var DocketCalendar = {
 		twoWeeks = DateUtils.addDays(new Date(), 30);
 
 		// Fetch JSON calendar data
+		// `end` is parsed by the backend with strtotime() in the app's
+		// timezone (UTC) and passed straight through as Google Calendar's
+		// exclusive timeMax, so it must stay a UTC calendar date - not the
+		// viewer's local date used elsewhere for display bucketing.
 		fetch(
 			"/all-calendars?end=" +
-				DateUtils.formatDate(twoWeeks, "YYYY-MM-DD") +
+				twoWeeks.toISOString().split("T")[0] +
 				"&calendar_set=" +
 				DocketConfig.constants.CALENDAR_SET,
 		)
@@ -95,7 +99,7 @@ var DocketCalendar = {
 			end;
 
 		now = new Date();
-		nowF = now.toISOString().split("T")[0]; // Today's date in YYYY-MM-DD format
+		nowF = DateUtils.formatDate(now, "YYYY-MM-DD"); // Today's date in YYYY-MM-DD format
 		todayEvents = [];
 
 		// Combine all events from different sources
@@ -116,29 +120,42 @@ var DocketCalendar = {
 				continue;
 			}
 
-			start = new Date(event.start);
-			end = new Date(event.end);
+			start = DateUtils.parseEventDate(event.start);
+			end = DateUtils.parseEventDate(event.end);
 
 			// Skip events with invalid dates
 			if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
 				continue;
 			}
 
+			// See DateUtils.lastCoveredDay for why exclusiveEnd and
+			// isMidnight are both checked when finding the last day an
+			// event covers.
+			var inclusiveEnd = DateUtils.lastCoveredDay(event, end);
+
 			// Check if event is today (starts today, ends today, or spans today)
-			var startDateF = start.toISOString().split("T")[0];
-			var endDateF = end.toISOString().split("T")[0];
+			var startDateF = DateUtils.formatDate(start, "YYYY-MM-DD");
+			var endDateF = DateUtils.formatDate(inclusiveEnd, "YYYY-MM-DD");
 
 			if (
 				startDateF === nowF ||
 				endDateF === nowF ||
 				(startDateF < nowF && endDateF > nowF)
 			) {
-				todayEvents.push(event);
+				// Push a copy with start/end normalized to real Dates - the
+				// shared DocketConfig.allEvents object can carry a bare
+				// "YYYY-MM-DD" string (Google all-day events), which
+				// DocketUI.updateUntil would otherwise subtract directly,
+				// producing NaN ("NaN seconds ago") instead of a duration.
+				todayEvents.push(Object.assign({}, event, { start: start, end: end }));
 			}
 		}
 
 		// Sort events by start time
-		todayEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+		todayEvents.sort(
+			(a, b) =>
+				DateUtils.parseEventDate(a.start) - DateUtils.parseEventDate(b.start),
+		);
 
 		return todayEvents;
 	},
@@ -361,7 +378,11 @@ var DocketCalendar = {
 		name,
 		events,
 	) => {
-		var expand, next, end, minutesLength, title, allDay;
+		var expand, next, end, minutesLength, title, allDay, explicitAllDay;
+
+		// item (and therefore this) is invariant across every occurrence
+		// this loop expands, so compute it once rather than per-iteration.
+		explicitAllDay = DocketCalendar.isExplicitAllDay(item);
 
 		expand = new ICAL.RecurExpansion({
 			component: item,
@@ -391,7 +412,7 @@ var DocketCalendar = {
 			minutesLength = duration.toSeconds() / 60;
 			title = item.getFirstPropertyValue("summary");
 			allDay = DocketCalendar.determineAllDay(
-				item,
+				explicitAllDay,
 				minutesLength,
 				allDayMinutes,
 				title,
@@ -404,6 +425,9 @@ var DocketCalendar = {
 				location: item.getFirstPropertyValue("location"),
 				calendars: [name],
 				allDay: allDay,
+				// See processSingleEvent for why this is tracked separately
+				// from allDay.
+				exclusiveEnd: explicitAllDay,
 			});
 		}
 	},
@@ -417,6 +441,7 @@ var DocketCalendar = {
 			minutesLength,
 			eventTitle,
 			allDay,
+			explicitAllDay,
 			dtstartProp,
 			dtendProp;
 
@@ -448,7 +473,13 @@ var DocketCalendar = {
 
 		minutesLength = (dtend - dtstart) / (1000 * 60);
 		eventTitle = item.getFirstPropertyValue("summary");
-		allDay = minutesLength >= allDayMinutes;
+		explicitAllDay = DocketCalendar.isExplicitAllDay(item);
+		// Duration alone already catches every normal date-only event,
+		// since a VALUE=DATE span is always a whole number of days - but
+		// an explicitly-flagged Outlook/Apple all-day event isn't
+		// guaranteed to meet that duration threshold on its own, so it's
+		// also checked here rather than only in exclusiveEnd below.
+		allDay = explicitAllDay || minutesLength >= allDayMinutes;
 
 		events.push({
 			title: eventTitle,
@@ -457,30 +488,44 @@ var DocketCalendar = {
 			location: item.getFirstPropertyValue("location"),
 			calendars: [name],
 			allDay: allDay,
+			// Distinct from allDay (which also covers ordinary timed events
+			// that just happen to run long): true only when `end` is
+			// genuinely an exclusive day-after-last-covered-day boundary.
+			exclusiveEnd: explicitAllDay,
 		});
 	},
 
 	/**
-	 * Determine if an event should be marked as all-day
+	 * True if an ICS item is explicitly all-day: a genuine date-only
+	 * (VALUE=DATE) DTSTART, or an Outlook/Apple all-day flag - regardless
+	 * of whether its actual DTSTART/DTEND are date-times (e.g. a
+	 * recurring all-day event anchored at a fixed local time). Duration
+	 * alone is deliberately not considered here - see determineAllDay()
+	 * and processSingleEvent(), which each fold this in as one signal
+	 * among others for "should this render as all-day", but a long
+	 * ordinary timed event is never explicitly all-day.
 	 */
-	determineAllDay: (item, minutesLength, allDayMinutes, title) => {
-		if (item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") === "TRUE") {
+	isExplicitAllDay: (item) =>
+		item.getFirstPropertyValue("dtstart").isDate === true ||
+		item.getFirstPropertyValue("x-microsoft-cdo-alldayevent") === "TRUE" ||
+		item.getFirstPropertyValue("x-apple-allday") === "TRUE",
+
+	/**
+	 * Determine if an event should be marked as all-day, logging which
+	 * signal (if any) decided it.
+	 * @param {boolean} explicitAllDay - DocketCalendar.isExplicitAllDay(item)
+	 */
+	determineAllDay: (explicitAllDay, minutesLength, allDayMinutes, title) => {
+		if (explicitAllDay) {
 			NotificationUtils.debug(
-				`Setting all day for: ${title} from Microsoft Calendar flag`,
+				`Setting all day for: ${title} from all-day marker`,
 			);
-			return true;
-		} else if (item.getFirstPropertyValue("x-apple-allday") === "TRUE") {
-			NotificationUtils.debug(
-				`Setting all day for: ${title} from Apple Calendar flag`,
-			);
-			return true;
 		} else if (minutesLength >= allDayMinutes) {
 			NotificationUtils.warning(
 				`All-day flag not found for long event: ${title}`,
 			);
-			return false;
 		}
-		return false;
+		return explicitAllDay;
 	},
 };
 

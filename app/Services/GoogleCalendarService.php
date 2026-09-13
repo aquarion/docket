@@ -30,8 +30,13 @@ class GoogleCalendarService
         $start = $start ?? date('Y-m-01');
         $end = $end ?? date('Y-m-d', strtotime('+1 month'));
 
-        // Create cache key based on calendars, date range, and merged config
+        // Create cache key based on calendars, date range, and merged config.
+        // `schema` guards against a stale cached payload from before a
+        // field was added/changed to the per-event shape (e.g. exclusiveEnd)
+        // being served as-is until it naturally expires; bump it whenever
+        // that shape changes so a deploy gets a clean cache miss.
         $cacheKey = 'google_calendar_events:'.md5(serialize([
+            'schema' => 2,
             'calendars' => array_keys($googleCalendars),
             'merged' => $mergedCalendars,
             'start' => $start,
@@ -170,9 +175,12 @@ class GoogleCalendarService
             $start = $event->start->dateTime ?? $event->start->date;
             $end = $event->end->dateTime ?? $event->end->date;
 
+            $isAllDay = (bool) $event->start->date;
+
             $events_out[] = [
                 'title' => $event->getSummary(),
-                'allDay' => $event->start->date ? true : false,
+                'allDay' => $isAllDay,
+                'exclusiveEnd' => $isAllDay,
                 'id' => $event->getId(),
                 'start' => $start,
                 'end' => $end,
@@ -233,8 +241,17 @@ class GoogleCalendarService
                     $margin = $background = $colour;
                 }
 
+                // Google only sets `date` (vs. `dateTime`) for a genuine
+                // all-day event, so its end is always the RFC 5545
+                // exclusive day-after-last-covered-day boundary - unlike
+                // the ICS side, there's no separate "long timed event"
+                // heuristic muddying this signal, so allDay and
+                // exclusiveEnd are always the same value here.
+                $isAllDay = (bool) $event->start->date;
+
                 $all_events[$event_id] = [
-                    'allDay' => $event->start->date ? true : false,
+                    'allDay' => $isAllDay,
+                    'exclusiveEnd' => $isAllDay,
                     'title' => $summary,
                     'first' => $calendar['src'],
                     'clean' => $clean_summary,
