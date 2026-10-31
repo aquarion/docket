@@ -5,7 +5,7 @@ on:
     branches: [dependabot-updates, 'release/*']
   pull_request:
     branches: ['**']
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -23,6 +23,10 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # 'edited' also fires for title/body-only edits, not just base-branch
+    # retargets — skip those so an unrelated description tweak doesn't
+    # trigger a full test + build-and-push + deploy-staging run.
+    if: github.event.action != 'edited' || github.event.changes.base != null
     permissions:
       contents: read
 
@@ -85,6 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.ref != 'refs/heads/dependabot-updates' &&
+      github.event.pull_request.base.ref != 'dependabot-updates' &&
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     permissions:
       contents: read
@@ -114,6 +119,8 @@ jobs:
             type=sha
             type=raw,value=latest,enable=${{ inputs.tag != '' || startsWith(github.ref, 'refs/tags/v') }}
             type=raw,value=staging,enable=${{ github.event_name == 'pull_request' }}
+          labels: |
+            org.opencontainers.image.description=${{ github.event_name == 'pull_request' && format('Staging build for PR #{0}: {1}', github.event.pull_request.number, github.event.pull_request.html_url) || format('Production build {0}', inputs.tag || github.ref_name) }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -131,6 +138,8 @@ jobs:
             APP_VERSION=${{ inputs.tag || github.ref_name }}
             APP_PR_NUMBER=${{ github.event.pull_request.number }}
             APP_BRANCH=${{ github.head_ref }}
+            APP_ENV=${{ github.event_name == 'pull_request' && 'staging' || 'production' }}
+            VITE_OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.svc.istic.systems/v1/traces
 
   deploy-staging:
     needs: build-and-push
@@ -138,7 +147,9 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-staging
-      cancel-in-progress: true
+      # Never cancel a deploy mid-flight: the container runs migrations on
+      # boot, so a cancelled deploy can leave staging half-migrated.
+      cancel-in-progress: false
     permissions:
       contents: read
 

@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!vendor", "!node_modules", "!htdocs/static/snowstorm"]
+		"includes": ["**", "!vendor", "!node_modules", "!htdocs/static/snowstorm", "!resources/branding/app.icon/icon.json"]
 	},
 	"formatter": {
 		"enabled": true,

@@ -204,6 +204,16 @@ GOOGLE_CLIENT_ID=your_client_id
 GOOGLE_CLIENT_SECRET=your_client_secret
 ```
 
+## Analytics and monitoring
+
+- **Matomo**: set `MATOMO_URL` and `MATOMO_AUTH_TOKEN` in `.env`. On first page view Docket finds (or creates) the Matomo site matching `APP_URL` and caches its ID; leave either empty to disable tracking.
+- **Browser errors**: set `VITE_OTEL_EXPORTER_OTLP_ENDPOINT` at build time to report uncaught JS errors via OpenTelemetry. CI sets it for staging and production images.
+- **Version**: `GET /version` returns the deployed version, PR number and branch.
+
+## Icons
+
+Favicons and the home-screen icon are generated during `npm run build` from `resources/branding/` (the glyph is `app.icon/Assets/glyph.svg`, the background colour is in `icon-config.json`). Output goes to the gitignored `resources/icons/`.
+
 ## License
 
 BSD-3-Clause

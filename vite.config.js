@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 import legacy from "@vitejs/plugin-legacy";
 import laravel from "laravel-vite-plugin";
 import { defineConfig } from "vite";
+import { iconGenerationPlugin } from "./bin/icons/vite-plugin.js";
 
 export default defineConfig({
 	server: {
@@ -19,10 +20,16 @@ export default defineConfig({
 				"resources/js/app.js",
 				"resources/css/app.scss",
 				"resources/css/manage.scss",
+				"resources/icons/apple-touch-icon.png",
+				"resources/icons/favicon.ico",
+				"resources/icons/favicon.svg",
+				"resources/icons/web-app-manifest-192x192.png",
+				"resources/icons/web-app-manifest-512x512.png",
 			],
 		},
 	},
 	plugins: [
+		iconGenerationPlugin(),
 		legacy({
 			targets: ["iOS >= 12"],
 			modernTargets: ["iOS >= 12"],
@@ -33,6 +40,11 @@ export default defineConfig({
 				"resources/js/app.js",
 				"resources/css/app.scss",
 				"resources/css/manage.scss",
+				"resources/icons/apple-touch-icon.png",
+				"resources/icons/favicon.ico",
+				"resources/icons/favicon.svg",
+				"resources/icons/web-app-manifest-192x192.png",
+				"resources/icons/web-app-manifest-512x512.png",
 			],
 			refresh: true,
 		}),
