@@ -14,6 +14,8 @@ COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /u
 
 RUN install-php-extensions pdo_mysql redis pcntl opcache calendar gmp intl opentelemetry
 
+COPY docker/php-opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
@@ -54,7 +56,8 @@ ENV APP_VERSION=$APP_VERSION
 ENV APP_PR_NUMBER=$APP_PR_NUMBER
 ENV APP_BRANCH=$APP_BRANCH
 
-ENV OTEL_RESOURCE_ATTRIBUTES="service.version=$APP_VERSION,service.environment=$APP_ENV,service.name=$APP_NAME,service.revision=$APP_PR_NUMBER,service.branch=$APP_BRANCH"
+ENV OTEL_RESOURCE_ATTRIBUTES="service.version=$APP_VERSION,deployment.environment=$APP_ENV,service.name=$APP_NAME,service.revision=$APP_PR_NUMBER,service.branch=$APP_BRANCH"
+ENV OTEL_PHP_AUTOLOAD_ENABLED=true
 
 LABEL org.opencontainers.image.version=$APP_VERSION \
       org.opencontainers.image.revision=$APP_PR_NUMBER \

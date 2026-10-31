@@ -7,12 +7,21 @@
 - GitHub Actions CI pipeline: build and push to GHCR, deploy staging on PRs, deploy production on release
 - `docket:migrate-from-sqlite` artisan command for one-time SQLite → MySQL data migration
 - MySQL service added to Laravel Sail for local development
+- Dependabot security updates (which always target `main`, ignoring `target-branch`) are now auto-merged too, and `dependabot-main-release.yml` cuts a patch release once the merged PR's checks are confirmed green (from laravel-starter-kit)
+- OPcache production config (`docker/php-opcache.ini`): timestamp validation off, since the image is immutable
+- Container images carry an `org.opencontainers.image.description` label naming the PR or release they were built from
 
 ### Changed
+- Staging deploys are no longer cancelled mid-flight by a newer push (the container migrates on boot, so cancelling could leave staging half-migrated); they queue instead
+- Staging images are built with `APP_ENV=staging` instead of always `production`, and the OTEL resource attribute is now the standard `deployment.environment` rather than `service.environment`
+- `OTEL_PHP_AUTOLOAD_ENABLED=true` is baked into the image as a default, so the OTEL SDK isn't a silent no-op when the runtime environment doesn't set it
+- CI re-runs when a PR is retargeted to a different base branch, but not for title/description-only edits; PRs into `dependabot-updates` no longer build and push an image
+- Dependabot release jobs share a `release-tag` concurrency group, and call the local `release.yml` instead of `aquarion/docket/...@main`, so a release runs the workflow from the same commit
 - Default database switched from SQLite to MySQL (matching production deployment model)
 - GitHub Actions workflows replaced with self-contained release and Dependabot automation matching Sprouter's model
 
 ### Fixed
+- detect-secrets pre-commit hook excluded the non-existent `package.lock.json` instead of `package-lock.json`; Biome hook now uses `npx --no-install` so it can't silently fetch a different Biome version
 - Production build failure after `suncalc` upgraded to v2 and dropped its CommonJS default export in favor of named-only ESM exports; switched to a namespace import (`import * as SunCalc from "suncalc"`) that works against both v1 and v2
 - Google OAuth callback failures are now logged instead of being silently swallowed, so login errors (e.g. readonly database, misconfigured `GOOGLE_DEFAULT_ACCOUNT`) can be diagnosed from logs
 - All-day calendar events (Outlook/ICS and Google Calendar) could render or bucket under the wrong day depending on the viewer's timezone offset from UTC, be excluded from the fetched event window near a UTC day boundary, render twice with a spurious "ends" marker on the following day for a single-day event spanning a DST transition, or (for a long timed event that started before today and got treated as all-day) be dropped from "today" or from the following day it still runs into

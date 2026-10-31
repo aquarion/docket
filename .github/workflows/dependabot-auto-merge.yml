@@ -8,8 +8,13 @@ on:
   # pull_request. This job never checks out or runs code from the PR head
   # (it only calls the GitHub API against the PR by number), so running it
   # in the base repo's context is safe.
+  #
+  # dependabot.yml targets version updates at dependabot-updates, but
+  # GitHub's automatic security updates ignore target-branch and always
+  # open against the default branch - so main needs the same handling
+  # (dependabot-main-release.yml then cuts a patch release for them).
   pull_request_target:
-    branches: [dependabot-updates]
+    branches: [dependabot-updates, main]
 
 permissions: {}
 

@@ -183,10 +183,13 @@ jobs:
     if: |
       !failure() && !cancelled() &&
       (github.event_name == 'workflow_dispatch' || needs.check-for-updates.outputs.has_updates == 'true')
+    concurrency:
+      group: release-tag
+      cancel-in-progress: false
     permissions:
       contents: write
       packages: write
-    uses: aquarion/docket/.github/workflows/release.yml@main
+    uses: ./.github/workflows/release.yml
     with:
       version_bump: ${{ needs.check-for-updates.outputs.version_bump }}
     secrets: inherit # pragma: allowlist secret

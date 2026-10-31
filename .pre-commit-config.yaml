@@ -12,7 +12,7 @@ repos:
     hooks:
       - id: biome
         name: Biome
-        entry: npx biome check --write --unsafe --no-errors-on-unmatched
+        entry: npx --no-install biome check --write --unsafe --no-errors-on-unmatched
         language: system
         types_or: [javascript, ts, json]
         pass_filenames: true
@@ -51,4 +51,4 @@ repos:
     hooks:
       - id: detect-secrets
         args: ["--baseline", ".secrets.baseline"]
-        exclude: package.lock.json
+        exclude: package-lock.json
