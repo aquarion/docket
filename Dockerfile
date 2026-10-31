@@ -3,9 +3,18 @@ WORKDIR /var/www/html
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY resources resources
+COPY bin/icons bin/icons
 COPY vite.config.js ./
 COPY public public
-RUN npm run build
+
+ARG APP_ENV=production
+ARG APP_NAME=Docket
+ARG APP_VERSION=dev
+ARG APP_PR_NUMBER=
+ARG APP_BRANCH=
+ARG VITE_OTEL_EXPORTER_OTLP_ENDPOINT=
+
+RUN VITE_APP_NAME=$APP_NAME VITE_APP_VERSION=$APP_VERSION VITE_APP_ENV=$APP_ENV VITE_APP_PR_NUMBER=$APP_PR_NUMBER VITE_APP_BRANCH=$APP_BRANCH VITE_OTEL_EXPORTER_OTLP_ENDPOINT=$VITE_OTEL_EXPORTER_OTLP_ENDPOINT npm run build
 
 FROM php:8.5-fpm-alpine
 WORKDIR /var/www/html
