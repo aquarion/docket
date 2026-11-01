@@ -333,7 +333,8 @@ class MatomoServiceTest extends TestCase
                 return 0;
             }
         };
-        $cacheKey = (fn () => $this->cacheKey())->call($service);
+        // cacheKey() is private to MatomoService, so bind to that scope, not the subclass's.
+        $cacheKey = \Closure::bind(fn () => $this->cacheKey(), $service, MatomoService::class)();
         $lock = Cache::lock($cacheKey.':lock', 30);
         $this->assertTrue($lock->get());
 
