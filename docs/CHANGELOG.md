@@ -5,7 +5,7 @@
 ### Added
 - `GET /version` returns the running build's version, PR number and branch as JSON (no login needed) (from laravel-starter-kit)
 - Browser error reporting via `@istic-co/otel-browser-errors`: uncaught JS errors are sent to the OTLP endpoint baked in at build time (`VITE_OTEL_EXPORTER_OTLP_ENDPOINT`); disabled when that's empty (from laravel-starter-kit)
-- Matomo analytics: `App\Services\MatomoService` finds or creates the Matomo site for `APP_URL` and caches it; the tracker is rendered on the dashboard, manage and login pages when `MATOMO_URL` and `MATOMO_AUTH_TOKEN` are set, with `trackEvent`/`trackGoal` helpers in `resources/js/matomo.js` (from laravel-starter-kit)
+- Matomo analytics: `App\Services\MatomoService` finds or creates the Matomo site for `APP_URL` and caches it (keyed on the Matomo/app settings, with a lock so concurrent first requests can't create duplicate sites); the tracker is rendered on the dashboard, manage and login pages when `MATOMO_URL` and `MATOMO_AUTH_TOKEN` are set, with `trackEvent`/`trackGoal` helpers in `resources/js/matomo.js` (from laravel-starter-kit)
 - Favicons, apple-touch icon and web-app-manifest icons are generated at build time by `@istic-co/annealer` from `resources/branding/` (white calendar-and-house glyph on near-black), replacing the hand-exported set in `public/static/icons`; the web manifest is now served from `/site.webmanifest` so it can reference the hashed build output (from laravel-starter-kit)
 - Production Docker deployment via PHP-FPM multi-stage Dockerfile and `docker/entrypoint.sh`
 - GitHub Actions CI pipeline: build and push to GHCR, deploy staging on PRs, deploy production on release
@@ -19,7 +19,7 @@
 - Staging deploys are no longer cancelled mid-flight by a newer push (the container migrates on boot, so cancelling could leave staging half-migrated); they queue instead
 - Staging images are built with `APP_ENV=staging` instead of always `production`, and the OTEL resource attribute is now the standard `deployment.environment` rather than `service.environment`
 - `OTEL_PHP_AUTOLOAD_ENABLED=true` is baked into the image as a default, so the OTEL SDK isn't a silent no-op when the runtime environment doesn't set it
-- CI re-runs when a PR is retargeted to a different base branch, but not for title/description-only edits; PRs into `dependabot-updates` no longer build and push an image
+- PRs into `dependabot-updates` no longer build and push an image
 - Dependabot release jobs share a `release-tag` concurrency group, and call the local `release.yml` instead of `aquarion/docket/...@main`, so a release runs the workflow from the same commit
 - Default database switched from SQLite to MySQL (matching production deployment model)
 - GitHub Actions workflows replaced with self-contained release and Dependabot automation matching Sprouter's model

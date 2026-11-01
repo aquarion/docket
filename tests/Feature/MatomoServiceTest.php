@@ -293,4 +293,53 @@ class MatomoServiceTest extends TestCase
 
         $this->assertNull((new MatomoService)->getConfig());
     }
+
+    public function test_a_changed_matomo_setting_bypasses_the_cached_config(): void
+    {
+        Http::fake([
+            '*' => function ($request) {
+                $method = $request->data()['method'] ?? '';
+
+                if ($method === 'SitesManager.getAllSites') {
+                    return Http::response([['idsite' => '3', 'main_url' => 'https://app.example.com']]);
+                }
+
+                if ($method === 'Goals.getGoals') {
+                    return Http::response([['idgoal' => '1', 'name' => 'Registration complete']]);
+                }
+
+                return Http::response([], 200);
+            },
+        ]);
+
+        (new MatomoService)->getConfig();
+        Http::assertSentCount(2);
+
+        config(['services.matomo.url' => 'https://matomo.example.org']);
+        $config = (new MatomoService)->getConfig();
+
+        $this->assertSame('https://matomo.example.org', $config['tracker_url']);
+        Http::assertSentCount(4);
+    }
+
+    public function test_returns_null_without_calling_the_api_while_another_request_is_provisioning(): void
+    {
+        Http::fake();
+
+        $service = new class extends MatomoService
+        {
+            protected function lockWaitSeconds(): int
+            {
+                return 0;
+            }
+        };
+        $cacheKey = (fn () => $this->cacheKey())->call($service);
+        $lock = Cache::lock($cacheKey.':lock', 30);
+        $this->assertTrue($lock->get());
+
+        $this->assertNull($service->getConfig());
+        Http::assertNothingSent();
+
+        $lock->release();
+    }
 }
