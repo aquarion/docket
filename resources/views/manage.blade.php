@@ -19,13 +19,9 @@
   <meta name="mobile-web-app-capable" content="yes">
 
   <!-- Favicons and Icons -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png">
-  <link rel="shortcut icon" href="/static/icons/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png">
-  <link rel="mask-icon" href="/static/icons/safari-pinned-tab.svg" color="#5bbad5">
-  <link rel="manifest" href="/static/icons/site.webmanifest">
-  <meta name="msapplication-config" content="/static/icons/browserconfig.xml">
+  @include('partials.head-icons')
+
+  @include('partials.matomo')
 
   <title>Manage Calendars - Docket</title>
 

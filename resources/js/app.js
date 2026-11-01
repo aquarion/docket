@@ -1,6 +1,21 @@
 // Import polyfills first for iOS 12 compatibility
 import "./ios12-polyfills.js";
 
+import { initOtelBrowserErrors } from "@istic-co/otel-browser-errors";
+
+try {
+	initOtelBrowserErrors({
+		endpoint: import.meta.env.VITE_OTEL_EXPORTER_OTLP_ENDPOINT,
+		serviceName: `${import.meta.env.VITE_APP_NAME}-frontend`,
+		serviceVersion: import.meta.env.VITE_APP_VERSION,
+		environment: import.meta.env.VITE_APP_ENV,
+		revision: import.meta.env.VITE_APP_PR_NUMBER,
+		branch: import.meta.env.VITE_APP_BRANCH,
+	});
+} catch (err) {
+	console.error("[otel] Failed to initialize browser error reporting:", err);
+}
+
 import twemoji from "@twemoji/api";
 // Import external libraries from node_modules
 import ICAL from "ical.js";

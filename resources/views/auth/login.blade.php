@@ -10,15 +10,10 @@
 
   <title>{{ config('app.name') }} - Login</title>
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png?v=zXvYGBOMEg">
-  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png?v=zXvYGBOMEg">
-  <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png?v=zXvYGBOMEg">
-  <link rel="manifest" href="/static/icons/site.webmanifest?v=zXvYGBOMEg">
-  <link rel="mask-icon" href="/static/icons/safari-pinned-tab.svg?v=zXvYGBOMEg" color="#000000">
-  <link rel="shortcut icon" href="/static/icons/favicon.ico?v=zXvYGBOMEg">
-  <meta name="msapplication-TileColor" content="#000000">
-  <meta name="msapplication-config" content="/static/icons/browserconfig.xml?v=zXvYGBOMEg">
+  @include('partials.head-icons')
   <meta name="theme-color" content="#000000">
+
+  @include('partials.matomo')
 
   @vite(['resources/css/app.scss'])
 
