@@ -26,5 +26,7 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
+        <env name="MATOMO_URL" value=""/>
+        <env name="MATOMO_AUTH_TOKEN" value=""/>
     </php>
 </phpunit>

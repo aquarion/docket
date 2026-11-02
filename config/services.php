@@ -50,4 +50,13 @@ return [
         'cache_ttl' => env('CALENDAR_CACHE_TTL', 15 * 60),
     ],
 
+    'matomo' => [
+        'url' => env('MATOMO_URL'),
+        'auth_token' => env('MATOMO_AUTH_TOKEN'),
+
+        // Goals to ensure exist on the Matomo site, keyed by the identifier
+        // the frontend uses (e.g. 'registration' => 'Registration complete').
+        'goals' => [],
+    ],
+
 ];
