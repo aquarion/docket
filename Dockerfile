@@ -1,3 +1,4 @@
+# Keep in step with .nvmrc, which CI and the release workflow read.
 FROM node:26-alpine AS node-deps
 WORKDIR /var/www/html
 COPY package.json package-lock.json ./
