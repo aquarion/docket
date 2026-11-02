@@ -100,7 +100,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          # Match the Dockerfile (node:26-alpine). Node 22 bundles npm 10, which
+          # drops the `libc` field from package-lock.json entries when it
+          # regenerates the lockfile below.
+          node-version: '26'
 
       - name: Merge main into dependabot-updates, regenerating lockfiles on conflict
         run: |
@@ -132,7 +135,7 @@ jobs:
           if echo "$CONFLICTS" | grep -qx 'composer.lock'; then
             echo "Regenerating composer.lock"
             rm -f composer.lock
-            composer update --no-interaction --no-scripts
+            composer update --no-interaction --no-scripts --no-install
             git add composer.lock
           fi
 
