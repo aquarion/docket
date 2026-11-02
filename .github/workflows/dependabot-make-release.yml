@@ -97,13 +97,32 @@ jobs:
           tools: composer:v2
           extensions: redis,opentelemetry
 
+      # Must be Node 24+: Node 22 bundles npm 10, which drops the `libc`
+      # field when regenerating package-lock.json below.
+      # .nvmrc is the single source of truth for Node (keep the Dockerfile's
+      # node image in step). Branches cut before it existed, such as
+      # dependabot-updates until main is next merged in, fall back to main's.
+      - name: Resolve Node version
+        id: node
+        run: |
+          set -euo pipefail
+          if [ -f .nvmrc ]; then
+            NODE_VERSION=$(tr -d '[:space:]' < .nvmrc)
+          else
+            git fetch --depth=1 origin main
+            NODE_VERSION=$(git show FETCH_HEAD:.nvmrc | tr -d '[:space:]')
+          fi
+          if [ -z "$NODE_VERSION" ]; then
+            echo "::error::Could not determine the Node version from .nvmrc"
+            exit 1
+          fi
+          echo "Using Node ${NODE_VERSION}"
+          echo "version=${NODE_VERSION}" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          # Match the Dockerfile (node:26-alpine). Node 22 bundles npm 10, which
-          # drops the `libc` field from package-lock.json entries when it
-          # regenerates the lockfile below.
-          node-version: '26'
+          node-version: ${{ steps.node.outputs.version }}
 
       - name: Merge main into dependabot-updates, regenerating lockfiles on conflict
         run: |
