@@ -218,7 +218,8 @@ var DocketCalendar = {
 					item,
 					event,
 					summary,
-					filterReason;
+					filterReason,
+					uid;
 
 				try {
 					jcalData = ICAL.parse(data);
@@ -261,7 +262,20 @@ var DocketCalendar = {
 				for (index = 0; index < eventComps.length; index++) {
 					try {
 						item = eventComps[index];
-						event = new ICAL.Event(item);
+						// Only relate exceptions that belong to this series (same
+						// UID). Left to its default, ICAL.Event attaches every
+						// RECURRENCE-ID event in the feed, so an unrelated series
+						// with a matching wall-clock time would adopt its exception.
+						uid = item.getFirstPropertyValue("uid");
+						event = new ICAL.Event(item, {
+							exceptions: item.hasProperty("recurrence-id")
+								? []
+								: eventComps.filter(
+										(comp) =>
+											comp.hasProperty("recurrence-id") &&
+											comp.getFirstPropertyValue("uid") === uid,
+									),
+						});
 						summary = item.getFirstPropertyValue("summary");
 
 						NotificationUtils.debug(`Event: ${summary}`); // Skip private events
@@ -390,10 +404,6 @@ var DocketCalendar = {
 			occurrenceDuration,
 			occurrenceStart;
 
-		// item (and therefore this) is invariant across every occurrence
-		// this loop expands, so compute it once rather than per-iteration.
-		explicitAllDay = DocketCalendar.isExplicitAllDay(item);
-
 		expand = new ICAL.RecurExpansion({
 			component: item,
 			dtstart: item.getFirstPropertyValue("dtstart"),
@@ -453,6 +463,11 @@ var DocketCalendar = {
 					continue;
 				}
 			}
+
+			// All-day-ness is decided by whichever component supplies this
+			// occurrence's DTSTART/DTEND (the master, or its exception), so
+			// exclusiveEnd stays tied to the origin of the rendered times.
+			explicitAllDay = DocketCalendar.isExplicitAllDay(occurrenceItem);
 
 			next = occurrenceStart.convertToZone(localTimeZone);
 
