@@ -219,8 +219,7 @@ var DocketCalendar = {
 					event,
 					summary,
 					skipEvent,
-					regex,
-					duration;
+					regex;
 
 				try {
 					jcalData = ICAL.parse(data);
@@ -315,13 +314,10 @@ var DocketCalendar = {
 							continue;
 						}
 
-						duration = event.duration;
-
 						if (event.isRecurring()) {
 							DocketCalendar.processRecurringEvent(
 								item,
 								event,
-								duration,
 								rangeStart,
 								rangeEnd,
 								localTimeZone,
@@ -369,8 +365,7 @@ var DocketCalendar = {
 	 */
 	processRecurringEvent: (
 		item,
-		_event,
-		duration,
+		event,
 		rangeStart,
 		rangeEnd,
 		localTimeZone,
@@ -378,7 +373,17 @@ var DocketCalendar = {
 		name,
 		events,
 	) => {
-		var expand, next, end, minutesLength, title, allDay, explicitAllDay;
+		var expand,
+			next,
+			end,
+			minutesLength,
+			title,
+			allDay,
+			explicitAllDay,
+			details,
+			occurrenceItem,
+			occurrenceDuration,
+			occurrenceStart;
 
 		// item (and therefore this) is invariant across every occurrence
 		// this loop expands, so compute it once rather than per-iteration.
@@ -395,7 +400,16 @@ var DocketCalendar = {
 			next = expand.next();
 			if (!next) break;
 
-			next = next.convertToZone(localTimeZone);
+			// Apply any RECURRENCE-ID exception (e.g. a single occurrence
+			// moved in Outlook). The lookup must use the occurrence as the
+			// expander produced it, before zone conversion, because
+			// exceptions are keyed on the original RECURRENCE-ID.
+			details = event.getOccurrenceDetails(next);
+			occurrenceItem = details.item ? details.item.component : item;
+			occurrenceStart = details.startDate;
+			occurrenceDuration = details.endDate.subtractDate(details.startDate);
+
+			next = occurrenceStart.convertToZone(localTimeZone);
 
 			if (next.compare(rangeStart) < 0) {
 				NotificationUtils.debug(`>> Too early ${rangeStart.toString()}`);
@@ -408,9 +422,12 @@ var DocketCalendar = {
 			NotificationUtils.debug(`Repeating ${next.toString()}`);
 
 			end = next.clone();
-			end.addDuration(duration);
-			minutesLength = duration.toSeconds() / 60;
-			title = item.getFirstPropertyValue("summary");
+			end.addDuration(occurrenceDuration);
+			minutesLength = occurrenceDuration.toSeconds() / 60;
+			title = occurrenceItem.getFirstPropertyValue("summary");
+			if (occurrenceItem.getFirstPropertyValue("status") === "CANCELLED") {
+				title = "<strike>" + title + "</strike>";
+			}
 			allDay = DocketCalendar.determineAllDay(
 				explicitAllDay,
 				minutesLength,
@@ -422,7 +439,7 @@ var DocketCalendar = {
 				title: title,
 				start: next.toJSDate(),
 				end: end.toJSDate(),
-				location: item.getFirstPropertyValue("location"),
+				location: occurrenceItem.getFirstPropertyValue("location"),
 				calendars: [name],
 				allDay: allDay,
 				// See processSingleEvent for why this is tracked separately
