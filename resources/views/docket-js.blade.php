@@ -18,7 +18,7 @@ SECONDS_PER_REFRESH: 300, // in seconds. 300 == 5 minutes
 
 // Filter configuration
 FILTER_OUT_LIST: {!! json_encode(config('calendars.filter_out', [])) !!},
-FILTER_OUT_REGEXES: ["^\/"],
+FILTER_OUT_REGEXES: {!! json_encode($filter_regexes ?? config('calendars.default_filter_regexes')) !!},
 
 // Calendar format configuration
 UNTIL_CALENDAR_FORMAT: {

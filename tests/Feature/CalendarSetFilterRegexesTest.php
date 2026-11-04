@@ -138,4 +138,42 @@ class CalendarSetFilterRegexesTest extends TestCase
             'not an array' => ['abc'],
         ];
     }
+
+    public function test_docket_js_emits_default_for_unconfigured_set(): void
+    {
+        $this->makeSet('work');
+
+        $this->get('/docket.js?calendar_set=work')
+            ->assertOk()
+            ->assertSee('FILTER_OUT_REGEXES: ["^\/"]', false);
+    }
+
+    public function test_docket_js_emits_custom_list(): void
+    {
+        $this->makeSet('work', ['filter_regexes' => ['^Lunch$', 'Standup']]);
+
+        $this->get('/docket.js?calendar_set=work')
+            ->assertOk()
+            ->assertSee('FILTER_OUT_REGEXES: ["^Lunch$","Standup"]', false);
+    }
+
+    public function test_docket_js_emits_empty_list(): void
+    {
+        $this->makeSet('work', ['filter_regexes' => []]);
+
+        $this->get('/docket.js?calendar_set=work')
+            ->assertOk()
+            ->assertSee('FILTER_OUT_REGEXES: []', false);
+    }
+
+    public function test_other_sets_rules_do_not_leak(): void
+    {
+        $this->makeSet('work', ['filter_regexes' => ['^Lunch$']]);
+        $this->makeSet('home');
+
+        $this->get('/docket.js?calendar_set=home')
+            ->assertOk()
+            ->assertSee('FILTER_OUT_REGEXES: ["^\/"]', false)
+            ->assertDontSee('Lunch', false);
+    }
 }
