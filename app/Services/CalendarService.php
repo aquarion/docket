@@ -223,7 +223,12 @@ class CalendarService
      */
     public function filterRegexesForSet(string $setKey): array
     {
-        $set = CalendarSet::where('key', $setKey)->first();
+        // Same visibility rules as set selection: active, and either global or
+        // owned by the current user, so other users' patterns never leak.
+        $set = CalendarSet::active()
+            ->forUser(Auth::id())
+            ->where('key', $setKey)
+            ->first();
 
         if ($set !== null && $set->filter_regexes !== null) {
             return $set->filter_regexes;

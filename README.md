@@ -89,7 +89,7 @@ Visit: **http://localhost:8000**
 - Next upcoming event display
 
 ### 🙈 Ignoring Events
-Each calendar set can hide events by title. On `/manage`, edit a set and fill in **Ignore events matching**: one regular expression per line, case-sensitive, matched against the event title. For example, `^Lunch$` hides events titled exactly "Lunch". Use **Try a title** in the editor to check a pattern before saving.
+Each calendar set can hide iCal events by title (Google Calendar events are not filtered by these patterns). On `/manage`, edit a set and fill in **Ignore events matching**: one regular expression per line, case-sensitive, matched against the event title. For example, `^Lunch$` hides events titled exactly "Lunch". Use **Try a title** in the editor to check a pattern before saving.
 
 A set with no patterns of its own hides events whose title starts with `/`. A custom list replaces that default (list `^/` to keep it), and an empty list hides nothing by pattern. Titles starting with `/` are always hidden regardless of the list. Patterns that are not valid JavaScript regular expressions are skipped with a warning.
 

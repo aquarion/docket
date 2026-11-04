@@ -176,4 +176,46 @@ class CalendarSetFilterRegexesTest extends TestCase
             ->assertSee('FILTER_OUT_REGEXES: ["^\/"]', false)
             ->assertDontSee('Lunch', false);
     }
+
+    public function test_private_sets_patterns_do_not_reach_guests(): void
+    {
+        $owner = User::factory()->create();
+        $this->makeSet('all', ['user_id' => $owner->id, 'filter_regexes' => ['SECRET-A']]);
+
+        $this->get('/docket.js')
+            ->assertOk()
+            ->assertSee('FILTER_OUT_REGEXES: ["^\/"]', false)
+            ->assertDontSee('SECRET-A', false);
+    }
+
+    public function test_private_sets_patterns_do_not_reach_other_users(): void
+    {
+        $owner = User::factory()->create();
+        $this->makeSet('all', ['user_id' => $owner->id, 'filter_regexes' => ['SECRET-A']]);
+
+        $this->actingAs(User::factory()->create())
+            ->get('/docket.js')
+            ->assertOk()
+            ->assertDontSee('SECRET-A', false);
+    }
+
+    public function test_inactive_sets_patterns_are_ignored(): void
+    {
+        $this->makeSet('all', ['is_active' => false, 'filter_regexes' => ['INACTIVE']]);
+
+        $this->get('/docket.js')
+            ->assertOk()
+            ->assertDontSee('INACTIVE', false);
+    }
+
+    public function test_owner_still_gets_their_own_patterns(): void
+    {
+        $owner = User::factory()->create();
+        $this->makeSet('all', ['user_id' => $owner->id, 'filter_regexes' => ['MINE']]);
+
+        $this->actingAs($owner)
+            ->get('/docket.js')
+            ->assertOk()
+            ->assertSee('FILTER_OUT_REGEXES: ["MINE"]', false);
+    }
 }
