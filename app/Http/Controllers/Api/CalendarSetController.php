@@ -35,6 +35,7 @@ class CalendarSetController extends Controller
                     'emoji' => $set->emoji,
                     'is_default' => $set->is_default,
                     'is_active' => $set->is_active,
+                    'filter_regexes' => $set->filter_regexes,
                     'calendar_count' => $set->calendarSources->count(),
                 ];
             }),
@@ -53,6 +54,7 @@ class CalendarSetController extends Controller
             'is_default' => 'boolean',
             'calendar_sources' => 'array',
             'calendar_sources.*' => 'exists:calendar_sources,id',
+            ...$this->filterRegexRules(),
         ]);
 
         $user = $request->user();
@@ -64,6 +66,7 @@ class CalendarSetController extends Controller
             'user_id' => $user ? $user->id : null,
             'is_default' => $request->is_default ?? false,
             'is_active' => true,
+            'filter_regexes' => $this->normaliseFilterRegexes($request->input('filter_regexes')),
         ]);
 
         if ($request->has('calendar_sources')) {
@@ -94,6 +97,7 @@ class CalendarSetController extends Controller
                 'emoji' => $calendarSet->emoji,
                 'is_default' => $calendarSet->is_default,
                 'is_active' => $calendarSet->is_active,
+                'filter_regexes' => $calendarSet->filter_regexes,
                 'calendar_sources' => $calendarSet->calendarSources->map(function ($source) {
                     return [
                         'id' => $source->id,
@@ -120,9 +124,14 @@ class CalendarSetController extends Controller
             'is_default' => 'boolean',
             'calendar_sources' => 'array',
             'calendar_sources.*' => 'exists:calendar_sources,id',
+            ...$this->filterRegexRules(),
         ]);
 
-        $calendarSet->update($request->only(['key', 'name', 'emoji', 'is_default']));
+        $attributes = $request->only(['key', 'name', 'emoji', 'is_default']);
+        if ($request->has('filter_regexes')) {
+            $attributes['filter_regexes'] = $this->normaliseFilterRegexes($request->input('filter_regexes'));
+        }
+        $calendarSet->update($attributes);
 
         if ($request->has('calendar_sources')) {
             $calendarSet->calendarSources()->sync($request->calendar_sources);
@@ -150,5 +159,50 @@ class CalendarSetController extends Controller
         return response()->json([
             'message' => 'Calendar set deleted successfully',
         ]);
+    }
+
+    /**
+     * Validation rules for a set's ignore patterns. The PCRE check is only a
+     * sanity check (PCRE and JavaScript syntax differ slightly); the browser
+     * is the authority. A control-character delimiter is used so patterns
+     * containing slashes need no escaping.
+     *
+     * @return array<string, mixed>
+     */
+    private function filterRegexRules(): array
+    {
+        return [
+            'filter_regexes' => 'nullable|array|max:20',
+            'filter_regexes.*' => [
+                // Blank lines arrive as null (empty strings are converted by middleware).
+                'nullable',
+                'string',
+                'max:200',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    if (is_string($value) && trim($value) !== '' && @preg_match("\x01".$value."\x01u", '') === false) {
+                        $fail('Not a valid regular expression.');
+                    }
+                },
+            ],
+        ];
+    }
+
+    /**
+     * Trim patterns, drop blanks and duplicates (keeping order). Null stays
+     * null, which means "use the default patterns".
+     *
+     * @param  array<int, string|null>|null  $patterns
+     * @return array<int, string>|null
+     */
+    private function normaliseFilterRegexes(?array $patterns): ?array
+    {
+        if ($patterns === null) {
+            return null;
+        }
+
+        return array_values(array_unique(array_filter(
+            array_map(fn (?string $pattern) => trim((string) $pattern), $patterns),
+            fn (string $pattern) => $pattern !== ''
+        )));
     }
 }
