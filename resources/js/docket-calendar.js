@@ -218,8 +218,7 @@ var DocketCalendar = {
 					item,
 					event,
 					summary,
-					skipEvent,
-					regex;
+					filterReason;
 
 				try {
 					jcalData = ICAL.parse(data);
@@ -283,34 +282,10 @@ var DocketCalendar = {
 							continue;
 						}
 
-						// Skip filtered events
-						if (
-							DocketConfig.constants.FILTER_OUT_LIST &&
-							DocketConfig.constants.FILTER_OUT_LIST.indexOf(summary) !== -1
-						) {
-							NotificationUtils.debug("Skipped: Filtered");
-							continue;
-						}
-
-						if (DocketConfig.constants.FILTER_OUT_REGEXES) {
-							skipEvent = false;
-							for (const regexString of DocketConfig.constants
-								.FILTER_OUT_REGEXES) {
-								regex = new RegExp(regexString);
-								if (regex.test(summary)) {
-									NotificationUtils.debug(
-										`Skipped: Filtered by regex ${regexString}`,
-									);
-									skipEvent = true;
-									break;
-								}
-							}
-							if (skipEvent) continue;
-						}
-
-						// Skip events with / prefix
-						if (summary && summary[0] === "/") {
-							NotificationUtils.debug("Skipped: Filtered for / prefix");
+						// Skip filtered events (list, regex, "/" prefix)
+						filterReason = DocketCalendar.filterReason(summary);
+						if (filterReason) {
+							NotificationUtils.debug(`Skipped: ${filterReason}`);
 							continue;
 						}
 
@@ -361,6 +336,35 @@ var DocketCalendar = {
 	},
 
 	/**
+	 * Why a summary should be hidden (configured filter list, regex or "/"
+	 * prefix), or null if it should be shown.
+	 */
+	filterReason: (summary) => {
+		var constants = DocketConfig.constants;
+
+		if (
+			constants.FILTER_OUT_LIST &&
+			constants.FILTER_OUT_LIST.indexOf(summary) !== -1
+		) {
+			return "Filtered";
+		}
+
+		if (constants.FILTER_OUT_REGEXES) {
+			for (const regexString of constants.FILTER_OUT_REGEXES) {
+				if (new RegExp(regexString).test(summary)) {
+					return `Filtered by regex ${regexString}`;
+				}
+			}
+		}
+
+		if (summary && summary[0] === "/") {
+			return "Filtered for / prefix";
+		}
+
+		return null;
+	},
+
+	/**
 	 * Process a recurring event
 	 */
 	processRecurringEvent: (
@@ -381,6 +385,7 @@ var DocketCalendar = {
 			allDay,
 			explicitAllDay,
 			details,
+			original,
 			occurrenceItem,
 			occurrenceDuration,
 			occurrenceStart;
@@ -400,23 +405,60 @@ var DocketCalendar = {
 			next = expand.next();
 			if (!next) break;
 
+			// The expander yields original occurrences in order, so range
+			// bounds are checked against the original time. A moved
+			// occurrence is range-checked separately below and must never
+			// end the loop, or later in-range occurrences would be lost.
+			original = next.convertToZone(localTimeZone);
+			if (original.compare(rangeEnd) > 0) {
+				NotificationUtils.debug(`>> Too late ${rangeEnd.toString()}`);
+				break;
+			}
+
 			// Apply any RECURRENCE-ID exception (e.g. a single occurrence
 			// moved in Outlook). The lookup must use the occurrence as the
 			// expander produced it, before zone conversion, because
 			// exceptions are keyed on the original RECURRENCE-ID.
-			details = event.getOccurrenceDetails(next);
-			occurrenceItem = details.item ? details.item.component : item;
-			occurrenceStart = details.startDate;
-			occurrenceDuration = details.endDate.subtractDate(details.startDate);
+			occurrenceItem = item;
+			occurrenceStart = next;
+			occurrenceDuration = event.duration;
+			try {
+				details = event.getOccurrenceDetails(next);
+				if (details.item) {
+					occurrenceItem = details.item.component;
+					occurrenceStart = details.startDate;
+					occurrenceDuration = details.endDate.subtractDate(details.startDate);
+				}
+			} catch (exceptionError) {
+				// A malformed exception must not drop the rest of the series.
+				NotificationUtils.warning(
+					`Ignoring bad exception for ${next.toString()} in ${name}: ${exceptionError.message}`,
+				);
+				occurrenceItem = item;
+				occurrenceStart = next;
+				occurrenceDuration = event.duration;
+			}
+
+			if (occurrenceItem !== item) {
+				// Exceptions can be private or renamed independently of the
+				// master, so the master's checks don't cover them.
+				if (occurrenceItem.getFirstPropertyValue("class") === "PRIVATE") {
+					continue;
+				}
+				if (
+					DocketCalendar.filterReason(
+						occurrenceItem.getFirstPropertyValue("summary"),
+					)
+				) {
+					continue;
+				}
+			}
 
 			next = occurrenceStart.convertToZone(localTimeZone);
 
-			if (next.compare(rangeStart) < 0) {
-				NotificationUtils.debug(`>> Too early ${rangeStart.toString()}`);
+			if (next.compare(rangeStart) < 0 || next.compare(rangeEnd) > 0) {
+				NotificationUtils.debug(`>> Out of range ${next.toString()}`);
 				continue;
-			} else if (next.compare(rangeEnd) > 0) {
-				NotificationUtils.debug(`>> Too late ${rangeEnd.toString()}`);
-				break;
 			}
 
 			NotificationUtils.debug(`Repeating ${next.toString()}`);
@@ -424,7 +466,9 @@ var DocketCalendar = {
 			end = next.clone();
 			end.addDuration(occurrenceDuration);
 			minutesLength = occurrenceDuration.toSeconds() / 60;
-			title = occurrenceItem.getFirstPropertyValue("summary");
+			title =
+				occurrenceItem.getFirstPropertyValue("summary") ??
+				item.getFirstPropertyValue("summary");
 			if (occurrenceItem.getFirstPropertyValue("status") === "CANCELLED") {
 				title = "<strike>" + title + "</strike>";
 			}
