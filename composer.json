@@ -7,7 +7,7 @@
 	"require": {
 		"php": "^8.2",
 		"google/apiclient": "^2.18",
-		"guzzlehttp/guzzle": "^7.5",
+		"guzzlehttp/guzzle": "^8.3",
 		"laravel/framework": "^13.39",
 		"laravel/sanctum": "^4.3",
 		"laravel/socialite": "^5.24",
