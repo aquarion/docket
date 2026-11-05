@@ -218,9 +218,8 @@ var DocketCalendar = {
 					item,
 					event,
 					summary,
-					skipEvent,
-					regex,
-					duration;
+					filterReason,
+					uid;
 
 				try {
 					jcalData = ICAL.parse(data);
@@ -263,7 +262,20 @@ var DocketCalendar = {
 				for (index = 0; index < eventComps.length; index++) {
 					try {
 						item = eventComps[index];
-						event = new ICAL.Event(item);
+						// Only relate exceptions that belong to this series (same
+						// UID). Left to its default, ICAL.Event attaches every
+						// RECURRENCE-ID event in the feed, so an unrelated series
+						// with a matching wall-clock time would adopt its exception.
+						uid = item.getFirstPropertyValue("uid");
+						event = new ICAL.Event(item, {
+							exceptions: item.hasProperty("recurrence-id")
+								? []
+								: eventComps.filter(
+										(comp) =>
+											comp.hasProperty("recurrence-id") &&
+											comp.getFirstPropertyValue("uid") === uid,
+									),
+						});
 						summary = item.getFirstPropertyValue("summary");
 
 						NotificationUtils.debug(`Event: ${summary}`); // Skip private events
@@ -284,44 +296,17 @@ var DocketCalendar = {
 							continue;
 						}
 
-						// Skip filtered events
-						if (
-							DocketConfig.constants.FILTER_OUT_LIST &&
-							DocketConfig.constants.FILTER_OUT_LIST.indexOf(summary) !== -1
-						) {
-							NotificationUtils.debug("Skipped: Filtered");
+						// Skip filtered events (list, regex, "/" prefix)
+						filterReason = DocketCalendar.filterReason(summary);
+						if (filterReason) {
+							NotificationUtils.debug(`Skipped: ${filterReason}`);
 							continue;
 						}
-
-						if (DocketConfig.constants.FILTER_OUT_REGEXES) {
-							skipEvent = false;
-							for (const regexString of DocketConfig.constants
-								.FILTER_OUT_REGEXES) {
-								regex = new RegExp(regexString);
-								if (regex.test(summary)) {
-									NotificationUtils.debug(
-										`Skipped: Filtered by regex ${regexString}`,
-									);
-									skipEvent = true;
-									break;
-								}
-							}
-							if (skipEvent) continue;
-						}
-
-						// Skip events with / prefix
-						if (summary && summary[0] === "/") {
-							NotificationUtils.debug("Skipped: Filtered for / prefix");
-							continue;
-						}
-
-						duration = event.duration;
 
 						if (event.isRecurring()) {
 							DocketCalendar.processRecurringEvent(
 								item,
 								event,
-								duration,
 								rangeStart,
 								rangeEnd,
 								localTimeZone,
@@ -365,12 +350,40 @@ var DocketCalendar = {
 	},
 
 	/**
+	 * Why a summary should be hidden (configured filter list, regex or "/"
+	 * prefix), or null if it should be shown.
+	 */
+	filterReason: (summary) => {
+		var constants = DocketConfig.constants;
+
+		if (
+			constants.FILTER_OUT_LIST &&
+			constants.FILTER_OUT_LIST.indexOf(summary) !== -1
+		) {
+			return "Filtered";
+		}
+
+		if (constants.FILTER_OUT_REGEXES) {
+			for (const regexString of constants.FILTER_OUT_REGEXES) {
+				if (new RegExp(regexString).test(summary)) {
+					return `Filtered by regex ${regexString}`;
+				}
+			}
+		}
+
+		if (summary && summary[0] === "/") {
+			return "Filtered for / prefix";
+		}
+
+		return null;
+	},
+
+	/**
 	 * Process a recurring event
 	 */
 	processRecurringEvent: (
 		item,
-		_event,
-		duration,
+		event,
 		rangeStart,
 		rangeEnd,
 		localTimeZone,
@@ -378,11 +391,18 @@ var DocketCalendar = {
 		name,
 		events,
 	) => {
-		var expand, next, end, minutesLength, title, allDay, explicitAllDay;
-
-		// item (and therefore this) is invariant across every occurrence
-		// this loop expands, so compute it once rather than per-iteration.
-		explicitAllDay = DocketCalendar.isExplicitAllDay(item);
+		var expand,
+			next,
+			end,
+			minutesLength,
+			title,
+			allDay,
+			explicitAllDay,
+			details,
+			original,
+			occurrenceItem,
+			occurrenceDuration,
+			occurrenceStart;
 
 		expand = new ICAL.RecurExpansion({
 			component: item,
@@ -395,22 +415,78 @@ var DocketCalendar = {
 			next = expand.next();
 			if (!next) break;
 
-			next = next.convertToZone(localTimeZone);
-
-			if (next.compare(rangeStart) < 0) {
-				NotificationUtils.debug(`>> Too early ${rangeStart.toString()}`);
-				continue;
-			} else if (next.compare(rangeEnd) > 0) {
+			// The expander yields original occurrences in order, so range
+			// bounds are checked against the original time. A moved
+			// occurrence is range-checked separately below and must never
+			// end the loop, or later in-range occurrences would be lost.
+			original = next.convertToZone(localTimeZone);
+			if (original.compare(rangeEnd) > 0) {
 				NotificationUtils.debug(`>> Too late ${rangeEnd.toString()}`);
 				break;
+			}
+
+			// Apply any RECURRENCE-ID exception (e.g. a single occurrence
+			// moved in Outlook). The lookup must use the occurrence as the
+			// expander produced it, before zone conversion, because
+			// exceptions are keyed on the original RECURRENCE-ID.
+			occurrenceItem = item;
+			occurrenceStart = next;
+			occurrenceDuration = event.duration;
+			try {
+				details = event.getOccurrenceDetails(next);
+				if (details.item) {
+					occurrenceItem = details.item.component;
+					occurrenceStart = details.startDate;
+					occurrenceDuration = details.endDate.subtractDate(details.startDate);
+				}
+			} catch (exceptionError) {
+				// A malformed exception must not drop the rest of the series.
+				NotificationUtils.warning(
+					`Ignoring bad exception for ${next.toString()} in ${name}: ${exceptionError.message}`,
+				);
+				occurrenceItem = item;
+				occurrenceStart = next;
+				occurrenceDuration = event.duration;
+			}
+
+			if (occurrenceItem !== item) {
+				// Exceptions can be private or renamed independently of the
+				// master, so the master's checks don't cover them.
+				if (occurrenceItem.getFirstPropertyValue("class") === "PRIVATE") {
+					continue;
+				}
+				if (
+					DocketCalendar.filterReason(
+						occurrenceItem.getFirstPropertyValue("summary"),
+					)
+				) {
+					continue;
+				}
+			}
+
+			// All-day-ness is decided by whichever component supplies this
+			// occurrence's DTSTART/DTEND (the master, or its exception), so
+			// exclusiveEnd stays tied to the origin of the rendered times.
+			explicitAllDay = DocketCalendar.isExplicitAllDay(occurrenceItem);
+
+			next = occurrenceStart.convertToZone(localTimeZone);
+
+			if (next.compare(rangeStart) < 0 || next.compare(rangeEnd) > 0) {
+				NotificationUtils.debug(`>> Out of range ${next.toString()}`);
+				continue;
 			}
 
 			NotificationUtils.debug(`Repeating ${next.toString()}`);
 
 			end = next.clone();
-			end.addDuration(duration);
-			minutesLength = duration.toSeconds() / 60;
-			title = item.getFirstPropertyValue("summary");
+			end.addDuration(occurrenceDuration);
+			minutesLength = occurrenceDuration.toSeconds() / 60;
+			title =
+				occurrenceItem.getFirstPropertyValue("summary") ??
+				item.getFirstPropertyValue("summary");
+			if (occurrenceItem.getFirstPropertyValue("status") === "CANCELLED") {
+				title = "<strike>" + title + "</strike>";
+			}
 			allDay = DocketCalendar.determineAllDay(
 				explicitAllDay,
 				minutesLength,
@@ -422,7 +498,7 @@ var DocketCalendar = {
 				title: title,
 				start: next.toJSDate(),
 				end: end.toJSDate(),
-				location: item.getFirstPropertyValue("location"),
+				location: occurrenceItem.getFirstPropertyValue("location"),
 				calendars: [name],
 				allDay: allDay,
 				// See processSingleEvent for why this is tracked separately
