@@ -216,6 +216,28 @@ class CalendarService
     }
 
     /**
+     * Ignore patterns for a calendar set: its own list when one is stored
+     * (an empty list means hide nothing), otherwise the configured default.
+     *
+     * @return array<int, string>
+     */
+    public function filterRegexesForSet(string $setKey): array
+    {
+        // Same visibility rules as set selection: active, and either global or
+        // owned by the current user, so other users' patterns never leak.
+        $set = CalendarSet::active()
+            ->forUser(Auth::id())
+            ->where('key', $setKey)
+            ->first();
+
+        if ($set !== null && $set->filter_regexes !== null) {
+            return $set->filter_regexes;
+        }
+
+        return config('calendars.default_filter_regexes', ['^/']);
+    }
+
+    /**
      * Clear all cached calendar filters
      */
     public function clearCache(): void

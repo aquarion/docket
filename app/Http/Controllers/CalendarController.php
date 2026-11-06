@@ -153,6 +153,7 @@ class CalendarController extends Controller
                 'google_calendars' => $filteredConfig['google_calendars'],
                 'merged_calendars' => $filteredConfig['merged_calendars'],
                 'calendar_set' => $filteredConfig['calendar_set_id'],
+                'filter_regexes' => $this->calendarService->filterRegexesForSet($filteredConfig['calendar_set_id']),
                 'festival' => $this->themeService->getFestival(),
             ])
             ->header('Content-Type', 'application/javascript')

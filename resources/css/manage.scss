@@ -269,7 +269,8 @@ body.nighttime .modal-content {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #ddd;
@@ -278,10 +279,39 @@ body.nighttime .modal-content {
 }
 
 body.nighttime .form-group input,
-body.nighttime .form-group select {
+body.nighttime .form-group select,
+body.nighttime .form-group textarea {
   background: #4a5568;
   border-color: #556379;
   color: #e2e8f0;
+}
+
+.form-group textarea {
+  font-family: monospace;
+  resize: vertical;
+}
+
+.field-help {
+  margin: 5px 0 0;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.field-errors {
+  margin: 5px 0;
+  padding-left: 1.2em;
+  color: #e53e3e;
+  font-size: 0.85em;
+}
+
+.regex-try {
+  margin-top: 12px;
+}
+
+#set-filter-regexes-try-result {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.85em;
 }
 
 .modal-actions {

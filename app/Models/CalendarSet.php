@@ -15,11 +15,13 @@ class CalendarSet extends Model
         'user_id',
         'is_default',
         'is_active',
+        'filter_regexes',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
         'is_active' => 'boolean',
+        'filter_regexes' => 'array',
     ];
 
     /**

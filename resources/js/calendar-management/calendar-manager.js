@@ -8,6 +8,8 @@ var CalendarManager = {
 	googleCalendars: [], // Store Google calendar data
 	currentEditingSet: null,
 	currentEditingSource: null,
+	// Ignore patterns being edited: null = use the default, array = custom list
+	currentFilterRegexes: null,
 
 	init: function () {
 		this.loadCalendarSets();
@@ -22,6 +24,25 @@ var CalendarManager = {
 		if (setForm) {
 			setForm.addEventListener("submit", (e) => {
 				this.handleSetSubmit(e);
+			});
+		}
+
+		// Ignore-pattern editor
+		var regexEl = document.getElementById("set-filter-regexes");
+		if (regexEl) {
+			regexEl.addEventListener("input", () => {
+				this.currentFilterRegexes = this.parseFilterRegexes(regexEl.value);
+				this.refreshFilterRegexFeedback();
+			});
+		}
+		var tryEl = document.getElementById("set-filter-regexes-try");
+		if (tryEl) {
+			tryEl.addEventListener("input", () => this.refreshFilterRegexFeedback());
+		}
+		var resetEl = document.getElementById("set-filter-regexes-reset");
+		if (resetEl) {
+			resetEl.addEventListener("click", () => {
+				this.setFilterRegexes(null);
 			});
 		}
 
@@ -235,6 +256,100 @@ var CalendarManager = {
 		);
 	},
 
+	// Ignore-pattern helpers
+	/** Split text into patterns: trimmed, no blanks, no duplicates (order kept). */
+	parseFilterRegexes: (text) => {
+		var seen = {};
+		return String(text || "")
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => {
+				if (line === "" || seen[line]) return false;
+				seen[line] = true;
+				return true;
+			});
+	},
+
+	/** Patterns that do not compile as JavaScript regular expressions. */
+	validateFilterRegexes: (patterns) => {
+		var problems = [];
+		(patterns || []).forEach((pattern) => {
+			try {
+				new RegExp(pattern);
+			} catch (error) {
+				problems.push({ pattern: pattern, message: error.message });
+			}
+		});
+		return problems;
+	},
+
+	/** First valid pattern matching the title, or null. Invalid patterns are ignored. */
+	firstMatchingPattern: (title, patterns) => {
+		var list = patterns || [];
+		for (var i = 0; i < list.length; i++) {
+			try {
+				if (new RegExp(list[i]).test(title)) return list[i];
+			} catch (_error) {
+				// skipped: reported by validateFilterRegexes
+			}
+		}
+		return null;
+	},
+
+	/** Put a pattern list (or null for "default") into the editor. */
+	setFilterRegexes: function (patterns) {
+		var regexEl = document.getElementById("set-filter-regexes");
+		this.currentFilterRegexes = patterns;
+		if (regexEl) regexEl.value = patterns ? patterns.join("\n") : "";
+		this.refreshFilterRegexFeedback();
+	},
+
+	/** Re-render the status line, inline errors and the "try a title" result. */
+	refreshFilterRegexFeedback: function () {
+		var errorsEl = document.getElementById("set-filter-regexes-errors");
+		var statusEl = document.getElementById("set-filter-regexes-status");
+		var tryEl = document.getElementById("set-filter-regexes-try");
+		var resultEl = document.getElementById("set-filter-regexes-try-result");
+		var patterns = this.currentFilterRegexes;
+
+		if (statusEl) {
+			statusEl.textContent =
+				patterns === null
+					? "Using the default (events starting with / are hidden)."
+					: patterns.length === 0
+						? "No patterns: nothing is hidden by pattern."
+						: patterns.length + " custom pattern(s).";
+		}
+
+		if (errorsEl) {
+			errorsEl.innerHTML = this.validateFilterRegexes(patterns)
+				.map(
+					(problem) =>
+						"<li>" +
+						this.escapeHtml(problem.pattern) +
+						": " +
+						this.escapeHtml(problem.message) +
+						"</li>",
+				)
+				.join("");
+		}
+
+		if (resultEl && tryEl) {
+			var effective = patterns === null ? ["^/"] : patterns;
+			var title = tryEl.value;
+			var match =
+				title === "" ? null : this.firstMatchingPattern(title, effective);
+			resultEl.textContent =
+				title === ""
+					? ""
+					: match !== null
+						? "Hidden by " + match
+						: title[0] === "/"
+							? "Hidden (titles starting with / are always hidden)"
+							: "Shown";
+		}
+	},
+
 	// Calendar Set Modal Methods
 	showAddSetModal: function () {
 		this.currentEditingSet = null;
@@ -244,6 +359,7 @@ var CalendarManager = {
 
 		if (titleEl) titleEl.textContent = "Add Calendar Set";
 		if (formEl) formEl.reset();
+		this.setFilterRegexes(null);
 		if (modalEl) modalEl.classList.add("show");
 
 		this.setupModalEmojiPickers("calendar-set-modal");
@@ -276,6 +392,9 @@ var CalendarManager = {
 				if (nameEl) nameEl.value = set.name || "";
 				if (emojiEl) emojiEl.value = set.emoji || "";
 				if (defaultEl) defaultEl.checked = set.is_default || false;
+				this.setFilterRegexes(
+					Array.isArray(set.filter_regexes) ? set.filter_regexes : null,
+				);
 				if (modalEl) modalEl.classList.add("show");
 
 				this.setupModalEmojiPickers("calendar-set-modal");
@@ -292,6 +411,15 @@ var CalendarManager = {
 	handleSetSubmit: function (e) {
 		e.preventDefault();
 
+		if (this.validateFilterRegexes(this.currentFilterRegexes).length > 0) {
+			if (typeof NotificationUtils !== "undefined") {
+				NotificationUtils.error(
+					"Fix the invalid ignore patterns before saving",
+				);
+			}
+			return;
+		}
+
 		var formData = new FormData(e.target);
 		var data = {
 			key: formData.get("key"),
@@ -299,6 +427,7 @@ var CalendarManager = {
 			emoji: formData.get("emoji"),
 			is_default: formData.get("is_default") === "on",
 			calendar_sources: this.getSelectedCalendarSources(),
+			filter_regexes: this.currentFilterRegexes,
 		};
 
 		var url = this.currentEditingSet
