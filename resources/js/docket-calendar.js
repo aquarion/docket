@@ -165,7 +165,11 @@ var DocketCalendar = {
 	 * @param {Object} data - Calendar data
 	 */
 	updateCallback: (data, _info, _third) => {
-		DocketConfig.allEvents.json_cals = data;
+		// Apply the same ignore rules as iCal events. A missing title is
+		// checked as "" so patterns don't match the text "undefined"/"null".
+		DocketConfig.allEvents.json_cals = Array.isArray(data)
+			? data.filter((event) => !DocketCalendar.filterReason(event.title || ""))
+			: data;
 		DocketEvents.updateNextUp();
 	},
 
