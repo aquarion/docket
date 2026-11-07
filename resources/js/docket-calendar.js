@@ -349,6 +349,9 @@ var DocketCalendar = {
 			});
 	},
 
+	// Invalid filter patterns already warned about, so each warns once.
+	warnedRegexes: {},
+
 	/**
 	 * Why a summary should be hidden (configured filter list, regex or "/"
 	 * prefix), or null if it should be shown.
@@ -365,7 +368,20 @@ var DocketCalendar = {
 
 		if (constants.FILTER_OUT_REGEXES) {
 			for (const regexString of constants.FILTER_OUT_REGEXES) {
-				if (new RegExp(regexString).test(summary)) {
+				let regex;
+				try {
+					regex = new RegExp(regexString);
+				} catch (regexError) {
+					// A bad pattern must not break the event; warn once and skip it.
+					if (!DocketCalendar.warnedRegexes[regexString]) {
+						DocketCalendar.warnedRegexes[regexString] = true;
+						NotificationUtils.warning(
+							`Ignoring invalid filter pattern "${regexString}": ${regexError.message}`,
+						);
+					}
+					continue;
+				}
+				if (regex.test(summary)) {
 					return `Filtered by regex ${regexString}`;
 				}
 			}

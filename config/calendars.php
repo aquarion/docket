@@ -135,6 +135,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Ignore Patterns
+    |--------------------------------------------------------------------------
+    |
+    | Regular expressions (case-sensitive) matched against event titles; matching
+    | events are hidden. Used by calendar sets that have no patterns of their
+    | own. The default hides events whose title starts with "/".
+    |
+    */
+
+    'default_filter_regexes' => ['^/'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Calendar Sets
     |--------------------------------------------------------------------------
     |
