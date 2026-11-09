@@ -169,7 +169,7 @@
         <div class="form-group">
           <label for="set-filter-regexes">Ignore events matching:</label>
           <textarea id="set-filter-regexes" name="filter_regexes_text" rows="4" spellcheck="false" placeholder="One regular expression per line, e.g. ^Lunch$"></textarea>
-          <p class="field-help">Regular expressions, case-sensitive, matched against event titles of iCal calendars (not Google Calendar sources). Events whose title starts with / are always hidden.</p>
+          <p class="field-help">Regular expressions, case-sensitive, matched against event titles from iCal and Google Calendar sources. Events whose title starts with / are always hidden.</p>
           <p class="field-help" id="set-filter-regexes-status" aria-live="polite"></p>
           <ul class="field-errors" id="set-filter-regexes-errors" aria-live="polite"></ul>
           <button type="button" class="btn btn-secondary" id="set-filter-regexes-reset">Reset to default</button>
