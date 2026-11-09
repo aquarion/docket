@@ -6,6 +6,7 @@ use App\Models\CalendarSet;
 use App\Models\User;
 use App\Services\CalendarService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class CalendarSetFilterRegexesTest extends TestCase
@@ -116,9 +117,7 @@ class CalendarSetFilterRegexesTest extends TestCase
         $this->assertSame(['a', 'b'], $set->fresh()->filter_regexes);
     }
 
-    /**
-     * @dataProvider invalidFilterRegexes
-     */
+    #[DataProvider('invalidFilterRegexes')]
     public function test_invalid_filter_regexes_are_rejected(mixed $value): void
     {
         $this->actingUser();
